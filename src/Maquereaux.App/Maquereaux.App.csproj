@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Maquereaux.App</RootNamespace>
+    <AssemblyName>Maquereaux</AssemblyName>
+    <ApplicationIcon>..\..\assets\maquereaux.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <!-- Publication : un seul .exe autonome (aucun .NET à installer sur le PC cible) -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- Embarque aussi les DLL natives de WPF (sinon elles restent à côté de l'exe) -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Compression : ~150 Mo → ~65 Mo, au prix d'un démarrage un poil plus lent -->
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\assets\maquereaux.ico" Link="Assets\maquereaux.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Maquereaux.Core\Maquereaux.Core.csproj" />
+    <ProjectReference Include="..\Maquereaux.Win32\Maquereaux.Win32.csproj" />
+  </ItemGroup>
+
+</Project>

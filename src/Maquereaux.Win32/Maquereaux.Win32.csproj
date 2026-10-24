@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Interop Windows (P/Invoke user32/kernel32/winmm). Pas de WPF ici non plus. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>Maquereaux.Win32</RootNamespace>
+    <!-- Requis par [LibraryImport] (marshalling généré à la compilation) -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Maquereaux.Core\Maquereaux.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Maquereaux.Win32.Tests" />
+  </ItemGroup>
+
+</Project>

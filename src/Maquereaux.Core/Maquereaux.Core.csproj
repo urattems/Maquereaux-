@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Logique pure : AUCUNE dépendance WPF ni Win32 → testable partout (même sous Linux) -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Maquereaux.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Maquereaux.Core.Tests" />
+  </ItemGroup>
+
+</Project>

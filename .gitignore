@@ -1,0 +1,31 @@
+# Build .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+publish/
+artifacts/
+*.user
+*.suo
+*.userprefs
+*.rsuser
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+
+# Tests / couverture
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+coverage.cobertura.xml
+
+# Divers
+*.log
+.DS_Store
+Thumbs.db
