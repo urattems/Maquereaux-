@@ -28,6 +28,8 @@ public class KeyCaptureBox : TextBox
 
     public KeyCaptureBox()
     {
+        // Les styles implicites WPF ne s'appliquent qu'au type EXACT : on reprend explicitement celui des TextBox
+        SetResourceReference(StyleProperty, typeof(TextBox));
         IsReadOnly = true;
         IsReadOnlyCaretVisible = false;
         Cursor = Cursors.Hand;
