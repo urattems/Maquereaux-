@@ -1,0 +1,24 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Palette sombre (défaut). Toutes les vues utilisent ces clés en DynamicResource → thème changeable à chaud. -->
+    <SolidColorBrush x:Key="Brush.Background" Color="#11151E" />
+    <SolidColorBrush x:Key="Brush.Surface" Color="#1A202C" />
+    <SolidColorBrush x:Key="Brush.SurfaceAlt" Color="#232B3A" />
+    <SolidColorBrush x:Key="Brush.SurfaceHover" Color="#2C3648" />
+    <SolidColorBrush x:Key="Brush.Border" Color="#334055" />
+    <SolidColorBrush x:Key="Brush.Text" Color="#E6EDF3" />
+    <SolidColorBrush x:Key="Brush.TextMuted" Color="#8B98AD" />
+    <SolidColorBrush x:Key="Brush.Accent" Color="#00C88C" />
+    <SolidColorBrush x:Key="Brush.AccentText" Color="#06281D" />
+    <SolidColorBrush x:Key="Brush.Running" Color="#1FD17A" />
+    <SolidColorBrush x:Key="Brush.RunningBg" Color="#0F3324" />
+    <SolidColorBrush x:Key="Brush.Stopped" Color="#FF5468" />
+    <SolidColorBrush x:Key="Brush.StoppedBg" Color="#3A1820" />
+    <SolidColorBrush x:Key="Brush.Paused" Color="#FFB020" />
+    <SolidColorBrush x:Key="Brush.PausedBg" Color="#3A2C10" />
+    <SolidColorBrush x:Key="Brush.Info" Color="#4DA3FF" />
+    <SolidColorBrush x:Key="Brush.Selection" Color="#1E4D3F" />
+    <SolidColorBrush x:Key="Brush.Chart.Physical" Color="#4DA3FF" />
+    <SolidColorBrush x:Key="Brush.Chart.Injected" Color="#00C88C" />
+    <SolidColorBrush x:Key="Brush.Chart.Grid" Color="#2A3445" />
+</ResourceDictionary>

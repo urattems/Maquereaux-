@@ -1,0 +1,35 @@
+<UserControl x:Class="Maquereaux.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Maquereaux.App.ViewModels"
+             xmlns:controls="clr-namespace:Maquereaux.App.Controls"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Sécurité" Style="{StaticResource Text.Title}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="220" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Arrêt d'urgence (global)" Style="{StaticResource Text.Label}" />
+                        <controls:HotkeyBox Grid.Column="1" Hotkey="{Binding EmergencyHotkey}" AllowNone="False" />
+                    </Grid>
+                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,8,0,0"
+                               Text="Toujours actif, même pendant la capture d'une touche. Il coupe la macro et relâche toutes les touches." />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Fenêtre" Style="{StaticResource Text.Title}" />
+                    <CheckBox Content="Toujours au premier plan" IsChecked="{Binding AlwaysOnTop}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

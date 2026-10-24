@@ -1,6 +1,25 @@
 <Application x:Class="Maquereaux.App.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
-    <Application.Resources />
+             xmlns:conv="clr-namespace:Maquereaux.App.Converters"
+             ShutdownMode="OnMainWindowClose">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Index 0 = palette de couleurs (remplacée à chaud par Light.xaml / Dark.xaml) -->
+                <ResourceDictionary Source="Themes/Dark.xaml" />
+                <ResourceDictionary Source="Themes/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:EngineStateToBrushConverter x:Key="StateToBrush" />
+            <conv:EngineStateToBrushConverter x:Key="StateToBrushBg" Suffix="Bg" />
+            <conv:EngineStateToTextConverter x:Key="StateToText" />
+            <conv:EnumToBoolConverter x:Key="EnumToBool" />
+            <conv:BoolToVisibilityConverter x:Key="BoolToVis" />
+            <conv:BoolToVisibilityConverter x:Key="BoolToVisInverted" Invert="True" />
+            <conv:NullToVisibilityConverter x:Key="NullToVis" />
+            <conv:NullToVisibilityConverter x:Key="NullToVisInverted" Invert="True" />
+            <conv:InverseBoolConverter x:Key="InverseBool" />
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

@@ -22,7 +22,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Les "implicit usings" WPF n'incluent pas System.IO -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="..\..\assets\maquereaux.ico" Link="Assets\maquereaux.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- MVVM : [ObservableProperty]/[RelayCommand] générés à la compilation → zéro boilerplate INotifyPropertyChanged -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <!-- Logs : API standard .NET ; le fournisseur "fichier" est maison (40 lignes, pas besoin de Serilog) -->
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
