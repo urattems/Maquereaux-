@@ -87,6 +87,14 @@ internal sealed class SmokeTest
         var stats = _host.Recorder.Snapshot();
         Log($"Stats 10 ms ({_host.Engine.CurrentSleeperName}) : moyenne {stats.Mean:0.000} ms, p95 {stats.P95:0.000}, σ {stats.StdDev:0.000}, manqués {stats.Missed}");
         var state = _host.Engine.State;
+
+        // Modification à chaud pendant l'exécution : l'intervalle passe à 20 ms sans arrêter la macro
+        profile.IntervalMs = 20;
+        await Delay(900);
+        var live = _host.Engine.RunningProfile;
+        var stats20 = _host.Recorder.Snapshot();
+        Log($"Édition à chaud : intervalle en cours = {live?.IntervalMs} ms, moyenne mesurée {stats20.Mean:0.000} ms");
+        if (live?.IntervalMs != 20) throw new InvalidOperationException("La modification à chaud n'a pas été appliquée");
         _vm.StartStopCommand.Execute(null);
         await Delay(500);
 

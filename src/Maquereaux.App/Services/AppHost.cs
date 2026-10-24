@@ -105,6 +105,18 @@ public sealed class AppHost : IDisposable
 
     public void Stop() => _executor.Post(_controller.Stop);
 
+    /// <summary>
+    /// Le profil en cours d'exécution vient d'être modifié dans l'UI : on relance le moteur avec la nouvelle
+    /// version (les touches enfoncées sont relâchées au passage). Sans effet si ce profil ne tourne pas.
+    /// </summary>
+    public void ApplyLiveEdit(Guid profileId) => _executor.Post(() =>
+    {
+        if (!Engine.IsRunning || Engine.RunningProfile?.Id != profileId) return;
+        var p = Profiles.Find(profileId);
+        if (p is null || p.Steps.Count == 0) { _controller.Stop(); return; }
+        Engine.Start(p, CreateGate(p));
+    });
+
     public void EmergencyStop()
     {
         // Double sécurité : annulation immédiate (non bloquante) + arrêt complet via la file de commandes.

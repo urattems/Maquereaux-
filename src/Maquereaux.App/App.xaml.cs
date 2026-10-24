@@ -46,6 +46,7 @@ public partial class App : Application
         ApplyTheme(_vm.IsLightTheme);
 
         var window = new MainWindow { DataContext = _vm };
+        if (!smoke) window.RestorePlacement();
         MainWindow = window;
         window.Show();
         _vm.Initialize();

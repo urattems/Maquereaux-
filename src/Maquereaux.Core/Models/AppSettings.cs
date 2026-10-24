@@ -8,6 +8,9 @@ public enum AppTheme
     Light,
 }
 
+/// <summary>Position et taille d'une fenêtre (en pixels indépendants du DPI).</summary>
+public sealed record WindowPlacement(double Left, double Top, double Width, double Height, bool Maximized);
+
 /// <summary>Réglages globaux de l'application.</summary>
 public sealed class AppSettings
 {
@@ -34,6 +37,9 @@ public sealed class AppSettings
 
     /// <summary>Réduire dans la zone de notification au lieu de la barre des tâches.</summary>
     public bool MinimizeToTray { get; set; }
+
+    /// <summary>Dernière position/taille de la fenêtre principale (null = centrée, taille par défaut).</summary>
+    public WindowPlacement? Window { get; set; }
 
     public AppSettings Clone() => (AppSettings)MemberwiseClone();
 }

@@ -66,7 +66,24 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _saveTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher) { Interval = TimeSpan.FromMilliseconds(600) };
         _saveTimer.Tick += (_, _) => { _saveTimer.Stop(); SaveNow(); };
 
+        _liveEditTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher) { Interval = TimeSpan.FromMilliseconds(300) };
+        _liveEditTimer.Tick += (_, _) =>
+        {
+            _liveEditTimer.Stop();
+            if (_liveEditProfile is { } id) _host.ApplyLiveEdit(id);
+        };
+
         Lab = new LabViewModel(host, dispatcher, dialogs, this);
+    }
+
+    private readonly DispatcherTimer _liveEditTimer;
+    private Guid? _liveEditProfile;
+
+    /// <summary>Position/taille de fenêtre mémorisées (lues/écrites par la vue).</summary>
+    public WindowPlacement? WindowPlacement
+    {
+        get => _settings.Window;
+        set { _settings.Window = value; MarkDirty(); }
     }
 
     public string Title => $"Maquereaux {AppInfo.Version}";
@@ -373,6 +390,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         _host.Profiles.Publish(vm.Model);
         if (hotkeysAffected) ApplyHotkeys();
+        // Modification du profil en cours → appliquée à chaud (anti-rebond pour ne pas relancer à chaque frappe)
+        if (vm.IsRunning)
+        {
+            _liveEditTimer.Stop();
+            _liveEditProfile = vm.Id;
+            _liveEditTimer.Start();
+        }
         RevalidateAll();
         MarkDirty();
     }
