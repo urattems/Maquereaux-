@@ -35,4 +35,13 @@ Sous le conteneur Claude : `export PATH=/root/.dotnet:$PATH` (SDK installé via 
 - [x] J2 — Timer haute précision (v0.2.0)
 - [x] J3 — Profils & activation (v0.3.0)
 - [x] J4 — Labo de mesure (v0.4.0)
-- [ ] Release v1.0.0 (polish + docs)
+- [x] Release v1.0.0 (polish + docs)
+
+## Points d'attention pour la suite
+- Toute fonctionnalité doit respecter le « Hors périmètre » (cahier des charges §2) : jamais d'humanisation des délais,
+  de masquage d'injection, de lecture d'écran, de réseau.
+- Threads : UI WPF / `MessageLoopThread` (hotkeys + hook, doit rester ultra réactif) / `SerialExecutor` (Start/Stop) /
+  thread moteur / thread de dispatch du hook. Ne jamais bloquer le thread de la boucle Win32.
+- Le moteur ne lit que des copies de profils (`ProfileRegistry`) ; l'UI publie à chaque modification.
+- Valider l'UI : pousser sur une branche → CI → artefact `screenshots` (smoke test) ; lire le rapport dans les logs du job.
+- Releases : bump `<Version>` + section CHANGELOG → push sur main (le proxy de dev refuse les push de tags).

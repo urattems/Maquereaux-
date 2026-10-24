@@ -25,3 +25,6 @@ Chaque ajout reste dans l'esprit du projet et respecte la section « Hors périm
 | A-19 | Sauvegarde/rechargement de sessions `.mqsession.json` | Comparer avec une session d'un autre jour. |
 | A-20 | Indicateur ● REC aussi dans le bandeau principal | On sait qu'on est enregistré quel que soit l'onglet. |
 | A-21 | Nommage automatique des sessions (Manuel / Maquereaux / Mixte / Vide) | Comparaisons lisibles sans renommer. |
+| A-22 | Modifications du profil en cours appliquées à chaud | Plus besoin d'arrêter/relancer pour ajuster l'intervalle pendant un test. |
+| A-23 | Position/taille de fenêtre mémorisées (avec garde-fou multi-écran) | Confort ; pas de fenêtre « perdue » hors écran. |
+| A-24 | Contrôles (cases, radios, scrollbars) thémés | Cohérence visuelle en sombre comme en clair. |

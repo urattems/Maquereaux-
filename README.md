@@ -147,10 +147,11 @@ dotnet publish src/Maquereaux.App -c Release -p:PublishSingleFile=true -o publis
 publish/Maquereaux.exe --smoke-test                   # démarre, parcourt tout, se ferme (code 0 = OK)
 ```
 
-**Tests** : ~200 tests unitaires sur `Maquereaux.Core` (moteur, cadence absolue, key-up garanti, Cycle/Burst/Repeat,
+**Tests** : ~200 tests unitaires sur `Maquereaux.Core` (couverture **98 % des lignes, 91 % des branches**) (moteur, cadence absolue, key-up garanti, Cycle/Burst/Repeat,
 stats, persistance atomique, JSON corrompu, import/export, logique Maintenir, filtre de fenêtre, labo, CSV…) et ~20 tests
 d'intégration Windows exécutés en CI sur un vrai runner : `SendInput` → `RegisterHotKey`, hook bas niveau (flags injecté,
-signature, avaler une touche, pas d'auto-déclenchement), mesure 10 ms moteur → hook, timers haute résolution.
+signature, avaler une touche, pas d'auto-déclenchement), mesure 10 ms moteur → hook, timers haute résolution
+(couverture `Maquereaux.Win32` : 93 % des lignes).
 Les points non automatisables sont listés dans [`docs/TESTS_MANUELS.md`](docs/TESTS_MANUELS.md).
 
 **CI/CD** : chaque push lance build + tests + publication + smoke test de l'exe (avec captures d'écran) + benchmarks

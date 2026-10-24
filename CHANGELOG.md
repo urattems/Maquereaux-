@@ -3,6 +3,24 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.0.0] - 2026-10-24
+
+🐟 Première version stable : les 4 jalons du cahier des charges (J1 moteur, J2 timer haute précision, J3 profils,
+J4 labo) sont livrés, testés en CI sur Windows et documentés.
+
+### Ajouté
+- Les modifications du profil **en cours d'exécution** sont appliquées à chaud (relance transparente du moteur, anti-rebond 300 ms).
+- Position et taille de la fenêtre mémorisées (ignorées si l'écran correspondant a disparu).
+- Cases à cocher, boutons radio et barres de défilement aux couleurs du thème.
+- README complet (installation, utilisation, captures, tableau des stratégies de timer, labo, limites connues),
+  `docs/TESTS_MANUELS.md`, `docs/SETUP_GITHUB.md`.
+
+### Qualité
+- ~200 tests unitaires sur `Maquereaux.Core` (couverture CI : **98 % des lignes, 91 % des branches**) et ~20 tests
+  d'intégration Windows sur `Maquereaux.Win32` (93 % des lignes) exécutés sur un vrai runner.
+- Smoke test de l'exe publié à chaque push : tous les onglets, moteur réel, édition à chaud, profils + persistance,
+  thème clair, mode compact, session du Labo à 10 ms, export CSV, captures d'écran.
+
 ## [0.4.0] - 2026-10-24
 
 ### Ajouté (J4 — labo de mesure)
