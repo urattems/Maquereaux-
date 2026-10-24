@@ -20,3 +20,8 @@ Chaque ajout reste dans l'esprit du projet et respecte la section « Hors périm
 | A-14 | Import qui n'écrase jamais (Ids + raccourcis en conflit neutralisés) | Importer un profil partagé ne casse rien. |
 | A-15 | Logs fichier (14 jours) + bouton « Ouvrir le dossier » | Debug facile, données 100 % locales. |
 | A-16 | Notification si Windows refuse des événements (SendInput partiel) | Diagnostic UIPI/bureau sécurisé. |
+| A-17 | Durée d'appui (down → up) mesurée par source dans le Labo | Explique pourquoi un jeu peut rater des appuis de 0 ms. |
+| A-18 | Comparaison A/B auto-remplie + écarts colorés + deux graphiques | « Manuel puis Maquereaux » → comparaison immédiate, sans clic. |
+| A-19 | Sauvegarde/rechargement de sessions `.mqsession.json` | Comparer avec une session d'un autre jour. |
+| A-20 | Indicateur ● REC aussi dans le bandeau principal | On sait qu'on est enregistré quel que soit l'onglet. |
+| A-21 | Nommage automatique des sessions (Manuel / Maquereaux / Mixte / Vide) | Comparaisons lisibles sans renommer. |

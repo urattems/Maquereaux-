@@ -3,6 +3,28 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [0.4.0] - 2026-10-24
+
+### Ajouté (J4 — labo de mesure)
+- **Onglet Labo** : sessions d'enregistrement Start/Stop, compte à rebours 3-2-1 optionnel, durée fixe optionnelle (20 s par défaut).
+- Capture via le hook clavier : horodatage haute résolution (`Stopwatch`) de chaque down/up, touche, **source**
+  (physique / Maquereaux via la signature `dwExtraInfo` / autre logiciel injecté via `LLKHF_INJECTED`),
+  répétitions automatiques du clavier détectées et exclues des « inputs ».
+- **Résultats** : inputs total et par touche, inputs/s, intervalle moyen/min/max/p95/jitter et **durée d'appui** par source.
+- **Graphique** des intervalles dans le temps (contrôle WPF maison, aucune dépendance), une couleur par source.
+- **Comparaison de 2 sessions** côte à côte (tableau A/B + écarts colorés + deux graphiques), remplie automatiquement
+  avec la session précédente.
+- **Export CSV** lisible dans Excel (séparateur et décimale selon la langue de Windows, UTF-8 avec BOM).
+- **Note libre** par session ; sauvegarde/rechargement explicites d'une session (`.mqsession.json`).
+- **Confidentialité** : capture uniquement pendant une session lancée à la main, indicateur **● REC** dans le Labo et dans
+  le bandeau principal, hook retiré à la fin de la session, données en mémoire, aucun envoi réseau.
+- Tests : stats par source, CSV (en-têtes, format FR/invariant, BOM, échappement), arrêt à la fin de la durée fixe,
+  répétitions, comparaison, sauvegarde/rechargement ; smoke test CI : session réelle à 10 ms → 200 inputs en 2 s (100/s),
+  intervalle moyen 9,998 ms (cohérent avec le panneau J2).
+
+### Corrigé
+- Thème clair : le bandeau d'état restait sombre (couleurs d'état désormais en DataTriggers + DynamicResource).
+
 ## [0.3.0] - 2026-10-24
 
 ### Ajouté (J3 — profils et modes d'activation)

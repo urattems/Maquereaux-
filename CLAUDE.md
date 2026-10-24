@@ -34,4 +34,5 @@ Sous le conteneur Claude : `export PATH=/root/.dotnet:$PATH` (SDK installé via 
 - [x] J1 — Moteur de base (v0.1.0)
 - [x] J2 — Timer haute précision (v0.2.0)
 - [x] J3 — Profils & activation (v0.3.0)
-- [ ] J4 — Labo de mesure (v0.4.0) → v1.0.0
+- [x] J4 — Labo de mesure (v0.4.0)
+- [ ] Release v1.0.0 (polish + docs)

@@ -109,3 +109,28 @@ Projet mené en **mode autonome** : chaque choix non trivial est noté ici (déc
 ### D-021 — Couleurs d'état par DataTriggers + DynamicResource
 - **Décision** : bandeau, pastille et texte d'état utilisent des styles à DataTriggers dont les setters sont en `DynamicResource`.
 - **Pourquoi** : un convertisseur qui renvoie une brosse n'est pas réévalué au changement de thème (bug vu sur capture en thème clair).
+
+### D-022 — Graphique du Labo fait maison
+- **Décision** : `IntervalChart`, un `FrameworkElement` qui dessine directement via `DrawingContext` (StreamGeometry gelée par source).
+- **Pourquoi** : quelques milliers de points, un seul type de graphe ; ScottPlot/LiveCharts2 ajoutent SkiaSharp et plusieurs Mo
+  à l'exe single-file pour un besoin couvert en ~150 lignes. Règle « pas de magie » du cahier des charges.
+- **Écarté** : ScottPlot.WPF, LiveCharts2, OxyPlot.
+
+### D-023 — Horodatage dans le callback du hook
+- **Décision** : chaque événement est horodaté avec le `Stopwatch` dès l'entrée dans le callback `WH_KEYBOARD_LL`
+  (et non avec `KBDLLHOOKSTRUCT.time`, en millisecondes `GetTickCount`).
+- **Pourquoi** : résolution ~100 ns et même base de temps que le moteur → stats du Labo directement comparables au panneau J2.
+  La latence de livraison du hook (quelques µs) est la même pour toutes les sources.
+
+### D-024 — CSV selon la culture Windows + BOM
+- **Décision** : séparateur = séparateur de liste de la culture, décimales de la culture, UTF-8 avec BOM.
+- **Pourquoi** : double-clic → Excel FR ouvre correctement (`;` et `,`), Excel EN aussi (`,` et `.`), accents intacts.
+- **Écarté** : CSV invariant (`,` + `.`) qui s'ouvre « en une colonne » dans Excel FR.
+
+### D-025 — Répétitions automatiques exclues des inputs
+- **Décision** : un key-down reçu alors que la touche est déjà enfoncée est marqué `IsRepeat` et exclu des stats (gardé dans le CSV).
+- **Pourquoi** : maintenir une touche n'est pas « appuyer 30 fois » ; sinon la comparaison manuel/auto serait faussée.
+
+### D-026 — Sessions du Labo jamais écrites automatiquement
+- **Décision** : pas d'historique sur disque ; export CSV et sauvegarde `.mqsession.json` uniquement sur clic.
+- **Pourquoi** : contrainte de confidentialité du cahier des charges (les frappes peuvent contenir du texte sensible).
