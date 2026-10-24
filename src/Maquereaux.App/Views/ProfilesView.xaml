@@ -11,9 +11,9 @@
             <Button Content="+ Nouveau" Style="{StaticResource Button.Accent}" Command="{Binding NewProfileCommand}" Margin="0,0,8,0" />
             <Button Content="Importer…" Command="{Binding ImportProfilesCommand}" Margin="0,0,8,0" ToolTip="Ajouter des profils depuis un fichier JSON (n'écrase rien)" />
             <Button Content="Exporter tout…" Command="{Binding ExportAllProfilesCommand}" Margin="0,0,8,0" />
-            <TextBlock Style="{StaticResource Text.Muted}" VerticalAlignment="Center" Margin="12,0,0,0"
-                       Text="Clique sur un profil pour le rendre actif (l'onglet Macro l'édite). Chaque profil peut avoir son raccourci : F6 = profil 1, F7 = profil 2…" />
         </StackPanel>
+        <TextBlock DockPanel.Dock="Top" Style="{StaticResource Text.Muted}" Margin="0,0,0,10"
+                   Text="Clique sur un profil pour le rendre actif (l'onglet Macro l'édite), sur son nom pour le renommer. Chaque profil peut avoir son raccourci : F6 = profil 1, F7 = profil 2… Un seul profil tourne à la fois." />
 
         <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding ActiveProfile}">
             <ListBox.ItemTemplate>

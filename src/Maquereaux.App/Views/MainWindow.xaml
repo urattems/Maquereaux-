@@ -16,8 +16,7 @@
     <DockPanel>
         <!-- ===== Bandeau d'état : énorme et coloré, lisible d'un coup d'œil ===== -->
         <Border DockPanel.Dock="Top" Margin="16,14,16,8" CornerRadius="10" Padding="20,12"
-                Background="{Binding EngineState, Converter={StaticResource StateToBrushBg}}"
-                BorderBrush="{Binding EngineState, Converter={StaticResource StateToBrush}}" BorderThickness="2">
+                Style="{StaticResource State.Border}" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -25,9 +24,9 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="26" Height="26" Fill="{Binding EngineState, Converter={StaticResource StateToBrush}}" Margin="0,0,14,0" />
-                    <TextBlock x:Name="StatusText" Text="{Binding EngineState, Converter={StaticResource StateToText}}" FontSize="36" FontWeight="Bold"
-                               Foreground="{Binding EngineState, Converter={StaticResource StateToBrush}}" />
+                    <Ellipse Width="26" Height="26" Style="{StaticResource State.Dot}" Margin="0,0,14,0" />
+                    <TextBlock x:Name="StatusText" Text="{Binding EngineState, Converter={StaticResource StateToText}}" FontSize="36"
+                               Style="{StaticResource State.Text}" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Margin="24,0" VerticalAlignment="Center">
                     <TextBlock FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis">

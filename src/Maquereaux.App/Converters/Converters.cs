@@ -5,26 +5,6 @@ using Maquereaux.Core.Engine;
 
 namespace Maquereaux.App.Converters;
 
-/// <summary>État moteur → ressource (brosse) : Running → vert, Paused → orange, Stopped → rouge.</summary>
-public sealed class EngineStateToBrushConverter : IValueConverter
-{
-    /// <summary>Suffixe ajouté à la clé (ex. "Bg" → Brush.RunningBg).</summary>
-    public string Suffix { get; set; } = "";
-
-    public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        var key = value is EngineState s ? s switch
-        {
-            EngineState.Running => "Brush.Running",
-            EngineState.Paused => "Brush.Paused",
-            _ => "Brush.Stopped",
-        } : "Brush.Stopped";
-        return Application.Current?.TryFindResource(key + Suffix);
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
-}
-
 /// <summary>État moteur → texte affiché.</summary>
 public sealed class EngineStateToTextConverter : IValueConverter
 {

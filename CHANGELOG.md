@@ -3,6 +3,33 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [0.3.0] - 2026-10-24
+
+### Ajouté (J3 — profils et modes d'activation)
+- **Onglet Profils** : créer, renommer (clic sur le nom), dupliquer, supprimer (avec confirmation), choisir le profil actif ;
+  pastille verte sur le profil en cours ; problèmes de configuration affichés sous chaque profil.
+- **Raccourci par profil** (F6 = profil 1, F7 = profil 2…), un seul profil actif à la fois ; un raccourci lance son profil et le sélectionne.
+- **Mode « Maintenir »** : la macro tourne uniquement tant que la touche est enfoncée, via un hook `WH_KEYBOARD_LL`
+  ultra léger (callback = horodatage + décision + file ; traitement sur un autre thread). Événements injectés ignorés
+  (pas d'auto-déclenchement), répétition automatique ignorée, touche de maintien avalée.
+- **Filtre de fenêtre cible** : liste des applis ouvertes (ou saisie libre), la macro passe en PAUSE dès que l'appli cible perd le focus
+  et reprend dès qu'elle le retrouve (sans rafale de rattrapage).
+- **Import / export JSON** (un profil ou tous) ; l'import n'écrase jamais (Ids et raccourcis en conflit régénérés/retirés).
+- **Sauvegarde automatique** dans `%AppData%\Maquereaux\profiles.json` + `settings.json`, écriture **atomique**
+  (fichier temporaire puis remplacement), anti-rebond 600 ms, sauvegarde à la fermeture.
+- **Validation au chargement** : JSON corrompu → copie `.corrupt-….bak` + profil/réglages par défaut, sans crash, avec notification.
+- Validation en direct : séquence vide, raccourci en double ou égal à l'arrêt d'urgence, touche de maintien dans la séquence,
+  durées d'appui incompatibles avec la cadence.
+- **Détection UIPI** : avertissement si l'appli au premier plan tourne en administrateur ; bouton « Relancer en administrateur ».
+- **Zone de notification** : icône avec pastille d'état (vert/orange/rouge), menu profil / Démarrer-Arrêter / urgence / Quitter.
+- **Mode compact** : mini-fenêtre déplaçable, toujours au premier plan (état + profil + START/STOP).
+- **Thème clair** optionnel (changement à chaud), option « réduire dans la zone de notification ».
+- **Garde-fou** : arrêt automatique après N minutes (60 par défaut, 1–240).
+- **Instance unique** : relancer l'exe ramène simplement la fenêtre existante au premier plan.
+- Tests : persistance aller-retour, JSON corrompu → backup, import/export, validation, logique Hold (fake + vrai hook),
+  filtre process (focus perdu → pause → reprise), hook WH_KEYBOARD_LL réel (flags injecté/signature, avaler une touche),
+  mesure 10 ms moteur → hook.
+
 ## [0.2.0] - 2026-10-24
 
 ### Ajouté (J2 — timer haute précision)

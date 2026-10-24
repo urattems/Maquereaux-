@@ -346,4 +346,42 @@
         <Setter Property="Background" Value="{DynamicResource Brush.Border}" />
         <Setter Property="Margin" Value="0,10" />
     </Style>
+    <!-- ===== Couleurs d'état (DataTriggers + DynamicResource → suivent le changement de thème à chaud) ===== -->
+    <Style x:Key="State.Border" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Brush.StoppedBg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Stopped}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                <Setter Property="Background" Value="{DynamicResource Brush.RunningBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Brush.Running}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                <Setter Property="Background" Value="{DynamicResource Brush.PausedBg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Brush.Paused}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="State.Dot" TargetType="Ellipse">
+        <Setter Property="Fill" Value="{DynamicResource Brush.Stopped}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                <Setter Property="Fill" Value="{DynamicResource Brush.Running}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                <Setter Property="Fill" Value="{DynamicResource Brush.Paused}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="State.Text" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Stopped}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                <Setter Property="Foreground" Value="{DynamicResource Brush.Running}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                <Setter Property="Foreground" Value="{DynamicResource Brush.Paused}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
 </ResourceDictionary>

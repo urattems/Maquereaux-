@@ -11,8 +11,6 @@
                 <ResourceDictionary Source="Themes/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <conv:EngineStateToBrushConverter x:Key="StateToBrush" />
-            <conv:EngineStateToBrushConverter x:Key="StateToBrushBg" Suffix="Bg" />
             <conv:EngineStateToTextConverter x:Key="StateToText" />
             <conv:EnumToBoolConverter x:Key="EnumToBool" />
             <conv:BoolToVisibilityConverter x:Key="BoolToVis" />

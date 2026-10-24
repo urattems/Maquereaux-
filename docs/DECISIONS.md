@@ -72,3 +72,40 @@ Projet mené en **mode autonome** : chaque choix non trivial est noté ici (déc
 - **Décision** : jitter = écart-type population (division par N).
 - **Pourquoi** : on décrit la série mesurée elle-même, pas une estimation d'une population plus large ; l'écart avec N−1 est
   négligeable dès quelques centaines d'intervalles.
+
+### D-014 — Hotkeys : RegisterHotKey pour ON/OFF, hook bas niveau seulement pour « Maintenir »
+- **Décision** : les profils Toggle et l'arrêt d'urgence passent par `RegisterHotKey` ; les profils Hold par le hook `WH_KEYBOARD_LL`.
+  Le hook n'est installé que s'il existe au moins un profil Hold (ou pendant une session du Labo), via un compteur de références.
+- **Pourquoi** : `RegisterHotKey` détecte les conflits avec les autres applis et ne voit pas toutes les frappes (vie privée, perfs) ;
+  seul le hook sait détecter le relâchement d'une touche.
+- **Écarté** : tout faire au hook (perte de la détection de conflit, hook permanent).
+
+### D-015 — La touche de maintien est « avalée »
+- **Décision** : en mode Maintenir, l'appui et le relâchement de la touche du raccourci ne sont pas transmis aux applis.
+- **Pourquoi** : même comportement que RegisterHotKey pour les profils ON/OFF ; évite qu'un F7 maintenu déclenche autre chose
+  dans l'appli cible.
+
+### D-016 — Boucle de messages Win32 sur un thread dédié
+- **Décision** : hotkeys et hook vivent sur un thread à part (`MessageLoopThread`, priorité Highest) qui ne fait que pomper des messages ;
+  les ordres Start/Stop partent sur une file de commandes (`SerialExecutor`).
+- **Pourquoi** : si l'UI WPF rame, le hook répond quand même instantanément (pas de retrait du hook par Windows, Hold < 20 ms).
+
+### D-017 — Instantanés de profils thread-safe (`ProfileRegistry`)
+- **Décision** : l'UI publie une copie de chaque profil à chaque modification ; les threads hotkeys/moteur ne lisent que ces copies.
+- **Pourquoi** : aucun risque de « collection modifiée » si on édite un profil pendant qu'un raccourci le démarre.
+
+### D-018 — NotifyIcon WinForms pour la zone de notification
+- **Décision** : `UseWindowsForms=true` uniquement pour `NotifyIcon` (framework inclus dans .NET, aucun NuGet), usings WinForms retirés.
+- **Pourquoi** : WPF n'a pas d'icône de notification ; ~100 lignes d'interop Shell_NotifyIcon pour refaire la même chose = « magie » inutile.
+
+### D-019 — Instance unique par dossier de données
+- **Décision** : mutex nommé dérivé du dossier de données ; une 2ᵉ instance signale la 1ʳᵉ (EventWaitHandle) qui se remet au premier plan.
+- **Pourquoi** : deux instances = conflits de raccourcis garantis. Le smoke test (autre dossier de données) reste lançable en parallèle.
+
+### D-020 — Garde-fou de durée (arrêt automatique)
+- **Décision** : toute exécution s'arrête après N minutes (60 par défaut, max 240), non désactivable.
+- **Pourquoi** : cohérent avec le « Hors périmètre » (pas d'automatisation longue durée sans présence) ; protège aussi d'un oubli.
+
+### D-021 — Couleurs d'état par DataTriggers + DynamicResource
+- **Décision** : bandeau, pastille et texte d'état utilisent des styles à DataTriggers dont les setters sont en `DynamicResource`.
+- **Pourquoi** : un convertisseur qui renvoie une brosse n'est pas réévalué au changement de thème (bug vu sur capture en thème clair).

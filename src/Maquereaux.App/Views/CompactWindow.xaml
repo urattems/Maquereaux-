@@ -12,18 +12,17 @@
         MouseLeftButtonDown="OnDrag">
     <!-- Mini-fenêtre : déplaçable à la souris, toujours au premier plan -->
     <Border CornerRadius="10" Padding="12,10" BorderThickness="2"
-            Background="{Binding EngineState, Converter={StaticResource StateToBrushBg}}"
-            BorderBrush="{Binding EngineState, Converter={StaticResource StateToBrush}}">
+            Style="{StaticResource State.Border}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Ellipse Width="16" Height="16" Fill="{Binding EngineState, Converter={StaticResource StateToBrush}}" Margin="0,0,10,0" VerticalAlignment="Center" />
+            <Ellipse Width="16" Height="16" Style="{StaticResource State.Dot}" Margin="0,0,10,0" VerticalAlignment="Center" />
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock Text="{Binding EngineState, Converter={StaticResource StateToText}}" FontSize="20" FontWeight="Bold"
-                           Foreground="{Binding EngineState, Converter={StaticResource StateToBrush}}" />
+                <TextBlock Text="{Binding EngineState, Converter={StaticResource StateToText}}" FontSize="20"
+                           Style="{StaticResource State.Text}" />
                 <TextBlock Text="{Binding ActiveProfile.Name}" Foreground="{DynamicResource Brush.TextMuted}" TextTrimming="CharacterEllipsis" />
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
