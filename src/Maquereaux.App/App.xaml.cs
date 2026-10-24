@@ -80,6 +80,7 @@ public partial class App : Application
     {
         var dict = new ResourceDictionary { Source = new Uri(light ? "Themes/Light.xaml" : "Themes/Dark.xaml", UriKind.Relative) };
         Resources.MergedDictionaries[0] = dict;
+        Controls.ThemeEvents.Raise();
     }
 
     private async void RunSmokeTest(MainWindow window)

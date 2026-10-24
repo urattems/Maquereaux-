@@ -52,6 +52,7 @@ internal sealed class SmokeTest
 
             await RunExtraChecksAsync();
             await RunUiChecksAsync();
+            await RunLabChecksAsync();
 
             ExitCode = 0;
             Log("SMOKE OK");
@@ -136,6 +137,57 @@ internal sealed class SmokeTest
         _vm.IsCompact = false;
         await Delay(300);
         Log("Thème clair, mode compact : OK");
+    }
+
+    /// <summary>
+    /// Labo : session de 2 s pendant laquelle le moteur envoie F24 à 10 ms → les stats « Maquereaux »
+    /// doivent être cohérentes (≈ 100 inputs/s, intervalle ≈ 10 ms). Puis export CSV et comparaison.
+    /// </summary>
+    private async Task RunLabChecksAsync()
+    {
+        var lab = _vm.Lab;
+        SelectTab("Labo");
+        lab.UseCountdown = false;
+        lab.UseFixedDuration = true;
+        lab.DurationSeconds = 2;
+
+        // Session 1 : à vide (personne ne tape sur la VM de CI)
+        lab.BeginRecording();
+        await Delay(2300);
+        if (lab.IsRecording) throw new InvalidOperationException("La session à durée fixe ne s'est pas arrêtée");
+
+        // Session 2 : Maquereaux à 10 ms
+        var profile = _vm.ActiveProfile!;
+        profile.ActivationMode = Core.Models.ActivationMode.Toggle;
+        profile.TargetProcess = null;
+        profile.ClearStepsCommand.Execute(null);
+        profile.AddStepCommand.Execute(Core.Models.KeyStroke.FromVirtualKey(Core.Input.VirtualKeys.F24));
+        profile.IntervalMs = 10;
+        await Delay(200);
+        lab.BeginRecording();
+        _vm.StartStopCommand.Execute(null);
+        await Delay(2300);
+        _vm.StartStopCommand.Execute(null);
+        await Delay(300);
+        if (lab.IsRecording) throw new InvalidOperationException("Session 2 non terminée");
+        if (_host.Hook.IsInstalled && !_vm.Profiles.Any(p => p.ActivationMode == Core.Models.ActivationMode.Hold))
+            throw new InvalidOperationException("Hook resté installé après la session (confidentialité)");
+
+        var s = lab.SelectedSession ?? throw new InvalidOperationException("Pas de session");
+        var ours = s.Results.For(Core.Lab.InputSource.Maquereaux) ?? throw new InvalidOperationException("Aucun input Maquereaux capturé");
+        Log($"Labo : {ours.Inputs} inputs Maquereaux en {s.Results.DurationSeconds:0.0} s ({ours.InputsPerSecond:0.0}/s), intervalle moyen {ours.Intervals.Mean:0.000} ms, p95 {ours.Intervals.P95:0.000}, σ {ours.Intervals.StdDev:0.000}");
+        if (ours.InputsPerSecond < 50) throw new InvalidOperationException("Cadence capturée incohérente");
+        if (lab.ComparisonRows.Count == 0) throw new InvalidOperationException("Comparaison vide");
+
+        var csv = Path.Combine(_host.Paths.DataDir, "smoke-session.csv");
+        Core.Lab.CsvExporter.Export(s.Session, csv);
+        var lines = File.ReadAllLines(csv);
+        Log($"CSV : {lines.Length} lignes, en-tête « {lines[0]} »");
+        if (lines.Length < ours.Inputs) throw new InvalidOperationException("CSV incomplet");
+
+        s.Note = "Smoke test CI : F24 à 10 ms pendant 2 s";
+        await Delay(500);
+        Capture(_window, "7-labo-resultats");
     }
 
     private void SelectTab(string header)

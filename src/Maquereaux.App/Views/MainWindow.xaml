@@ -42,6 +42,11 @@
                     </TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Indicateur d'enregistrement du Labo, visible quel que soit l'onglet -->
+                    <Border CornerRadius="6" Padding="10,6" Margin="0,0,10,0" Background="{DynamicResource Brush.Stopped}"
+                            Visibility="{Binding Lab.IsRecording, Converter={StaticResource BoolToVis}}" ToolTip="Le Labo enregistre les frappes clavier">
+                        <TextBlock Text="● REC" Foreground="White" FontWeight="Bold" FontSize="14" />
+                    </Border>
                     <Button Content="Compact" Command="{Binding ToggleCompactCommand}" Margin="0,0,8,0"
                             ToolTip="Mini-fenêtre toujours au premier plan (état + profil + START/STOP)" />
                     <ToggleButton IsChecked="{Binding AlwaysOnTop}" ToolTip="Toujours au premier plan" Margin="0,0,8,0" Content="Premier plan" />
@@ -87,6 +92,9 @@
             </TabItem>
             <TabItem Header="Profils">
                 <views:ProfilesView DataContext="{Binding}" Margin="0,10,0,0" />
+            </TabItem>
+            <TabItem Header="Labo">
+                <views:LabView DataContext="{Binding Lab}" Margin="0,10,0,0" />
             </TabItem>
             <TabItem Header="Paramètres">
                 <views:SettingsView DataContext="{Binding}" Margin="0,10,0,0" />
