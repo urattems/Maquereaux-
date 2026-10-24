@@ -134,3 +134,8 @@ Projet mené en **mode autonome** : chaque choix non trivial est noté ici (déc
 ### D-026 — Sessions du Labo jamais écrites automatiquement
 - **Décision** : pas d'historique sur disque ; export CSV et sauvegarde `.mqsession.json` uniquement sur clic.
 - **Pourquoi** : contrainte de confidentialité du cahier des charges (les frappes peuvent contenir du texte sensible).
+
+### D-027 — Tests concurrents : attendre l'événement, pas l'état
+- **Décision** : les tests qui observent la fin d'une exécution attendent l'événement `Stopped`, jamais `IsRunning == false`.
+- **Pourquoi** : le moteur passe l'état à Stopped juste avant de lever l'événement ; sous forte charge CPU, un test qui
+  sondait l'état lisait la liste des événements trop tôt (échec intermittent repéré puis reproduit sous stress, corrigé, 0/10 sous stress).

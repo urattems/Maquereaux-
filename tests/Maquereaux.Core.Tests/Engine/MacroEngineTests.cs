@@ -191,7 +191,9 @@ public class MacroEngineTests
         second.Name = "Second";
         _stopped.Reset();
         _engine.Start(second);
-        SpinWait.SpinUntil(() => !_engine.IsRunning, TimeSpan.FromSeconds(5));
+        // On attend les DEUX événements Stopped (l'état passe à Stopped juste avant que l'événement soit levé :
+        // attendre seulement !IsRunning créait une course sous forte charge CPU)
+        Assert.True(SpinWait.SpinUntil(() => _events.Count(e => e.State == EngineState.Stopped) >= 2, TimeSpan.FromSeconds(5)));
         var stops = _events.Where(e => e.State == EngineState.Stopped).ToList();
         Assert.Equal(StopReason.Replaced, stops[0].Reason);
         Assert.Equal("Premier", stops[0].Profile!.Name);
