@@ -1,17 +1,27 @@
 name: Release
 
-# À chaque tag vX.Y.Z : build + tests, publication d'un Maquereaux.exe autonome, Release GitHub.
+# Publie une Release GitHub avec Maquereaux.exe (single-file, self-contained, win-x64).
+# Trois déclencheurs :
+#   1. push d'un tag vX.Y.Z (git tag v1.2.3 && git push origin v1.2.3)
+#   2. push sur main quand <Version> de Directory.Build.props correspond à un tag qui n'existe pas encore
+#      → la CI crée le tag + la release toute seule ("bumper la version = publier")
+#   3. lancement manuel (onglet Actions → Release → Run workflow)
 on:
   push:
+    branches: [main]
     tags: ["v*"]
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Tag existant à (re)publier, ex. v1.0.0"
-        required: true
+      version:
+        description: "Version à publier (ex. 1.0.0). Vide = version de Directory.Build.props"
+        required: false
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 env:
   DOTNET_NOLOGO: true
@@ -21,61 +31,84 @@ jobs:
   release:
     runs-on: windows-latest
     steps:
-      - name: Déterminer le tag
-        id: tag
-        shell: pwsh
-        run: |
-          $tag = if ("${{ github.event_name }}" -eq "workflow_dispatch") { "${{ inputs.tag }}" } else { "${{ github.ref_name }}" }
-          $version = $tag.TrimStart('v')
-          "tag=$tag" >> $env:GITHUB_OUTPUT
-          "version=$version" >> $env:GITHUB_OUTPUT
-
       - uses: actions/checkout@v4
         with:
-          ref: ${{ steps.tag.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Déterminer la version et s'il faut publier
+        id: v
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}".TrimStart('v')
+          } elseif ("${{ inputs.version }}") {
+            $version = "${{ inputs.version }}".TrimStart('v')
+          } else {
+            [xml]$props = Get-Content Directory.Build.props
+            $version = ($props.Project.PropertyGroup | ForEach-Object { $_.Version } | Where-Object { $_ } | Select-Object -First 1).Trim()
+          }
+          $tag = "v$version"
+          $publish = "true"
+          if ("${{ github.event_name }}" -eq "push" -and "${{ github.ref_type }}" -ne "tag") {
+            # Sur main : on ne publie que si la release n'existe pas encore
+            gh release view $tag 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) { $publish = "false"; Write-Host "Release $tag déjà publiée : rien à faire." }
+          }
+          $global:LASTEXITCODE = 0
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "publish=$publish" >> $env:GITHUB_OUTPUT
+          Write-Host "Version $version → publier : $publish"
 
       - uses: actions/setup-dotnet@v4
+        if: steps.v.outputs.publish == 'true'
         with:
           dotnet-version: 8.0.x
 
       - name: Build
-        run: dotnet build -c Release -p:Version=${{ steps.tag.outputs.version }}
+        if: steps.v.outputs.publish == 'true'
+        run: dotnet build -c Release -p:Version=${{ steps.v.outputs.version }}
 
       - name: Tests
+        if: steps.v.outputs.publish == 'true'
         run: dotnet test -c Release --no-build --filter "Category!=Benchmark"
 
       - name: Publish (single-file, self-contained, win-x64)
-        run: dotnet publish src/Maquereaux.App/Maquereaux.App.csproj -c Release -p:PublishSingleFile=true -p:Version=${{ steps.tag.outputs.version }} -o publish
+        if: steps.v.outputs.publish == 'true'
+        run: dotnet publish src/Maquereaux.App/Maquereaux.App.csproj -c Release -p:PublishSingleFile=true -p:Version=${{ steps.v.outputs.version }} -o publish
 
       - name: Smoke test
+        if: steps.v.outputs.publish == 'true'
         shell: pwsh
         run: ./build/Invoke-SmokeTest.ps1 -ExePath publish/Maquereaux.exe
 
-      - name: Notes de release (depuis CHANGELOG.md)
-        shell: pwsh
-        run: ./build/Extract-ChangelogSection.ps1 -Version ${{ steps.tag.outputs.version }} -OutFile release-notes.md
-
-      - name: Empreinte SHA-256
+      - name: Notes de release (depuis CHANGELOG.md) + SHA-256
+        if: steps.v.outputs.publish == 'true'
         shell: pwsh
         run: |
+          ./build/Extract-ChangelogSection.ps1 -Version ${{ steps.v.outputs.version }} -OutFile release-notes.md
           $hash = (Get-FileHash publish/Maquereaux.exe -Algorithm SHA256).Hash
           "$hash  Maquereaux.exe" | Out-File -Encoding ascii publish/Maquereaux.exe.sha256
           "" | Out-File -Append -Encoding utf8 release-notes.md
           "🔐 SHA-256 : ``$hash``" | Out-File -Append -Encoding utf8 release-notes.md
 
       - name: Créer / mettre à jour la Release GitHub
+        if: steps.v.outputs.publish == 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "${{ steps.tag.outputs.tag }}"
+          $tag = "${{ steps.v.outputs.tag }}"
           # Les versions 0.x sont marquées "pré-release" ; la v1.0.0 devient "Latest"
           $extra = @()
-          if ($tag -match '^v0\.') { $extra += "--prerelease" }
+          if ($tag -match '^v0\.') { $extra += "--prerelease" } else { $extra += "--latest" }
           gh release view $tag 2>$null | Out-Null
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag publish/Maquereaux.exe publish/Maquereaux.exe.sha256 --clobber
             gh release edit $tag --notes-file release-notes.md
           } else {
-            gh release create $tag publish/Maquereaux.exe publish/Maquereaux.exe.sha256 --title "Maquereaux $tag" --notes-file release-notes.md @extra
+            # --target : crée le tag sur le commit courant s'il n'existe pas encore
+            gh release create $tag publish/Maquereaux.exe publish/Maquereaux.exe.sha256 --target ${{ github.sha }} --title "Maquereaux $tag" --notes-file release-notes.md @extra
           }
