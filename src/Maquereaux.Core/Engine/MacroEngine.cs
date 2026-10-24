@@ -73,15 +73,21 @@ public sealed class MacroEngine : IMacroRunner, IDisposable
     private readonly object _lifecycleLock = new();
     private readonly object _keysLock = new();
     private readonly Dictionary<ushort, KeyStroke> _pressed = new();
-    private ISleeper _sleeper;
+    private Func<ISleeper> _sleeperFactory;
     private RunContext? _current;
     private volatile EngineState _state = EngineState.Stopped;
     private long _ticksSent;
 
-    public MacroEngine(IInputSender sender, ISleeper sleeper, IClock clock)
+    /// <param name="sender">Envoi des touches.</param>
+    /// <param name="sleeperFactory">
+    /// Crée la stratégie d'attente. Appelée à CHAQUE démarrage, et le sleeper est disposé à l'arrêt
+    /// (dans un finally) : une ressource système comme timeBeginPeriod(1) est donc toujours rendue.
+    /// </param>
+    /// <param name="clock">Horloge de référence.</param>
+    public MacroEngine(IInputSender sender, Func<ISleeper> sleeperFactory, IClock clock)
     {
         _sender = sender ?? throw new ArgumentNullException(nameof(sender));
-        _sleeper = sleeper ?? throw new ArgumentNullException(nameof(sleeper));
+        _sleeperFactory = sleeperFactory ?? throw new ArgumentNullException(nameof(sleeperFactory));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
     }
 
@@ -103,12 +109,15 @@ public sealed class MacroEngine : IMacroRunner, IDisposable
     /// <summary>Durée max d'une exécution (garde-fou anti-oubli). null = pas de limite.</summary>
     public TimeSpan? MaxRunDuration { get; set; }
 
-    /// <summary>Stratégie d'attente. Changeable à chaud : prise en compte au prochain démarrage.</summary>
-    public ISleeper Sleeper
+    /// <summary>Fabrique de la stratégie d'attente. Changeable à chaud : prise en compte au prochain démarrage.</summary>
+    public Func<ISleeper> SleeperFactory
     {
-        get => _sleeper;
-        set => _sleeper = value ?? throw new ArgumentNullException(nameof(value));
+        get => _sleeperFactory;
+        set => _sleeperFactory = value ?? throw new ArgumentNullException(nameof(value));
     }
+
+    /// <summary>Nom de la stratégie d'attente de l'exécution en cours (null si arrêté).</summary>
+    public string? CurrentSleeperName => _current?.SleeperName;
 
     /// <summary>Lance le profil (arrête d'abord l'exécution en cours s'il y en a une).</summary>
     /// <exception cref="ArgumentException">Séquence vide.</exception>
@@ -123,7 +132,7 @@ public sealed class MacroEngine : IMacroRunner, IDisposable
             StopCore(StopReason.Replaced);
 
             _sender.Prepare(plan.DistinctKeys);
-            var ctx = new RunContext(snapshot, plan, gate ?? OpenGate.Instance, _sleeper, MaxRunDuration);
+            var ctx = new RunContext(snapshot, plan, gate ?? OpenGate.Instance, _sleeperFactory, MaxRunDuration);
             Interlocked.Exchange(ref _ticksSent, 0);
             _current = ctx;
             _state = EngineState.Running;
@@ -190,9 +199,12 @@ public sealed class MacroEngine : IMacroRunner, IDisposable
         var ct = ctx.Cts.Token;
         var stopReason = StopReason.Completed;
         Exception? error = null;
+        ISleeper? sleeper = null;
         try
         {
-            stopReason = Loop(ctx, ct);
+            sleeper = ctx.SleeperFactory();
+            ctx.SleeperName = sleeper.Name;
+            stopReason = Loop(ctx, sleeper, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -207,6 +219,9 @@ public sealed class MacroEngine : IMacroRunner, IDisposable
         {
             try { ReleaseAllKeys(); }
             catch (Exception ex) { error ??= ex; }
+            // Toujours libérer le sleeper (ex. timeEndPeriod), même après une exception
+            try { sleeper?.Dispose(); }
+            catch (Exception ex) { error ??= ex; }
         }
 
         // Fin d'exécution : on ne nettoie _current que s'il s'agit toujours de NOTRE exécution
@@ -218,10 +233,9 @@ public sealed class MacroEngine : IMacroRunner, IDisposable
         // peut encore appeler Cancel() dessus. Le GC s'en charge.
     }
 
-    private StopReason Loop(RunContext ctx, CancellationToken ct)
+    private StopReason Loop(RunContext ctx, ISleeper sleeper, CancellationToken ct)
     {
         var observer = Observer;
-        var sleeper = ctx.Sleeper;
         double startMs = _clock.NowMs;
         double target = startMs;       // échéance absolue du prochain tick
         double expected = 0;           // intervalle prévu entre le tick précédent et celui-ci
@@ -321,19 +335,20 @@ public sealed class MacroEngine : IMacroRunner, IDisposable
 
     private sealed class RunContext
     {
-        public RunContext(Profile profile, MacroPlan plan, ISendGate gate, ISleeper sleeper, TimeSpan? maxRunDuration)
+        public RunContext(Profile profile, MacroPlan plan, ISendGate gate, Func<ISleeper> sleeperFactory, TimeSpan? maxRunDuration)
         {
             Profile = profile;
             Plan = plan;
             Gate = gate;
-            Sleeper = sleeper;
+            SleeperFactory = sleeperFactory;
             MaxRunDuration = maxRunDuration;
         }
 
         public Profile Profile { get; }
         public MacroPlan Plan { get; }
         public ISendGate Gate { get; }
-        public ISleeper Sleeper { get; }
+        public Func<ISleeper> SleeperFactory { get; }
+        public volatile string? SleeperName;
         public TimeSpan? MaxRunDuration { get; }
         public CancellationTokenSource Cts { get; } = new();
         public Thread? Thread { get; set; }

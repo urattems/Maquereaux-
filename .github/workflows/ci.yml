@@ -32,7 +32,7 @@ jobs:
         run: dotnet build -c Release --no-restore
 
       - name: Tests (unitaires + intégration Win32, hors benchmarks)
-        run: dotnet test -c Release --no-build --filter "Category!=Benchmark" --logger "console;verbosity=normal" --collect:"XPlat Code Coverage" --results-directory TestResults
+        run: dotnet test -c Release --no-build --filter "Category!=Benchmark" --collect:"XPlat Code Coverage" --results-directory TestResults
 
       - name: Résumé couverture
         shell: pwsh
@@ -60,3 +60,29 @@ jobs:
           name: screenshots
           path: ${{ runner.temp }}/maquereaux-smoke-data/screenshots/*.png
           if-no-files-found: warn
+
+  benchmark:
+    name: Benchmarks timers (Windows)
+    runs-on: windows-latest
+    # Les VM partagées sont bruitées : un benchmark raté ne bloque pas la CI, mais les chiffres sont publiés
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Benchmarks (1 000 ticks par stratégie)
+        shell: pwsh
+        run: |
+          $env:BENCH_OUTPUT = Join-Path $env:RUNNER_TEMP "bench-results.md"
+          dotnet test tests/Maquereaux.Win32.Tests -c Release --filter "Category=Benchmark"
+          $code = $LASTEXITCODE
+          if (Test-Path $env:BENCH_OUTPUT) {
+            Write-Host "===== BENCH RESULTS ====="
+            Get-Content $env:BENCH_OUTPUT | ForEach-Object { Write-Host $_ }
+            "## ⏱️ Benchmarks timers" | Out-File -Append -Encoding utf8 $env:GITHUB_STEP_SUMMARY
+            Get-Content $env:BENCH_OUTPUT | Out-File -Append -Encoding utf8 $env:GITHUB_STEP_SUMMARY
+          }
+          exit $code

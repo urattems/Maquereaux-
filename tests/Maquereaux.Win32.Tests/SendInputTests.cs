@@ -93,8 +93,7 @@ public class SendInputTests
         Assert.True(mgr.Register(42, new Hotkey(HotkeyModifiers.None, VirtualKeys.F24)).Success, "F24 déjà pris sur cette machine ?");
 
         var sender = new SendInputSender();
-        using var sleeper = new StandardSleeper(StopwatchClock.Instance);
-        using var engine = new MacroEngine(sender, sleeper, StopwatchClock.Instance);
+        using var engine = new MacroEngine(sender, () => new StandardSleeper(StopwatchClock.Instance), StopwatchClock.Instance);
         using var done = new ManualResetEventSlim();
         engine.StateChanged += (_, e) => { if (e.State == EngineState.Stopped) done.Set(); };
 

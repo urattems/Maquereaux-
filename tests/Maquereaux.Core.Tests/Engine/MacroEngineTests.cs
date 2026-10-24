@@ -19,7 +19,7 @@ public class MacroEngineTests
     {
         _sleeper = new FakeSleeper(_clock);
         _sender = new RecordingSender(_clock);
-        _engine = new MacroEngine(_sender, _sleeper, _clock);
+        _engine = new MacroEngine(_sender, () => _sleeper, _clock);
         _engine.StateChanged += (_, e) =>
         {
             _events.Enqueue(e);
@@ -263,20 +263,64 @@ public class MacroEngineTests
     }
 
     [Fact]
-    public void Sleeper_can_be_swapped_and_null_is_rejected()
+    public void Sleeper_factory_is_called_per_run_and_sleeper_disposed()
     {
-        var other = new FakeSleeper(_clock);
-        _engine.Sleeper = other;
-        Assert.Same(other, _engine.Sleeper);
-        Assert.Throws<ArgumentNullException>(() => _engine.Sleeper = null!);
+        var created = new List<CountingSleeper>();
+        _engine.SleeperFactory = () => { var s = new CountingSleeper(new FakeSleeper(_clock)); created.Add(s); return s; };
+        RunToEnd(TestProfiles.Aze(repeat: 1));
+        RunToEnd(TestProfiles.Aze(repeat: 1));
+        Assert.Equal(2, created.Count);
+        Assert.All(created, s => Assert.True(s.Disposed));
+        Assert.Throws<ArgumentNullException>(() => _engine.SleeperFactory = null!);
+        Assert.NotNull(_engine.SleeperFactory);
+    }
+
+    [Fact]
+    public void Sleeper_disposed_even_after_sender_error()
+    {
+        var s = new CountingSleeper(new FakeSleeper(_clock));
+        _engine.SleeperFactory = () => s;
+        _sender.ThrowOnBatch = 1;
+        var end = RunToEnd(TestProfiles.Aze());
+        Assert.Equal(StopReason.Error, end.Reason);
+        Assert.True(s.Disposed);
+    }
+
+    [Fact]
+    public void Current_sleeper_name_is_exposed_while_running()
+    {
+        string? seen = null;
+        _sender.AfterSend = _ => seen ??= _engine.CurrentSleeperName;
+        RunToEnd(TestProfiles.Aze(repeat: 1));
+        Assert.Equal("Fake", seen);
+        Assert.Null(_engine.CurrentSleeperName);
+    }
+
+    [Fact]
+    public void RequestStop_is_non_blocking_and_stops()
+    {
+        _sender.AfterSend = s => { if (s.BatchSizes.Count == 3) _engine.RequestStop(StopReason.Emergency); };
+        var end = RunToEnd(TestProfiles.Aze());
+        Assert.Equal(StopReason.Emergency, end.Reason);
+        _engine.RequestStop(StopReason.Emergency); // arrêté : sans effet
     }
 
     [Fact]
     public void Constructor_rejects_nulls()
     {
-        Assert.Throws<ArgumentNullException>(() => new MacroEngine(null!, _sleeper, _clock));
+        Assert.Throws<ArgumentNullException>(() => new MacroEngine(null!, () => _sleeper, _clock));
         Assert.Throws<ArgumentNullException>(() => new MacroEngine(_sender, null!, _clock));
-        Assert.Throws<ArgumentNullException>(() => new MacroEngine(_sender, _sleeper, null!));
+        Assert.Throws<ArgumentNullException>(() => new MacroEngine(_sender, () => _sleeper, null!));
+    }
+
+    private sealed class CountingSleeper : ISleeper
+    {
+        private readonly ISleeper _inner;
+        public CountingSleeper(ISleeper inner) => _inner = inner;
+        public bool Disposed { get; private set; }
+        public string Name => _inner.Name;
+        public bool SleepUntil(double targetMs, CancellationToken ct) => _inner.SleepUntil(targetMs, ct);
+        public void Dispose() => Disposed = true;
     }
 
     private sealed class RecordingObserver : ITickObserver

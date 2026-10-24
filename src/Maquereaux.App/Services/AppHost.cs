@@ -37,7 +37,7 @@ public sealed class AppHost : IDisposable
         _log = loggerFactory.CreateLogger<AppHost>();
 
         Sender = new SendInputSender();
-        Engine = new MacroEngine(Sender, new StandardSleeper(StopwatchClock.Instance), StopwatchClock.Instance);
+        Engine = new MacroEngine(Sender, () => new StandardSleeper(StopwatchClock.Instance), StopwatchClock.Instance);
         Engine.StateChanged += OnEngineStateChanged;
 
         _executor = new SerialExecutor();
@@ -202,6 +202,5 @@ public sealed class AppHost : IDisposable
         _hotkeys.Dispose();
         _loop.Dispose();
         _executor.Dispose();
-        Engine.Sleeper.Dispose();
     }
 }

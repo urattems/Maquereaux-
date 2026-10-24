@@ -48,7 +48,8 @@ public sealed class MessageLoopThread : IDisposable
         });
         if (!NativeMethods.PostThreadMessageW(_threadId, WM_INVOKE, 0, 0))
             throw new InvalidOperationException("Impossible de poster un message à la boucle Win32.");
-        if (!tcs.Task.Wait(TimeSpan.FromSeconds(5)))
+        // WaitAny ne lève pas d'AggregateException ; GetResult() relance l'exception d'origine telle quelle
+        if (Task.WaitAny(new Task[] { tcs.Task }, TimeSpan.FromSeconds(5)) < 0)
             throw new TimeoutException("La boucle de messages Win32 ne répond pas.");
         return tcs.Task.GetAwaiter().GetResult();
     }
