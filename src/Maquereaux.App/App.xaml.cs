@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using Maquereaux.App.Services;
@@ -12,8 +14,11 @@ public partial class App : Application
 {
     private AppHost? _host;
     private MainViewModel? _vm;
+    private TrayIcon? _tray;
     private ILoggerFactory? _loggerFactory;
     private ILogger? _log;
+    private Mutex? _singleInstance;
+    private EventWaitHandle? _showSignal;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -23,19 +28,58 @@ public partial class App : Application
         var paths = AppPaths.Default();
         paths.EnsureCreated();
 
+        // Une seule instance par dossier de données (deux instances = conflits de raccourcis).
+        // La 2e instance demande simplement à la 1re de se montrer, puis se ferme.
+        if (!AcquireSingleInstance(paths.DataDir))
+        {
+            Shutdown(0);
+            return;
+        }
+
         _loggerFactory = LoggerFactory.Create(b => b.AddProvider(new FileLoggerProvider(paths.LogsDir)));
         _log = _loggerFactory.CreateLogger<App>();
         InstallCrashHandlers();
 
         _host = new AppHost(paths, _loggerFactory);
-        _vm = new MainViewModel(_host, Dispatcher);
+        _vm = new MainViewModel(_host, Dispatcher, new DialogService());
+        _vm.ThemeChanged += ApplyTheme;
+        ApplyTheme(_vm.IsLightTheme);
 
         var window = new MainWindow { DataContext = _vm };
         MainWindow = window;
         window.Show();
         _vm.Initialize();
 
+        _tray = new TrayIcon(_vm, window.ShowFromTray, () => window.Close());
+
         if (smoke) RunSmokeTest(window);
+    }
+
+    private bool AcquireSingleInstance(string dataDir)
+    {
+        var id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dataDir.ToLowerInvariant())))[..16];
+        _singleInstance = new Mutex(initiallyOwned: true, $"Local\\Maquereaux-{id}", out bool created);
+        _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, $"Local\\Maquereaux-show-{id}");
+        if (!created)
+        {
+            _showSignal.Set();
+            return false;
+        }
+        // Thread d'écoute : si une 2e instance est lancée, on remet notre fenêtre au premier plan
+        var listener = new Thread(() =>
+        {
+            while (_showSignal.WaitOne())
+                Dispatcher.BeginInvoke(() => (MainWindow as MainWindow)?.ShowFromTray());
+        }) { IsBackground = true, Name = "Maquereaux.SingleInstance" };
+        listener.Start();
+        return true;
+    }
+
+    /// <summary>Remplace la palette de couleurs (index 0 des dictionnaires fusionnés) : thème changé à chaud.</summary>
+    private void ApplyTheme(bool light)
+    {
+        var dict = new ResourceDictionary { Source = new Uri(light ? "Themes/Light.xaml" : "Themes/Dark.xaml", UriKind.Relative) };
+        Resources.MergedDictionaries[0] = dict;
     }
 
     private async void RunSmokeTest(MainWindow window)
@@ -78,9 +122,11 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         // Ordre important : arrêter le moteur (relâche les touches) AVANT de couper le reste
+        _tray?.Dispose();
         _vm?.Dispose();
         _host?.Dispose();
         _loggerFactory?.Dispose();
+        _singleInstance?.Dispose();
         base.OnExit(e);
     }
 }

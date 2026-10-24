@@ -4,6 +4,10 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- Uniquement pour NotifyIcon (icône de la zone de notification) : WPF n'en a pas -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- WFAC010 : l'analyseur WinForms veut le DPI hors du manifest ; c'est une appli WPF, le manifest est la bonne place -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
     <RootNamespace>Maquereaux.App</RootNamespace>
     <AssemblyName>Maquereaux</AssemblyName>
     <ApplicationIcon>..\..\assets\maquereaux.ico</ApplicationIcon>
@@ -24,6 +28,9 @@
   <ItemGroup>
     <!-- Les "implicit usings" WPF n'incluent pas System.IO -->
     <Using Include="System.IO" />
+    <!-- WinForms n'est utilisé que pour la NotifyIcon : on évite les conflits de noms (Application, MessageBox…) -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>

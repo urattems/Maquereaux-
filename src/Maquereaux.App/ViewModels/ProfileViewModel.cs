@@ -87,6 +87,57 @@ public sealed partial class ProfileViewModel : ObservableObject
 
     public string HotkeyText => Model.Hotkey?.ToString() ?? "aucun raccourci";
 
+    public ActivationMode ActivationMode
+    {
+        get => Model.ActivationMode;
+        set
+        {
+            if (SetProperty(Model.ActivationMode, value, Model, (m, x) => m.ActivationMode = x))
+            {
+                OnPropertyChanged(nameof(ActivationText));
+                RaiseChanged(true);
+            }
+        }
+    }
+
+    public string ActivationText => Model.ActivationMode == ActivationMode.Hold ? "maintenir" : "ON/OFF";
+
+    /// <summary>Process cible (filtre de fenêtre), null = toutes les fenêtres.</summary>
+    public string? TargetProcess
+    {
+        get => Model.TargetProcess;
+        set
+        {
+            var v = Core.Profiles.ProfileValidator.NormalizeProcessName(value);
+            if (SetProperty(Model.TargetProcess, v, Model, (m, x) => m.TargetProcess = x))
+            {
+                OnPropertyChanged(nameof(TargetText));
+                RaiseChanged();
+            }
+            else if (v != value) OnPropertyChanged();
+        }
+    }
+
+    public string TargetText => Model.TargetProcess ?? "toutes les fenêtres";
+
+    [RelayCommand]
+    private void ClearTargetProcess() => TargetProcess = null;
+
+    /// <summary>Problèmes détectés (conflits de raccourcis, séquence vide…), recalculés par le MainViewModel.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasIssues))]
+    private IReadOnlyList<string> _issues = Array.Empty<string>();
+
+    public bool HasIssues => Issues.Count > 0;
+
+    /// <summary>Profil actuellement sélectionné (mise en évidence dans la liste).</summary>
+    [ObservableProperty]
+    private bool _isActive;
+
+    /// <summary>Profil en cours d'exécution.</summary>
+    [ObservableProperty]
+    private bool _isRunning;
+
     /// <summary>Résumé court pour les listes : "3 touches · 10 ms · Cycle".</summary>
     public string Summary => $"{Model.Steps.Count} touche(s) · {Model.IntervalMs} ms · {Model.SequenceMode}";
 

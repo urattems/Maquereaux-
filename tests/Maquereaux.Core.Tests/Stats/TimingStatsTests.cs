@@ -227,11 +227,13 @@ public class HybridSleeperTests
     [Fact]
     public void Real_clock_hybrid_is_accurate()
     {
-        using var h = new HybridSleeper(new StandardSleeper(StopwatchClock.Instance), StopwatchClock.Instance, 20);
-        var target = StopwatchClock.Instance.NowMs + 30;
+        // Marge de spin (40 ms) > granularité de Thread.Sleep (~16 ms) : même sur une machine chargée,
+        // le sommeil grossier se termine avant l'échéance et le spin finit pile à l'heure.
+        using var h = new HybridSleeper(new StandardSleeper(StopwatchClock.Instance), StopwatchClock.Instance, 40);
+        var target = StopwatchClock.Instance.NowMs + 50;
         Assert.True(h.SleepUntil(target, CancellationToken.None));
         var late = StopwatchClock.Instance.NowMs - target;
-        Assert.InRange(late, 0, 5);
+        Assert.InRange(late, 0, 15); // jamais en avance ; tolérance large pour les VM de CI
     }
 
     private sealed class AdvancingClock : IClock

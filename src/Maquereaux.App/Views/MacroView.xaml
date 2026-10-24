@@ -137,6 +137,40 @@
                     </StackPanel>
                     <TextBlock Style="{StaticResource Text.Muted}" Margin="0,0,0,10"
                                Text="Cycle : une touche par tick (A → Z → E → A…). Burst : toute la séquence à chaque tick (A,Z,E → A,Z,E…)." />
+
+                    <TextBlock Text="Activation par le raccourci" Style="{StaticResource Text.Label}" Margin="0,4,0,6" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <RadioButton GroupName="ActMode" Content="ON / OFF"
+                                     IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Toggle}" />
+                        <RadioButton GroupName="ActMode" Content="Maintenir"
+                                     IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Hold}" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,0,0,10"
+                               Text="ON/OFF : un appui lance, un autre arrête. Maintenir : la macro tourne uniquement tant que tu gardes la touche enfoncée." />
+
+                    <TextBlock Text="Fenêtre cible (optionnel)" Style="{StaticResource Text.Label}" Margin="0,4,0,6" />
+                    <DockPanel Margin="0,0,0,4">
+                        <Button DockPanel.Dock="Right" Content="✕" Style="{StaticResource Button.Icon}" ToolTip="Aucun filtre (toutes les fenêtres)"
+                                Command="{Binding ClearTargetProcessCommand}" />
+                        <Button DockPanel.Dock="Right" Content="⟳" Style="{StaticResource Button.Icon}" ToolTip="Rafraîchir la liste des applis ouvertes"
+                                Command="{Binding DataContext.RefreshProcessesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                        <ComboBox IsEditable="True" Margin="0,0,4,0"
+                                  ItemsSource="{Binding DataContext.RunningProcesses, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                  Text="{Binding TargetProcess, UpdateSourceTrigger=LostFocus, TargetNullValue=''}"
+                                  ToolTip="Ex. notepad.exe. La macro n'envoie des touches que si cette appli a le focus ; sinon pause automatique." />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,0,0,10"
+                               Text="Sécurité : évite de spammer dans Discord ou un navigateur par erreur. Vide = toutes les fenêtres." />
+
+                    <ItemsControl ItemsSource="{Binding Issues}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,4,0,0" Padding="8,5" CornerRadius="6" Background="{DynamicResource Brush.PausedBg}">
+                                    <TextBlock Text="{Binding StringFormat='⚠ {0}'}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.Paused}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
         </Border>

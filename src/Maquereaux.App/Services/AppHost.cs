@@ -26,9 +26,12 @@ public sealed class AppHost : IDisposable
     private readonly GlobalHotkeyManager _hotkeys;
     private readonly SerialExecutor _executor;
     private readonly ActivationController _controller;
+    private readonly HoldHotkeyTracker _holdTracker = new();
+    private readonly object _hookLock = new();
+    private int _hookUsers;
     private volatile IReadOnlyDictionary<int, Guid> _hotkeyToProfile = new Dictionary<int, Guid>();
     private AppSettings _settings = new();
-    private bool _profileHotkeysSuspended;
+    private volatile bool _profileHotkeysSuspended;
     private volatile TimerStrategy _timerStrategy = TimerStrategy.HighResolution;
     private EngineState _lastState = EngineState.Stopped;
     private bool _disposed;
@@ -57,6 +60,9 @@ public sealed class AppHost : IDisposable
         _hotkeys = new GlobalHotkeyManager(_loop);
         _hotkeys.Pressed += OnHotkeyPressed;
 
+        Hook = new KeyboardHook(_loop);
+        Hook.Filter = OnHookKey;
+
         _log.LogInformation("Maquereaux {Version} démarré (données : {Dir})", AppInfo.Version, paths.DataDir);
     }
 
@@ -74,6 +80,12 @@ public sealed class AppHost : IDisposable
         get => _timerStrategy;
         set => _timerStrategy = value;
     }
+
+    /// <summary>Hook clavier bas niveau (installé seulement si un profil Maintenir existe ou si le Labo enregistre).</summary>
+    public KeyboardHook Hook { get; }
+
+    /// <summary>Nom du process au premier plan (filtre de fenêtre cible).</summary>
+    public ForegroundProcessProvider Foreground { get; } = new();
 
     /// <summary>Copies thread-safe des profils (publiées par l'UI à chaque modification).</summary>
     public ProfileRegistry Profiles { get; } = new();
@@ -129,10 +141,18 @@ public sealed class AppHost : IDisposable
     {
         var errors = new List<string>();
         var map = new Dictionary<int, Guid>();
+        var holdBindings = new List<(Guid, Hotkey)>();
         int id = ProfileHotkeyIdBase;
         foreach (var p in Profiles.All.OrderBy(p => p.Name))
         {
             if (p.Hotkey is null) continue;
+            if (p.ActivationMode == ActivationMode.Hold)
+            {
+                // Mode Maintenir : RegisterHotKey ne signale pas le relâchement → détection par le hook bas niveau
+                if (p.Hotkey == _settings.EmergencyStopHotkey) errors.Add($"« {p.Name} » : {p.Hotkey} est déjà l'arrêt d'urgence.");
+                else holdBindings.Add((p.Id, p.Hotkey));
+                continue;
+            }
             if (p.Hotkey == _settings.EmergencyStopHotkey)
             {
                 errors.Add($"« {p.Name} » : {p.Hotkey} est déjà l'arrêt d'urgence.");
@@ -144,7 +164,57 @@ public sealed class AppHost : IDisposable
             id++;
         }
         _hotkeyToProfile = map;
+        _holdTracker.SetBindings(holdBindings);
+        UpdateHookNeed(holdHotkeys: holdBindings.Count > 0);
         return errors;
+    }
+
+    // ---------- Hook clavier ----------
+
+    private bool _hookForHold;
+
+    private void UpdateHookNeed(bool holdHotkeys)
+    {
+        if (_hookForHold == holdHotkeys) return;
+        _hookForHold = holdHotkeys;
+        if (holdHotkeys) AcquireHook(); else ReleaseHook();
+    }
+
+    /// <summary>Demande le hook clavier (compteur de références : Hold + Labo).</summary>
+    public bool AcquireHook()
+    {
+        lock (_hookLock)
+        {
+            _hookUsers++;
+            if (Hook.IsInstalled) return true;
+            var ok = Hook.Install();
+            if (!ok) Error?.Invoke("Impossible d'installer le hook clavier (mode Maintenir / Labo indisponibles).");
+            else _log.LogInformation("Hook clavier installé");
+            return ok;
+        }
+    }
+
+    public void ReleaseHook()
+    {
+        lock (_hookLock)
+        {
+            if (_hookUsers == 0) return;
+            if (--_hookUsers == 0 && Hook.IsInstalled)
+            {
+                Hook.Uninstall();
+                _log.LogInformation("Hook clavier retiré");
+            }
+        }
+    }
+
+    /// <summary>Appelé DANS le callback du hook : décision instantanée, le travail part sur la file de commandes.</summary>
+    private bool OnHookKey(RawKeyEvent e)
+    {
+        if (_profileHotkeysSuspended) return false;
+        var d = _holdTracker.Process(e);
+        if (d.StartProfile is { } start) _executor.Post(() => _controller.HoldDown(start));
+        if (d.StopProfile is { } stop) _executor.Post(() => _controller.HoldUp(stop));
+        return d.Swallow;
     }
 
     /// <summary>
@@ -182,7 +252,9 @@ public sealed class AppHost : IDisposable
 
     // ---------- Divers ----------
 
-    private ISendGate? CreateGate(Profile profile) => null;
+    /// <summary>Filtre « fenêtre cible » : n'envoie que si le process choisi a le focus.</summary>
+    private ISendGate? CreateGate(Profile profile) =>
+        string.IsNullOrWhiteSpace(profile.TargetProcess) ? null : new ProcessGate(Foreground, profile.TargetProcess);
 
     private void OnEngineStateChanged(object? sender, EngineStateChangedEventArgs e)
     {
@@ -220,6 +292,7 @@ public sealed class AppHost : IDisposable
         _log.LogInformation("Fermeture");
         Engine.Stop(StopReason.Shutdown); // relâche les touches avant tout le reste
         _hotkeys.Dispose();
+        Hook.Dispose();
         _loop.Dispose();
         _executor.Dispose();
     }

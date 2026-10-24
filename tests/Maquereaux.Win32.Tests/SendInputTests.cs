@@ -7,6 +7,7 @@ using Maquereaux.Win32.Native;
 
 namespace Maquereaux.Win32.Tests;
 
+[Collection("Clavier global")]
 public class SendInputTests
 {
     [Fact]

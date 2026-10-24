@@ -45,8 +45,51 @@
 
             <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="Fenêtre" Style="{StaticResource Text.Title}" />
+                    <TextBlock Text="Garde-fou" Style="{StaticResource Text.Title}" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Arrêt automatique après" Style="{StaticResource Text.Label}" />
+                        <TextBox Style="{StaticResource TextBox.Number}" Width="60"
+                                 Text="{Binding SafetyTimeoutMinutes, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=True}" />
+                        <TextBlock Text="minutes (1 à 240)" Style="{StaticResource Text.Label}" Margin="8,0,0,0" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,8,0,0"
+                               Text="Une exécution s'arrête toute seule passé ce délai : Maquereaux est un outil de test et d'apprentissage, pas fait pour tourner sans surveillance." />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Fenêtre &amp; apparence" Style="{StaticResource Text.Title}" />
                     <CheckBox Content="Toujours au premier plan" IsChecked="{Binding AlwaysOnTop}" />
+                    <CheckBox Content="Réduire dans la zone de notification (à côté de l'horloge)" IsChecked="{Binding MinimizeToTray}" />
+                    <CheckBox Content="Thème clair" IsChecked="{Binding IsLightTheme}" />
+                    <Button Content="Mode compact" Command="{Binding ToggleCompactCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"
+                            ToolTip="Mini-fenêtre toujours au premier plan : état + profil actif + START/STOP" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Droits administrateur (UIPI)" Style="{StaticResource Text.Title}" />
+                    <TextBlock Style="{StaticResource Text.Muted}"
+                               Text="Windows interdit à une appli « normale » d'envoyer des touches à une appli lancée en administrateur. Si ta cible est en admin, relance Maquereaux en admin (sinon inutile)." />
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Relancer en administrateur" Command="{Binding RestartAsAdminCommand}"
+                                IsEnabled="{Binding IsElevated, Converter={StaticResource InverseBool}}" />
+                        <TextBlock Text="✔ Maquereaux tourne déjà en administrateur" Foreground="{DynamicResource Brush.Running}" VerticalAlignment="Center" Margin="10,0,0,0"
+                                   Visibility="{Binding IsElevated, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Données" Style="{StaticResource Text.Title}" />
+                    <TextBlock Style="{StaticResource Text.Muted}">
+                        <Run Text="Profils, réglages et logs (100 % local, aucune connexion réseau) :" />
+                        <Run Text="{Binding DataDir, Mode=OneWay}" FontFamily="{StaticResource Font.Mono}" />
+                    </TextBlock>
+                    <Button Content="Ouvrir le dossier" Command="{Binding OpenDataFolderCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
                 </StackPanel>
             </Border>
         </StackPanel>

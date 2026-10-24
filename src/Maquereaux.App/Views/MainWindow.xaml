@@ -43,6 +43,8 @@
                     </TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Compact" Command="{Binding ToggleCompactCommand}" Margin="0,0,8,0"
+                            ToolTip="Mini-fenêtre toujours au premier plan (état + profil + START/STOP)" />
                     <ToggleButton IsChecked="{Binding AlwaysOnTop}" ToolTip="Toujours au premier plan" Margin="0,0,8,0" Content="Premier plan" />
                     <Button Command="{Binding StartStopCommand}" Content="{Binding StartStopLabel}" MinWidth="130" FontSize="16" Padding="16,10">
                         <Button.Style>
@@ -83,6 +85,9 @@
         <TabControl x:Name="Tabs" Margin="16,0,16,8">
             <TabItem Header="Macro">
                 <views:MacroView DataContext="{Binding}" Margin="0,10,0,0" />
+            </TabItem>
+            <TabItem Header="Profils">
+                <views:ProfilesView DataContext="{Binding}" Margin="0,10,0,0" />
             </TabItem>
             <TabItem Header="Paramètres">
                 <views:SettingsView DataContext="{Binding}" Margin="0,10,0,0" />

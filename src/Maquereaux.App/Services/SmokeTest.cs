@@ -51,6 +51,7 @@ internal sealed class SmokeTest
             }
 
             await RunExtraChecksAsync();
+            await RunUiChecksAsync();
 
             ExitCode = 0;
             Log("SMOKE OK");
@@ -97,6 +98,50 @@ internal sealed class SmokeTest
         profile.ClearStepsCommand.Execute(null);
         foreach (var s in original.Steps) profile.AddStepCommand.Execute(s.Key);
         profile.IntervalMs = original.IntervalMs;
+    }
+
+    /// <summary>Profils, persistance, thème clair, mode compact.</summary>
+    private async Task RunUiChecksAsync()
+    {
+        int before = _vm.Profiles.Count;
+        _vm.NewProfileCommand.Execute(null);
+        _vm.DuplicateProfileCommand.Execute(null);
+        if (_vm.Profiles.Count != before + 2) throw new InvalidOperationException("Création de profil KO");
+        _vm.ActiveProfile!.ActivationMode = Core.Models.ActivationMode.Hold;
+        _vm.ActiveProfile.Hotkey = new Core.Models.Hotkey(Core.Models.HotkeyModifiers.None, Core.Input.VirtualKeys.F8);
+        _vm.ActiveProfile.TargetProcess = "notepad";
+        SelectTab("Profils");
+        await Delay(400);
+        Capture(_window, "4-profils-multiples");
+
+        _vm.SaveNow();
+        var repo = new Core.Profiles.ProfileRepository(_host.Paths);
+        var reloaded = repo.LoadProfiles();
+        if (reloaded.Count != _vm.Profiles.Count) throw new InvalidOperationException("Persistance KO");
+        if (reloaded.Last().TargetProcess != "notepad.exe") throw new InvalidOperationException("Process cible non sauvegardé");
+        Log($"Profils : {reloaded.Count} sauvegardés et relus, hook installé = {_host.Hook.IsInstalled}");
+        if (!_host.Hook.IsInstalled) throw new InvalidOperationException("Hook non installé alors qu'un profil Maintenir existe");
+
+        _vm.IsLightTheme = true;
+        SelectTab("Macro");
+        await Delay(400);
+        Capture(_window, "5-theme-clair");
+        _vm.IsLightTheme = false;
+
+        _vm.IsCompact = true;
+        await Delay(500);
+        var compact = Application.Current.Windows.OfType<CompactWindow>().FirstOrDefault()
+                      ?? throw new InvalidOperationException("Fenêtre compacte absente");
+        Capture(compact, "6-compact");
+        _vm.IsCompact = false;
+        await Delay(300);
+        Log("Thème clair, mode compact : OK");
+    }
+
+    private void SelectTab(string header)
+    {
+        var tab = _window.Tabs.Items.OfType<TabItem>().First(t => (string)t.Header == header);
+        _window.Tabs.SelectedItem = tab;
     }
 
     private void Capture(Window window, string name)

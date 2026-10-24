@@ -1,0 +1,80 @@
+<UserControl x:Class="Maquereaux.App.Views.ProfilesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Maquereaux.App.ViewModels"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}">
+    <DockPanel>
+        <!-- Barre d'actions -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="+ Nouveau" Style="{StaticResource Button.Accent}" Command="{Binding NewProfileCommand}" Margin="0,0,8,0" />
+            <Button Content="Importer…" Command="{Binding ImportProfilesCommand}" Margin="0,0,8,0" ToolTip="Ajouter des profils depuis un fichier JSON (n'écrase rien)" />
+            <Button Content="Exporter tout…" Command="{Binding ExportAllProfilesCommand}" Margin="0,0,8,0" />
+            <TextBlock Style="{StaticResource Text.Muted}" VerticalAlignment="Center" Margin="12,0,0,0"
+                       Text="Clique sur un profil pour le rendre actif (l'onglet Macro l'édite). Chaque profil peut avoir son raccourci : F6 = profil 1, F7 = profil 2…" />
+        </StackPanel>
+
+        <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding ActiveProfile}">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:ProfileViewModel}">
+                    <Grid Margin="4,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Ellipse Width="12" Height="12" Margin="0,0,12,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{DynamicResource Brush.Border}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                            <Setter Property="Fill" Value="{DynamicResource Brush.Accent}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                            <Setter Property="Fill" Value="{DynamicResource Brush.Running}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <StackPanel Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" FontSize="15" FontWeight="SemiBold" MinWidth="200"
+                                         Background="Transparent" BorderThickness="0" Padding="0" ToolTip="Clique pour renommer" />
+                                <Border CornerRadius="4" Padding="6,1" Margin="10,0,0,0" Background="{DynamicResource Brush.Selection}"
+                                        Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="EN COURS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Running}" />
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Margin="0,3,0,0" Foreground="{DynamicResource Brush.TextMuted}">
+                                <Run Text="{Binding Summary, Mode=OneWay}" />
+                                <Run Text="  ·  " />
+                                <Run Text="{Binding HotkeyText, Mode=OneWay}" Foreground="{DynamicResource Brush.Accent}" />
+                                <Run Text="(" /><Run Text="{Binding ActivationText, Mode=OneWay}" /><Run Text=")" />
+                                <Run Text="  ·  cible : " />
+                                <Run Text="{Binding TargetText, Mode=OneWay}" />
+                            </TextBlock>
+                            <ItemsControl ItemsSource="{Binding Issues}" Margin="0,4,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding StringFormat='⚠ {0}'}" Foreground="{DynamicResource Brush.Paused}" FontSize="12" TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="Dupliquer" Style="{StaticResource Button.Icon}" Margin="2,0"
+                                    Command="{Binding DataContext.DuplicateProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
+                            <Button Content="Exporter" Style="{StaticResource Button.Icon}" Margin="2,0"
+                                    Command="{Binding DataContext.ExportProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
+                            <Button Content="Supprimer" Style="{StaticResource Button.Icon}" Margin="2,0" Foreground="{DynamicResource Brush.Stopped}"
+                                    Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>
