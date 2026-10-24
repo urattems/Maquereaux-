@@ -40,3 +40,35 @@ Projet mené en **mode autonome** : chaque choix non trivial est noté ici (déc
 - **Pourquoi** : le proxy de l'environnement de dev refuse le push de tags (HTTP 403) ; « bumper la version = publier »
   est en plus simple et sans oubli possible.
 - **Écarté** : créer les tags via l'API GitHub à la main (pas d'outil dispo) ; abandonner les releases par jalon.
+
+### D-008 — Release v0.1.0 construite depuis une branche dédiée
+- **Décision** : J1 et J2 ont été développés en parallèle (la CI Windows sert de banc de test). Pour garder
+  « 1 jalon = 1 release », la v0.1.0 a été construite depuis `release/v0.1.0` (commit J1 + 2 correctifs), publiée via
+  le workflow manuel, puis fusionnée dans `main`.
+- **Pourquoi** : chaque jalon reste téléchargeable tel qu'il était à la fin de son jalon.
+
+### D-009 — Sleeper créé et détruit à chaque exécution
+- **Décision** : le moteur reçoit une *fabrique* de sleeper (`Func<ISleeper>`), appelée à chaque Start ; le sleeper est disposé
+  dans le `finally` du thread moteur.
+- **Pourquoi** : garantit `timeEndPeriod(1)` (repli) et la fermeture du handle de timer même après une exception ; permet de
+  changer de stratégie entre deux exécutions sans rien redémarrer.
+- **Écarté** : un sleeper unique pour toute la vie de l'appli (aurait gardé la résolution système à 1 ms en permanence).
+
+### D-010 — Stratégie par défaut : HighResolution
+- **Décision** : `HighResolution` est le défaut ; `Hybrid` est proposé avec un avertissement CPU.
+- **Pourquoi** : les benchmarks montrent que HighRes atteint déjà le critère J2 (p95 10,34 ms à 10 ms) pour 0,5 % de CPU,
+  alors que Hybrid coûte ~10× plus de CPU (100 % d'un cœur à 1 ms) pour un gain que l'utilisateur ne percevra que sous ~5 ms.
+
+### D-011 — Mesure via le moteur réel avec un envoi factice
+- **Décision** : les benchmarks pilotent le vrai `MacroEngine` (même boucle que l'appli) avec un `IInputSender` qui n'envoie rien.
+- **Pourquoi** : mesure exactement ce que l'utilisateur obtient, sans taper de touches sur la machine de CI.
+
+### D-012 — Percentiles par interpolation linéaire
+- **Décision** : p95/p99 calculés comme `PERCENTILE.INC` d'Excel (interpolation entre rangs).
+- **Pourquoi** : les chiffres affichés correspondent à ce qu'on obtient en recalculant l'export CSV dans Excel.
+- **Écarté** : « nearest rank » (sauts brusques sur petits échantillons).
+
+### D-013 — Écart-type « population » pour le jitter
+- **Décision** : jitter = écart-type population (division par N).
+- **Pourquoi** : on décrit la série mesurée elle-même, pas une estimation d'une population plus large ; l'écart avec N−1 est
+  négligeable dès quelques centaines d'intervalles.

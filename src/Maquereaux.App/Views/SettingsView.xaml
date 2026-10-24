@@ -26,6 +26,25 @@
 
             <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                 <StackPanel>
+                    <TextBlock Text="Précision du timer" Style="{StaticResource Text.Title}" />
+                    <RadioButton GroupName="Timer" Margin="0,3" Content="Standard (Thread.Sleep) — référence imprécise, ~15,6 ms de granularité"
+                                 IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=Standard}" />
+                    <RadioButton GroupName="Timer" Margin="0,3" Content="Haute résolution — précis et économe (recommandé)"
+                                 IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=HighResolution}" />
+                    <RadioButton GroupName="Timer" Margin="0,3" Content="Hybride — haute résolution + attente active la dernière ms : le plus précis"
+                                 IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=Hybrid}" />
+                    <Border Margin="0,8,0,0" Padding="10,6" CornerRadius="6" Background="{DynamicResource Brush.PausedBg}"
+                            Visibility="{Binding IsHybridTimer, Converter={StaticResource BoolToVis}}">
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Brush.Paused}"
+                                   Text="⚠ Le mode Hybride occupe un cœur CPU pendant la dernière milliseconde de chaque intervalle (≈ 10 % d'un cœur à 10 ms, beaucoup plus à 1–2 ms). Plus de chauffe et de conso sur portable." />
+                    </Border>
+                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,8,0,0"
+                               Text="Pourquoi : Windows ne réveille les threads qu'à chaque « tic » d'horloge (~15,6 ms). Un Sleep(10) dure donc souvent ~15 ms. Le timer haute résolution contourne ce tic proprement. Changement pris en compte au prochain démarrage de la macro." />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                <StackPanel>
                     <TextBlock Text="Fenêtre" Style="{StaticResource Text.Title}" />
                     <CheckBox Content="Toujours au premier plan" IsChecked="{Binding AlwaysOnTop}" />
                 </StackPanel>

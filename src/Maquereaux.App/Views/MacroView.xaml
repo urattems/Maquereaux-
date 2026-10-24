@@ -141,13 +141,61 @@
             </ScrollViewer>
         </Border>
 
-        <!-- ===== Bas : compteur ===== -->
+        <!-- ===== Bas : stats de timing en direct (J2) ===== -->
         <Border Grid.Row="1" Grid.ColumnSpan="3" Style="{StaticResource Card}" Margin="0,12,0,0" Padding="14,10"
                 DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Ticks envoyés" Style="{StaticResource Text.Label}" />
-                <TextBlock Text="{Binding TicksSent}" Style="{StaticResource Text.StatValue}" />
-            </StackPanel>
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <TextBlock DockPanel.Dock="Right" Style="{StaticResource Text.Muted}" VerticalAlignment="Center">
+                        <Run Text="Timer :" />
+                        <Run Text="{Binding ActiveTimerName, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Text="Timing réel (en direct)" Style="{StaticResource Text.Title}" Margin="0" />
+                </DockPanel>
+                <UniformGrid Rows="1" Columns="9">
+                    <UniformGrid.Resources>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Margin" Value="0,0,10,0" />
+                        </Style>
+                    </UniformGrid.Resources>
+                    <StackPanel ToolTip="Nombre de ticks envoyés depuis le démarrage">
+                        <TextBlock Text="Ticks" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding TicksSent}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                    <StackPanel ToolTip="Fréquence moyenne réelle des ticks">
+                        <TextBlock Text="Fréquence" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding LiveStats.RateHz, StringFormat={}{0:0.0} Hz}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                    <StackPanel ToolTip="Intervalle moyen mesuré entre deux ticks">
+                        <TextBlock Text="Moyenne" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding LiveStats.Mean, StringFormat={}{0:0.000} ms}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Min" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding LiveStats.Min, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Max" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding LiveStats.Max, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                    <StackPanel ToolTip="95 % des intervalles sont inférieurs ou égaux à cette valeur">
+                        <TextBlock Text="p95" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding LiveStats.P95, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                    <StackPanel ToolTip="99 % des intervalles sont inférieurs ou égaux à cette valeur">
+                        <TextBlock Text="p99" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding LiveStats.P99, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                    <StackPanel ToolTip="Écart-type des intervalles : plus c'est bas, plus le rythme est régulier">
+                        <TextBlock Text="Jitter (σ)" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding LiveStats.StdDev, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                    <StackPanel ToolTip="Intervalles plus longs que 1,5 × l'intervalle prévu">
+                        <TextBlock Text="Manqués" Style="{StaticResource Text.Muted}" />
+                        <TextBlock Text="{Binding LiveStats.Missed}" Style="{StaticResource Text.StatValue}" />
+                    </StackPanel>
+                </UniformGrid>
+            </DockPanel>
         </Border>
     </Grid>
 </UserControl>

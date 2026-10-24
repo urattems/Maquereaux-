@@ -6,6 +6,8 @@ using Maquereaux.App.Services;
 using Maquereaux.Core;
 using Maquereaux.Core.Engine;
 using Maquereaux.Core.Models;
+using Maquereaux.Core.Stats;
+using Maquereaux.Win32;
 
 namespace Maquereaux.App.ViewModels;
 
@@ -29,6 +31,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _activeProfile = profile;
         _alwaysOnTop = _settings.AlwaysOnTop;
         _emergencyHotkey = _settings.EmergencyStopHotkey;
+        _timerStrategy = _settings.TimerStrategy;
+        _host.TimerStrategy = _timerStrategy;
 
         _host.EngineStateChanged += (_, e) => _dispatcher.BeginInvoke(() => OnEngineStateChanged(e));
         _host.Error += msg => _dispatcher.BeginInvoke(() => Notify(msg, NotificationLevel.Warning));
@@ -72,6 +76,22 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private Hotkey _emergencyHotkey;
 
+    /// <summary>Stats de timing en direct (rafraîchies 4×/s pendant l'exécution).</summary>
+    [ObservableProperty]
+    private TimingStats _liveStats = TimingStats.Empty;
+
+    /// <summary>Nom de la stratégie d'attente réellement utilisée par l'exécution en cours.</summary>
+    [ObservableProperty]
+    private string _activeTimerName = "—";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsHybridTimer))]
+    [NotifyPropertyChangedFor(nameof(TimerStrategyDescription))]
+    private TimerStrategy _timerStrategy;
+
+    public bool IsHybridTimer => TimerStrategy == TimerStrategy.Hybrid;
+    public string TimerStrategyDescription => SleeperFactory.Describe(TimerStrategy);
+
     public bool IsRunning => EngineState != EngineState.Stopped;
     public string StartStopLabel => IsRunning ? "■  STOP" : "▶  START";
 
@@ -103,6 +123,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     // ---------- Réglages ----------
 
     partial void OnAlwaysOnTopChanged(bool value) => _settings.AlwaysOnTop = value;
+
+    partial void OnTimerStrategyChanged(TimerStrategy value)
+    {
+        _settings.TimerStrategy = value;
+        _host.TimerStrategy = value;
+        if (IsRunning) Notify("Nouvelle stratégie de timer : prise en compte au prochain démarrage.");
+    }
 
     partial void OnEmergencyHotkeyChanged(Hotkey value)
     {
@@ -170,6 +197,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void RefreshLiveData()
     {
         TicksSent = _host.Engine.TicksSent;
+        LiveStats = _host.Recorder.Snapshot();
+        ActiveTimerName = _host.Engine.CurrentSleeperName ?? ActiveTimerName;
     }
 
     public void Notify(string message, NotificationLevel level = NotificationLevel.Info)

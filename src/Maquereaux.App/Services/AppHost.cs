@@ -5,6 +5,7 @@ using Maquereaux.Core.Engine;
 using Maquereaux.Core.Input;
 using Maquereaux.Core.Models;
 using Maquereaux.Core.Profiles;
+using Maquereaux.Core.Stats;
 using Maquereaux.Win32;
 using Microsoft.Extensions.Logging;
 
@@ -28,6 +29,8 @@ public sealed class AppHost : IDisposable
     private volatile IReadOnlyDictionary<int, Guid> _hotkeyToProfile = new Dictionary<int, Guid>();
     private AppSettings _settings = new();
     private bool _profileHotkeysSuspended;
+    private volatile TimerStrategy _timerStrategy = TimerStrategy.HighResolution;
+    private EngineState _lastState = EngineState.Stopped;
     private bool _disposed;
 
     public AppHost(AppPaths paths, ILoggerFactory loggerFactory)
@@ -37,7 +40,10 @@ public sealed class AppHost : IDisposable
         _log = loggerFactory.CreateLogger<AppHost>();
 
         Sender = new SendInputSender();
-        Engine = new MacroEngine(Sender, () => new StandardSleeper(StopwatchClock.Instance), StopwatchClock.Instance);
+        Engine = new MacroEngine(Sender, () => SleeperFactory.Create(_timerStrategy, StopwatchClock.Instance), StopwatchClock.Instance)
+        {
+            Observer = Recorder,
+        };
         Engine.StateChanged += OnEngineStateChanged;
 
         _executor = new SerialExecutor();
@@ -58,6 +64,16 @@ public sealed class AppHost : IDisposable
     public ILoggerFactory LoggerFactory { get; }
     public MacroEngine Engine { get; }
     public SendInputSender Sender { get; }
+
+    /// <summary>Intervalles réels mesurés pendant l'exécution (stats en direct).</summary>
+    public TimingRecorder Recorder { get; } = new();
+
+    /// <summary>Stratégie d'attente utilisée au prochain démarrage.</summary>
+    public TimerStrategy TimerStrategy
+    {
+        get => _timerStrategy;
+        set => _timerStrategy = value;
+    }
 
     /// <summary>Copies thread-safe des profils (publiées par l'UI à chaque modification).</summary>
     public ProfileRegistry Profiles { get; } = new();
@@ -170,6 +186,10 @@ public sealed class AppHost : IDisposable
 
     private void OnEngineStateChanged(object? sender, EngineStateChangedEventArgs e)
     {
+        // Nouvelle exécution : on repart de stats vierges (levé AVANT le premier tick)
+        if (e.State == EngineState.Running && _lastState == EngineState.Stopped) Recorder.Reset();
+        _lastState = e.State;
+
         if (e.State == EngineState.Stopped)
         {
             if (e.Error is not null) _log.LogError(e.Error, "Moteur arrêté sur erreur");

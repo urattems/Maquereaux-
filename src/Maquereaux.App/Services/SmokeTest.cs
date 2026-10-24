@@ -82,6 +82,8 @@ internal sealed class SmokeTest
         await Delay(1000);
         Capture(_window, "0-running");
         var ticks = _host.Engine.TicksSent;
+        var stats = _host.Recorder.Snapshot();
+        Log($"Stats 10 ms ({_host.Engine.CurrentSleeperName}) : moyenne {stats.Mean:0.000} ms, p95 {stats.P95:0.000}, σ {stats.StdDev:0.000}, manqués {stats.Missed}");
         var state = _host.Engine.State;
         _vm.StartStopCommand.Execute(null);
         await Delay(500);

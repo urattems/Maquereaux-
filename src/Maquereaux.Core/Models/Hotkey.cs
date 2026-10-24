@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Maquereaux.Core.Input;
 
 namespace Maquereaux.Core.Models;
@@ -21,6 +22,7 @@ public sealed record Hotkey(HotkeyModifiers Modifiers, ushort VirtualKey)
     public static Hotkey DefaultEmergencyStop => new(HotkeyModifiers.Control | HotkeyModifiers.Alt, VirtualKeys.Pause);
 
     /// <summary>Un raccourci doit avoir une touche principale qui n'est pas un simple modificateur.</summary>
+    [JsonIgnore]
     public bool IsValid => VirtualKey != 0 && !VirtualKeys.IsModifier(VirtualKey);
 
     public override string ToString()

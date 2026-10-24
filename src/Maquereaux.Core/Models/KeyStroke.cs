@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Maquereaux.Core.Input;
 
 namespace Maquereaux.Core.Models;
@@ -14,6 +15,7 @@ namespace Maquereaux.Core.Models;
 public sealed record KeyStroke(ushort VirtualKey, ushort ScanCode = 0, bool IsExtended = false, string? Name = null)
 {
     /// <summary>Nom affichable (nom capturé, sinon nom par défaut du VK).</summary>
+    [JsonIgnore]
     public string DisplayName => string.IsNullOrWhiteSpace(Name) ? KeyNames.GetName(VirtualKey) : Name!;
 
     /// <summary>Crée une touche à partir d'un VK seul (scan code résolu plus tard par Win32).</summary>

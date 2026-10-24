@@ -32,6 +32,6 @@ Sous le conteneur Claude : `export PATH=/root/.dotnet:$PATH` (SDK installé via 
 ## État des jalons
 - [x] J0 — Socle (v0.0.1)
 - [x] J1 — Moteur de base (v0.1.0)
-- [ ] J2 — Timer haute précision (v0.2.0)
+- [x] J2 — Timer haute précision (v0.2.0)
 - [ ] J3 — Profils & activation (v0.3.0)
 - [ ] J4 — Labo de mesure (v0.4.0) → v1.0.0
