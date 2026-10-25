@@ -241,4 +241,15 @@ public class ProfileViewModelTests
         for (int i = 0; i < 100; i++) vm.AddStepCommand.Execute(KeyStroke.FromVirtualKey(VirtualKeys.A));
         Assert.Equal(ProfileLimits.MaxSteps, vm.Steps.Count);
     }
+
+    [Fact]
+    public void Preview_keys_are_capped_with_overflow_counter()
+    {
+        var vm = Vm(out _);
+        Assert.Equal(new[] { "A", "Z", "E" }, vm.PreviewKeys);
+        Assert.Null(vm.MoreKeysText);
+        for (int i = 0; i < 5; i++) vm.AddStepCommand.Execute(KeyStroke.FromVirtualKey(VirtualKeys.F24));
+        Assert.Equal(ProfileViewModel.PreviewKeyCount, vm.PreviewKeys.Count);
+        Assert.Equal("+2", vm.MoreKeysText);
+    }
 }

@@ -4,93 +4,307 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Maquereaux.App.ViewModels"
-             xmlns:controls="clr-namespace:Maquereaux.App.Controls"
-             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="760" HorizontalAlignment="Left">
-            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Sécurité" Style="{StaticResource Text.Title}" />
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="200" />
-                            <ColumnDefinition Width="220" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Arrêt d'urgence (global)" Style="{StaticResource Text.Label}" />
-                        <controls:HotkeyBox Grid.Column="1" Hotkey="{Binding EmergencyHotkey}" AllowNone="False" />
-                    </Grid>
-                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,8,0,0"
-                               Text="Toujours actif, même pendant la capture d'une touche. Il coupe la macro et relâche toutes les touches." />
-                </StackPanel>
-            </Border>
+             xmlns:c="clr-namespace:Maquereaux.App.Controls"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}" d:DesignWidth="900" d:DesignHeight="1400">
+    <UserControl.Resources>
+        <!-- En-tête de section : icône + titre + phrase d'explication -->
+        <Style x:Key="Section.Icon" TargetType="c:Icon">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Margin" Value="0,2,12,0" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+        </Style>
 
-            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Précision du timer" Style="{StaticResource Text.Title}" />
-                    <RadioButton GroupName="Timer" Margin="0,3" Content="Standard (Thread.Sleep) — référence imprécise, ~15,6 ms de granularité"
-                                 IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=Standard}" />
-                    <RadioButton GroupName="Timer" Margin="0,3" Content="Haute résolution — précis et économe (recommandé)"
-                                 IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=HighResolution}" />
-                    <RadioButton GroupName="Timer" Margin="0,3" Content="Hybride — haute résolution + attente active la dernière ms : le plus précis"
-                                 IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=Hybrid}" />
-                    <Border Margin="0,8,0,0" Padding="10,6" CornerRadius="6" Background="{DynamicResource Brush.PausedBg}"
-                            Visibility="{Binding IsHybridTimer, Converter={StaticResource BoolToVis}}">
-                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Brush.Paused}"
-                                   Text="⚠ Le mode Hybride occupe un cœur CPU pendant la dernière milliseconde de chaque intervalle (≈ 10 % d'un cœur à 10 ms, beaucoup plus à 1–2 ms). Plus de chauffe et de conso sur portable." />
-                    </Border>
-                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,8,0,0"
-                               Text="Pourquoi : Windows ne réveille les threads qu'à chaque « tic » d'horloge (~15,6 ms). Un Sleep(10) dure donc souvent ~15 ms. Le timer haute résolution contourne ce tic proprement. Changement pris en compte au prochain démarrage de la macro." />
-                </StackPanel>
-            </Border>
+        <!-- Ligne de réglage : libellé + aide à gauche, contrôle à droite -->
+        <Style x:Key="Row" TargetType="DockPanel">
+            <Setter Property="Margin" Value="0,16,0,0" />
+            <Setter Property="LastChildFill" Value="True" />
+        </Style>
+        <Style x:Key="Row.Label" TargetType="TextBlock" BasedOn="{StaticResource Text.BodyStrong}" />
+        <Style x:Key="Row.Help" TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,2,24,0" />
+        </Style>
 
-            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Garde-fou" Style="{StaticResource Text.Title}" />
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Arrêt automatique après" Style="{StaticResource Text.Label}" />
-                        <TextBox Style="{StaticResource TextBox.Number}" Width="60"
-                                 Text="{Binding SafetyTimeoutMinutes, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=True}" />
-                        <TextBlock Text="minutes (1 à 240)" Style="{StaticResource Text.Label}" Margin="8,0,0,0" />
+        <!-- Jauge à 3 crans (précision / coût CPU des timers) -->
+        <Style x:Key="Notch" TargetType="Border">
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="6" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Margin" Value="0,0,3,0" />
+            <Setter Property="Background" Value="{DynamicResource Surface.Sunken}" />
+        </Style>
+        <Style x:Key="Notch.On" TargetType="Border" BasedOn="{StaticResource Notch}">
+            <Setter Property="Background" Value="{DynamicResource Accent}" />
+        </Style>
+        <Style x:Key="Notch.Warn" TargetType="Border" BasedOn="{StaticResource Notch}">
+            <Setter Property="Background" Value="{DynamicResource State.Paused}" />
+        </Style>
+
+        <!-- Option de timer : un RadioButton dessiné en carte sélectionnable -->
+        <Style x:Key="TimerOption" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,0,12,12" />
+            <Setter Property="Width" Value="232" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource Focus.Ring}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="{DynamicResource Surface.Sunken}" BorderBrush="{DynamicResource Border.Subtle}"
+                                BorderThickness="1.5" CornerRadius="{DynamicResource Radius.L}" Padding="14,12">
+                            <Grid>
+                                <Ellipse x:Name="Ring" Width="16" Height="16" Stroke="{DynamicResource Border.Strong}" StrokeThickness="1.5"
+                                         HorizontalAlignment="Right" VerticalAlignment="Top" />
+                                <Ellipse x:Name="Dot" Width="8" Height="8" Fill="{DynamicResource Accent}" Margin="0,4,4,0"
+                                         HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="Collapsed" />
+                                <ContentPresenter />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Border.Strong}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Accent.Subtle}" />
+                                <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="Dot" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+        <StackPanel MaxWidth="860" HorizontalAlignment="Left" Margin="0,0,4,8">
+
+            <!-- ===================== Général ===================== -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <DockPanel>
+                    <c:Icon Glyph="{StaticResource Icon.Settings}" Style="{StaticResource Section.Icon}" />
+                    <StackPanel>
+                        <TextBlock Text="Général" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Comportement de la fenêtre au quotidien." Style="{StaticResource Text.Supporting}" />
+
+                        <DockPanel Style="{StaticResource Row}">
+                            <CheckBox DockPanel.Dock="Right" Style="{StaticResource Toggle}" IsChecked="{Binding AlwaysOnTop}" VerticalAlignment="Center"
+                                      AutomationProperties.Name="Toujours au premier plan" />
+                            <StackPanel>
+                                <TextBlock Text="Toujours au premier plan" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Maquereaux reste visible par-dessus l'appli que tu testes." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource Row}">
+                            <CheckBox DockPanel.Dock="Right" Style="{StaticResource Toggle}" IsChecked="{Binding MinimizeToTray}" VerticalAlignment="Center"
+                                      AutomationProperties.Name="Réduire dans la zone de notification" />
+                            <StackPanel>
+                                <TextBlock Text="Réduire dans la zone de notification" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Réduire cache la fenêtre à côté de l'horloge ; l'icône change de couleur selon l'état." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource Row}">
+                            <Button DockPanel.Dock="Right" Content="Ouvrir" c:Ui.Icon="{StaticResource Icon.Compact}" Command="{Binding ToggleCompactCommand}"
+                                    VerticalAlignment="Center" />
+                            <StackPanel>
+                                <TextBlock Text="Mode compact" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Une petite pastille flottante : état, profil actif et Start/Stop, toujours au premier plan." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
                     </StackPanel>
-                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,8,0,0"
-                               Text="Une exécution s'arrête toute seule passé ce délai : Maquereaux est un outil de test et d'apprentissage, pas fait pour tourner sans surveillance." />
-                </StackPanel>
+                </DockPanel>
             </Border>
 
-            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Fenêtre &amp; apparence" Style="{StaticResource Text.Title}" />
-                    <CheckBox Content="Toujours au premier plan" IsChecked="{Binding AlwaysOnTop}" />
-                    <CheckBox Content="Réduire dans la zone de notification (à côté de l'horloge)" IsChecked="{Binding MinimizeToTray}" />
-                    <CheckBox Content="Thème clair" IsChecked="{Binding IsLightTheme}" />
-                    <Button Content="Mode compact" Command="{Binding ToggleCompactCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"
-                            ToolTip="Mini-fenêtre toujours au premier plan : état + profil actif + START/STOP" />
-                </StackPanel>
-            </Border>
+            <!-- ===================== Raccourcis ===================== -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <DockPanel>
+                    <c:Icon Glyph="{StaticResource Icon.Keyboard}" Style="{StaticResource Section.Icon}" />
+                    <StackPanel>
+                        <TextBlock Text="Raccourcis" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Les raccourcis de chaque profil se règlent dans l'écran Macro." Style="{StaticResource Text.Supporting}" />
 
-            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Droits administrateur (UIPI)" Style="{StaticResource Text.Title}" />
-                    <TextBlock Style="{StaticResource Text.Muted}"
-                               Text="Windows interdit à une appli « normale » d'envoyer des touches à une appli lancée en administrateur. Si ta cible est en admin, relance Maquereaux en admin (sinon inutile)." />
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <Button Content="Relancer en administrateur" Command="{Binding RestartAsAdminCommand}"
-                                IsEnabled="{Binding IsElevated, Converter={StaticResource InverseBool}}" />
-                        <TextBlock Text="✔ Maquereaux tourne déjà en administrateur" Foreground="{DynamicResource Brush.Running}" VerticalAlignment="Center" Margin="10,0,0,0"
-                                   Visibility="{Binding IsElevated, Converter={StaticResource BoolToVis}}" />
+                        <DockPanel Style="{StaticResource Row}">
+                            <c:HotkeyBox DockPanel.Dock="Right" Hotkey="{Binding EmergencyHotkey}" AllowNone="False" Width="180" VerticalAlignment="Center"
+                                         FontFamily="{DynamicResource Font.Mono}" HorizontalContentAlignment="Center"
+                                         AutomationProperties.Name="Raccourci d'arrêt d'urgence" />
+                            <StackPanel>
+                                <TextBlock Text="Arrêt d'urgence" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Global et toujours actif, même pendant la capture d'une touche : coupe la macro et relâche toutes les touches." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
                     </StackPanel>
-                </StackPanel>
+                </DockPanel>
             </Border>
 
-            <Border Style="{StaticResource Card}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Données" Style="{StaticResource Text.Title}" />
-                    <TextBlock Style="{StaticResource Text.Muted}">
-                        <Run Text="Profils, réglages et logs (100 % local, aucune connexion réseau) :" />
-                        <Run Text="{Binding DataDir, Mode=OneWay}" FontFamily="{StaticResource Font.Mono}" />
-                    </TextBlock>
-                    <Button Content="Ouvrir le dossier" Command="{Binding OpenDataFolderCommand}" HorizontalAlignment="Left" Margin="0,8,0,0" />
-                </StackPanel>
+            <!-- ===================== Timing ===================== -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <DockPanel>
+                    <c:Icon Glyph="{StaticResource Icon.Timer}" Style="{StaticResource Section.Icon}" />
+                    <StackPanel>
+                        <TextBlock Text="Précision du timer" Style="{StaticResource Text.Title}" />
+                        <TextBlock Style="{StaticResource Text.Supporting}" TextWrapping="Wrap" Margin="0,0,0,16"
+                                   Text="Windows ne réveille les programmes qu'à chaque « tic » d'horloge (~15,6 ms) : un Sleep(10) dure souvent 15 ms. Choisis ton compromis précision / CPU. Appliqué au prochain démarrage de la macro." />
+
+                        <WrapPanel>
+                            <RadioButton Style="{StaticResource TimerOption}" GroupName="Timer"
+                                         IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=Standard}">
+                                <StackPanel>
+                                    <TextBlock Text="Standard" Style="{StaticResource Text.BodyStrong}" />
+                                    <TextBlock Text="Thread.Sleep classique. Référence pour comparer." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,20,10" />
+                                    <DockPanel Margin="0,0,0,4">
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                            <Border Style="{StaticResource Notch.On}" /><Border Style="{StaticResource Notch}" /><Border Style="{StaticResource Notch}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Précision" Style="{StaticResource Text.Caption}" />
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                            <Border Style="{StaticResource Notch.On}" /><Border Style="{StaticResource Notch}" /><Border Style="{StaticResource Notch}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Coût CPU" Style="{StaticResource Text.Caption}" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource TimerOption}" GroupName="Timer"
+                                         IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=HighResolution}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Haute résolution" Style="{StaticResource Text.BodyStrong}" />
+                                        <Border Style="{StaticResource Badge}" Margin="8,0,0,0" Padding="6,0">
+                                            <TextBlock Text="conseillé" FontSize="11" />
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="Contourne le tic d'horloge proprement. Précis et économe." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,20,10" />
+                                    <DockPanel Margin="0,0,0,4">
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                            <Border Style="{StaticResource Notch.On}" /><Border Style="{StaticResource Notch.On}" /><Border Style="{StaticResource Notch}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Précision" Style="{StaticResource Text.Caption}" />
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                            <Border Style="{StaticResource Notch.On}" /><Border Style="{StaticResource Notch}" /><Border Style="{StaticResource Notch}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Coût CPU" Style="{StaticResource Text.Caption}" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource TimerOption}" GroupName="Timer"
+                                         IsChecked="{Binding TimerStrategy, Converter={StaticResource EnumToBool}, ConverterParameter=Hybrid}">
+                                <StackPanel>
+                                    <TextBlock Text="Hybride" Style="{StaticResource Text.BodyStrong}" />
+                                    <TextBlock Text="Haute résolution + attente active la dernière ms. Le plus précis." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,20,10" />
+                                    <DockPanel Margin="0,0,0,4">
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                            <Border Style="{StaticResource Notch.On}" /><Border Style="{StaticResource Notch.On}" /><Border Style="{StaticResource Notch.On}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Précision" Style="{StaticResource Text.Caption}" />
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                            <Border Style="{StaticResource Notch.Warn}" /><Border Style="{StaticResource Notch.Warn}" /><Border Style="{StaticResource Notch.Warn}" />
+                                        </StackPanel>
+                                        <TextBlock Text="Coût CPU" Style="{StaticResource Text.Caption}" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </RadioButton>
+                        </WrapPanel>
+
+                        <Border Background="{DynamicResource State.Paused.Bg}" CornerRadius="{DynamicResource Radius.M}" Padding="12,8" Margin="0,4,0,0"
+                                Visibility="{Binding IsHybridTimer, Converter={StaticResource BoolToVis}}">
+                            <DockPanel>
+                                <c:Icon Glyph="{StaticResource Icon.WarningFilled}" Width="16" Height="16" Foreground="{DynamicResource State.Paused}"
+                                        VerticalAlignment="Top" Margin="0,1,10,0" />
+                                <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource Text.Primary}"
+                                           Text="L'attente active occupe un cœur CPU pendant la dernière milliseconde de chaque intervalle (≈ 10 % d'un cœur à 10 ms, bien plus à 1–2 ms) : plus de chauffe et de conso sur portable." />
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ===================== Sécurité ===================== -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <DockPanel>
+                    <c:Icon Glyph="{StaticResource Icon.Shield}" Style="{StaticResource Section.Icon}" />
+                    <StackPanel>
+                        <TextBlock Text="Sécurité" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Maquereaux est un outil de test et d'apprentissage, pas fait pour tourner sans surveillance." Style="{StaticResource Text.Supporting}" TextWrapping="Wrap" />
+
+                        <DockPanel Style="{StaticResource Row}">
+                            <c:NumericBox DockPanel.Dock="Right" Value="{Binding SafetyTimeoutMinutes}" Minimum="1" Maximum="240" Unit="min" Width="120"
+                                          VerticalAlignment="Center" AutomationProperties.Name="Arrêt automatique en minutes" />
+                            <StackPanel>
+                                <TextBlock Text="Arrêt automatique" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Toute exécution s'arrête seule passé ce délai (1 à 240 minutes)." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ===================== Apparence ===================== -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <DockPanel>
+                    <c:Icon Glyph="{StaticResource Icon.Sparkle}" Style="{StaticResource Section.Icon}" />
+                    <StackPanel>
+                        <TextBlock Text="Apparence" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Eaux profondes ou écume : même confort, à toi de voir." Style="{StaticResource Text.Supporting}" />
+
+                        <DockPanel Style="{StaticResource Row}">
+                            <Border DockPanel.Dock="Right" Style="{StaticResource Segmented}" VerticalAlignment="Center">
+                                <UniformGrid Rows="1">
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="Theme" Content="Sombre" c:Ui.Icon="{StaticResource Icon.Moon}"
+                                                 IsChecked="{Binding IsLightTheme, Converter={StaticResource InverseBool}}" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="Theme" Content="Clair" c:Ui.Icon="{StaticResource Icon.Sun}"
+                                                 IsChecked="{Binding IsLightTheme}" />
+                                </UniformGrid>
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Thème" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Aussi accessible depuis la barre de titre." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- ===================== Avancé ===================== -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <DockPanel>
+                    <c:Icon Glyph="{StaticResource Icon.Lock}" Style="{StaticResource Section.Icon}" />
+                    <StackPanel>
+                        <TextBlock Text="Avancé" Style="{StaticResource Text.Title}" />
+                        <TextBlock Text="Droits Windows et données locales." Style="{StaticResource Text.Supporting}" />
+
+                        <DockPanel Style="{StaticResource Row}">
+                            <Grid DockPanel.Dock="Right" VerticalAlignment="Center">
+                                <Button Content="Relancer en admin" c:Ui.Icon="{StaticResource Icon.Shield}" Command="{Binding RestartAsAdminCommand}"
+                                        Visibility="{Binding IsElevated, Converter={StaticResource BoolToVisInverted}}" />
+                                <Border Style="{StaticResource Badge}" Visibility="{Binding IsElevated, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="Déjà en administrateur" />
+                                </Border>
+                            </Grid>
+                            <StackPanel>
+                                <TextBlock Text="Droits administrateur (UIPI)" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Windows bloque les touches envoyées à une appli lancée en admin. Utile seulement si ta cible tourne elle-même en admin." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource Row}">
+                            <Button DockPanel.Dock="Right" Content="Ouvrir le dossier" c:Ui.Icon="{StaticResource Icon.Folder}" Command="{Binding OpenDataFolderCommand}"
+                                    VerticalAlignment="Center" />
+                            <StackPanel>
+                                <TextBlock Text="Données" Style="{StaticResource Row.Label}" />
+                                <TextBlock Style="{StaticResource Row.Help}">
+                                    <Run Text="Profils, réglages et logs — 100 % local, aucune connexion réseau." /><LineBreak />
+                                    <Run Text="{Binding DataDir, Mode=OneWay}" FontFamily="{DynamicResource Font.Mono}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </DockPanel>
+                    </StackPanel>
+                </DockPanel>
             </Border>
         </StackPanel>
     </ScrollViewer>

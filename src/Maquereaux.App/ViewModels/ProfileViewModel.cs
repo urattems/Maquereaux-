@@ -60,6 +60,7 @@ public sealed partial class ProfileViewModel : ObservableObject
             {
                 NotifyCadence();
                 OnPropertyChanged(nameof(IsBurst));
+                OnPropertyChanged(nameof(ModeText));
                 RaiseChanged();
             }
         }
@@ -294,17 +295,36 @@ public sealed partial class ProfileViewModel : ObservableObject
         OnPropertyChanged(nameof(HasSteps));
         OnPropertyChanged(nameof(StepCountText));
         OnPropertyChanged(nameof(ShowHoldAdvice));
+        NotifyPreview();
         RaiseChanged();
+    }
+
+    private void NotifyPreview()
+    {
+        OnPropertyChanged(nameof(PreviewKeys));
+        OnPropertyChanged(nameof(MoreKeysText));
     }
 
     /// <summary>Appelé par une étape modifiée (appui, délai, touche).</summary>
     internal void AfterStepEdit()
     {
         OnPropertyChanged(nameof(ShowHoldAdvice));
+        NotifyPreview();
         RaiseChanged();
     }
 
     public bool HasSteps => Steps.Count > 0;
+
+    /// <summary>Nombre de touches montrées en aperçu sur la carte du profil.</summary>
+    public const int PreviewKeyCount = 6;
+
+    /// <summary>Libellés des premières touches (mini-keycaps de la carte du profil).</summary>
+    public IReadOnlyList<string> PreviewKeys => Steps.Take(PreviewKeyCount).Select(s => s.Label).ToList();
+
+    /// <summary>« +3 » quand la séquence dépasse l'aperçu, sinon null.</summary>
+    public string? MoreKeysText => Steps.Count > PreviewKeyCount ? $"+{Steps.Count - PreviewKeyCount}" : null;
+
+    public string ModeText => IsBurst ? "Burst" : "Cycle";
 
     public string StepCountText => $"{Steps.Count} / {ProfileLimits.MaxSteps}";
 

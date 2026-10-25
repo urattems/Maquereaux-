@@ -291,13 +291,41 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             Notify("Impossible de supprimer le dernier profil.", NotificationLevel.Warning);
             return;
         }
-        if (!_dialogs.Confirm("Supprimer le profil", $"Supprimer définitivement « {p.Name} » ?")) return;
+        // Pas de boîte de confirmation : suppression immédiate + toast « Annuler » (plus rapide, et rien n'est perdu)
         if (_host.Engine.RunningProfile?.Id == p.Id) _host.Stop();
         int index = Profiles.IndexOf(p);
         Profiles.Remove(p);
         _host.Profiles.Remove(p.Id);
         if (ActiveProfile == p) ActiveProfile = Profiles[Math.Min(index, Profiles.Count - 1)];
         ProfilesStructureChanged();
+
+        NotificationViewModel? toast = null;
+        toast = Notify($"Profil « {p.Name} » supprimé.", NotificationLevel.Info, "Annuler", new RelayCommand(() =>
+        {
+            RestoreProfile(p, index);
+            if (toast is not null) Notifications.Remove(toast);
+        }));
+    }
+
+    /// <summary>Annule une suppression : le profil revient à sa place (sans son raccourci s'il a été repris entre-temps).</summary>
+    private void RestoreProfile(ProfileViewModel p, int index)
+    {
+        if (Profiles.Contains(p)) return;
+        if (p.Hotkey is { } hk && (hk == _settings.EmergencyStopHotkey || Profiles.Any(o => o.Hotkey == hk)))
+            p.Hotkey = null;
+        Profiles.Insert(Math.Clamp(index, 0, Profiles.Count), p);
+        _host.Profiles.Publish(p.Model);
+        ActiveProfile = p;
+        ProfilesStructureChanged();
+    }
+
+    /// <summary>Rend le profil actif et ouvre l'écran Macro pour l'éditer.</summary>
+    [RelayCommand]
+    private void EditProfile(ProfileViewModel? p)
+    {
+        if (p is null) return;
+        ActiveProfile = p;
+        Navigate("Macro");
     }
 
     [RelayCommand]

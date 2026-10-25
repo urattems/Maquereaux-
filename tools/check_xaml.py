@@ -36,7 +36,7 @@ for f in [f"{ROOT}/App.xaml"] + [t for t in themes if not t.endswith("Light.xaml
         if k in owner and owner[k] != f:
             errors.append(f"{f}: clé '{k}' déjà définie dans {owner[k]} (collision : le dernier dictionnaire gagne)")
         owner.setdefault(k, f)
-for f in glob.glob(f"{ROOT}/Views/*.xaml") + [f"{ROOT}/App.xaml"]:
+for f in glob.glob(f"{ROOT}/Views/*.xaml") + glob.glob(f"{ROOT}/Controls/*.xaml") + [f"{ROOT}/App.xaml"]:
     s = read(f)
     local = set(KEY.findall(s))
     for m in REF.finditer(s):

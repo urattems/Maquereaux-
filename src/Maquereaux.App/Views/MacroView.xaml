@@ -571,20 +571,8 @@
                         </TextBlock>
 
                         <TextBlock Text="Fenêtre cible" Style="{StaticResource Field.Label}" Margin="0,20,0,6" />
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Close}"
-                                    ToolTip="Aucun filtre (toutes les fenêtres)" AutomationProperties.Name="Retirer la fenêtre cible"
-                                    Command="{Binding ClearTargetProcessCommand}"
-                                    Visibility="{Binding HasTarget, Converter={StaticResource BoolToVis}}" />
-                            <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Refresh}" Margin="4,0,0,0"
-                                    ToolTip="Rafraîchir la liste des applis ouvertes" AutomationProperties.Name="Rafraîchir la liste des applis"
-                                    Command="{Binding DataContext.RefreshProcessesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                            <ComboBox IsEditable="True" c:Ui.Placeholder="Toutes les fenêtres"
-                                      ItemsSource="{Binding DataContext.RunningProcesses, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                      Text="{Binding TargetProcess, UpdateSourceTrigger=LostFocus, TargetNullValue=''}"
-                                      AutomationProperties.Name="Fenêtre cible"
-                                      ToolTip="Ex. notepad.exe. Les touches ne partent que si cette appli a le focus ; sinon pause automatique." />
-                        </DockPanel>
+                        <c:ProcessPicker Value="{Binding TargetProcess}"
+                                         ToolTip="Les touches ne partent que si cette appli a le focus ; sinon pause automatique." />
                         <TextBlock Text="Sécurité : la macro se met en pause dès que tu changes de fenêtre. Vide = partout." Style="{StaticResource Field.Help}" />
                     </StackPanel>
                 </Border>

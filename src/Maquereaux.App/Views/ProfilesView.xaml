@@ -4,75 +4,198 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Maquereaux.App.ViewModels"
-             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}">
+             xmlns:c="clr-namespace:Maquereaux.App.Controls"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}" d:DesignWidth="900" d:DesignHeight="600">
+    <UserControl.Resources>
+        <!-- Mini-keycap (aperçu de la séquence) -->
+        <Style x:Key="MiniKey" TargetType="Border" BasedOn="{StaticResource Kbd}">
+            <Setter Property="Margin" Value="0,0,4,4" />
+            <Setter Property="MinWidth" Value="26" />
+            <Setter Property="Padding" Value="6,2,6,2" />
+        </Style>
+
+        <!-- Carte de profil : un ListBoxItem entièrement redessiné (sélection = profil actif) -->
+        <Style x:Key="ProfileCard" TargetType="ListBoxItem">
+            <Setter Property="Margin" Value="0,0,16,16" />
+            <Setter Property="Width" Value="300" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource Focus.Ring}" />
+            <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Card" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border.Subtle}"
+                                BorderThickness="1" CornerRadius="{DynamicResource Radius.L}" Padding="16,14">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource Border.Strong}" />
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource Surface.Elevated}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource State.Running}" />
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource State.Running.Bg}" />
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <DockPanel>
         <!-- Barre d'actions -->
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
-            <Button Content="+ Nouveau" Style="{StaticResource Button.Accent}" Command="{Binding NewProfileCommand}" Margin="0,0,8,0" />
-            <Button Content="Importer…" Command="{Binding ImportProfilesCommand}" Margin="0,0,8,0" ToolTip="Ajouter des profils depuis un fichier JSON (n'écrase rien)" />
-            <Button Content="Exporter tout…" Command="{Binding ExportAllProfilesCommand}" Margin="0,0,8,0" />
-        </StackPanel>
-        <TextBlock DockPanel.Dock="Top" Style="{StaticResource Text.Muted}" Margin="0,0,0,10"
-                   Text="Clique sur un profil pour le rendre actif (l'onglet Macro l'édite), sur son nom pour le renommer. Chaque profil peut avoir son raccourci : F6 = profil 1, F7 = profil 2… Un seul profil tourne à la fois." />
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Style="{StaticResource Btn.Ghost}" Content="Importer" c:Ui.Icon="{StaticResource Icon.Import}" Command="{Binding ImportProfilesCommand}"
+                        ToolTip="Ajouter des profils depuis un fichier JSON (n'écrase rien)" Margin="0,0,4,0" />
+                <Button Style="{StaticResource Btn.Ghost}" Content="Tout exporter" c:Ui.Icon="{StaticResource Icon.Export}" Command="{Binding ExportAllProfilesCommand}"
+                        ToolTip="Sauvegarder tous les profils dans un fichier JSON" />
+            </StackPanel>
+            <Button Style="{StaticResource Btn.Primary}" Content="Nouveau profil" c:Ui.Icon="{StaticResource Icon.Add}" Command="{Binding NewProfileCommand}"
+                    HorizontalAlignment="Left" />
+        </DockPanel>
+        <TextBlock DockPanel.Dock="Top" Style="{StaticResource Text.Supporting}" Margin="0,0,0,16" TextWrapping="Wrap"
+                   Text="Clique une carte pour la rendre active (l'écran Macro l'édite). Un raccourci par profil ; un seul profil tourne à la fois." />
 
-        <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding ActiveProfile}">
+        <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding ActiveProfile}" ItemContainerStyle="{StaticResource ProfileCard}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Profils">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type vm:ProfileViewModel}">
-                    <Grid Margin="4,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Ellipse Width="12" Height="12" Margin="0,0,12,0" VerticalAlignment="Center">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Fill" Value="{DynamicResource Brush.Border}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                            <Setter Property="Fill" Value="{DynamicResource Brush.Accent}" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                                            <Setter Property="Fill" Value="{DynamicResource Brush.Running}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
-                        <StackPanel Grid.Column="1">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" FontSize="15" FontWeight="SemiBold" MinWidth="200"
-                                         Background="Transparent" BorderThickness="0" Padding="0" ToolTip="Clique pour renommer" />
-                                <Border CornerRadius="4" Padding="6,1" Margin="10,0,0,0" Background="{DynamicResource Brush.Selection}"
-                                        Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
-                                    <TextBlock Text="EN COURS" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Brush.Running}" />
-                                </Border>
+                    <Grid x:Name="Root" Background="Transparent">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- En-tête : nom (renommable) + raccourci en keycap -->
+                        <DockPanel>
+                            <Border DockPanel.Dock="Right" Style="{StaticResource Kbd}" Padding="8,3,8,3" VerticalAlignment="Top"
+                                    ToolTip="{Binding ActivationText}">
+                                <TextBlock Text="{Binding HotkeyText}" FontSize="{DynamicResource FontSize.Body}" />
+                            </Border>
+                            <StackPanel Margin="0,0,8,0">
+                                <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" FontSize="{DynamicResource FontSize.Subtitle}" FontWeight="SemiBold"
+                                         Background="Transparent" BorderThickness="0" Padding="0" MinHeight="0" Cursor="IBeam"
+                                         ToolTip="Clique pour renommer" AutomationProperties.Name="Nom du profil" />
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <Border x:Name="RunningBadge" Style="{StaticResource Badge}" Margin="0,0,6,0" Visibility="Collapsed">
+                                        <TextBlock Text="EN MARCHE" />
+                                    </Border>
+                                    <Border x:Name="ActiveBadge" Style="{StaticResource Badge.Neutral}" Visibility="Collapsed">
+                                        <TextBlock Text="actif" />
+                                    </Border>
+                                </StackPanel>
                             </StackPanel>
-                            <TextBlock Margin="0,3,0,0" Foreground="{DynamicResource Brush.TextMuted}">
-                                <Run Text="{Binding Summary, Mode=OneWay}" />
-                                <Run Text="  ·  " />
-                                <Run Text="{Binding HotkeyText, Mode=OneWay}" Foreground="{DynamicResource Brush.Accent}" />
-                                <Run Text="(" /><Run Text="{Binding ActivationText, Mode=OneWay}" /><Run Text=")" />
-                                <Run Text="  ·  cible : " />
-                                <Run Text="{Binding TargetText, Mode=OneWay}" />
-                            </TextBlock>
-                            <ItemsControl ItemsSource="{Binding Issues}" Margin="0,4,0,0">
+                        </DockPanel>
+
+                        <!-- Aperçu de la séquence -->
+                        <WrapPanel Grid.Row="1" Margin="0,12,0,0">
+                            <ItemsControl ItemsSource="{Binding PreviewKeys}" Focusable="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding StringFormat='⚠ {0}'}" Foreground="{DynamicResource Brush.Paused}" FontSize="12" TextWrapping="Wrap" />
+                                        <Border Style="{StaticResource MiniKey}">
+                                            <TextBlock Text="{Binding}" TextAlignment="Center" />
+                                        </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="Dupliquer" Style="{StaticResource Button.Icon}" Margin="2,0"
+                            <TextBlock Text="{Binding MoreKeysText}" Style="{StaticResource Num.Small}" VerticalAlignment="Center" Margin="2,0,0,4"
+                                       Visibility="{Binding MoreKeysText, Converter={StaticResource NullToVis}}" />
+                            <TextBlock Text="Séquence vide" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource State.Paused}"
+                                       Visibility="{Binding HasSteps, Converter={StaticResource BoolToVisInverted}}" />
+                        </WrapPanel>
+
+                        <!-- Méta : mode, intervalle, cible -->
+                        <WrapPanel Grid.Row="2" Margin="0,8,0,0" TextElement.Foreground="{DynamicResource Text.Secondary}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,14,4" ToolTip="Mode d'envoi">
+                                <c:Icon Width="14" Height="14" Margin="0,0,5,0" Foreground="{DynamicResource Text.Tertiary}">
+                                    <c:Icon.Style>
+                                        <Style TargetType="c:Icon">
+                                            <Setter Property="Glyph" Value="{StaticResource Icon.Refresh}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsBurst}" Value="True">
+                                                    <Setter Property="Glyph" Value="{StaticResource Icon.Flash}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </c:Icon.Style>
+                                </c:Icon>
+                                <TextBlock Text="{Binding ModeText}" Style="{StaticResource Text.Caption}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,14,4" ToolTip="Intervalle entre deux ticks">
+                                <c:Icon Glyph="{StaticResource Icon.Timer}" Width="14" Height="14" Margin="0,0,5,0" Foreground="{DynamicResource Text.Tertiary}" />
+                                <TextBlock Style="{StaticResource Num.Small}">
+                                    <Run Text="{Binding IntervalMs, Mode=OneWay}" /><Run Text=" ms" />
+                                </TextBlock>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4" ToolTip="Fenêtre cible">
+                                <c:Icon Glyph="{StaticResource Icon.Window}" Width="14" Height="14" Margin="0,0,5,0" Foreground="{DynamicResource Text.Tertiary}" />
+                                <TextBlock Text="{Binding TargetText}" Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" MaxWidth="150" />
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <!-- Problèmes détectés -->
+                        <ItemsControl Grid.Row="3" ItemsSource="{Binding Issues}" Margin="0,6,0,0" Focusable="False"
+                                      Visibility="{Binding HasIssues, Converter={StaticResource BoolToVis}}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Margin="0,2,0,0">
+                                        <c:Icon Glyph="{StaticResource Icon.WarningFilled}" Width="14" Height="14" Margin="0,1,6,0" VerticalAlignment="Top"
+                                                Foreground="{DynamicResource State.Paused}" />
+                                        <TextBlock Text="{Binding}" Style="{StaticResource Text.Caption}" Foreground="{DynamicResource State.Paused}" TextWrapping="Wrap" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Actions (visibles au survol ou sur la carte active) -->
+                        <StackPanel x:Name="Actions" Grid.Row="4" Orientation="Horizontal" Margin="0,10,0,0" Opacity="0">
+                            <Button Style="{StaticResource Btn.Secondary}" Content="Éditer" c:Ui.Icon="{StaticResource Icon.Edit}" MinHeight="28" Padding="10,2"
+                                    Command="{Binding DataContext.EditProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
+                            <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Copy}" Margin="6,0,0,0" ToolTip="Dupliquer"
+                                    AutomationProperties.Name="Dupliquer le profil"
                                     Command="{Binding DataContext.DuplicateProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
-                            <Button Content="Exporter" Style="{StaticResource Button.Icon}" Margin="2,0"
+                            <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Export}" ToolTip="Exporter en JSON"
+                                    AutomationProperties.Name="Exporter le profil"
                                     Command="{Binding DataContext.ExportProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
-                            <Button Content="Supprimer" Style="{StaticResource Button.Icon}" Margin="2,0" Foreground="{DynamicResource Brush.Stopped}"
+                            <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Delete}" ToolTip="Supprimer (annulable)"
+                                    AutomationProperties.Name="Supprimer le profil" Foreground="{DynamicResource State.Danger}"
                                     Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
                         </StackPanel>
                     </Grid>
+                    <DataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                            <Setter TargetName="RunningBadge" Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                            <Setter TargetName="ActiveBadge" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Actions" Property="Opacity" Value="1" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                            <Setter TargetName="Actions" Property="Opacity" Value="1" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsKeyboardFocusWithin, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                            <Setter TargetName="Actions" Property="Opacity" Value="1" />
+                        </DataTrigger>
+                    </DataTemplate.Triggers>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

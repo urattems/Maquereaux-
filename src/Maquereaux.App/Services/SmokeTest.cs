@@ -122,6 +122,20 @@ internal sealed class SmokeTest
         await Delay(400);
         Capture(_window, "4-profils-multiples");
 
+        // Suppression sans confirmation + toast « Annuler » qui restaure le profil à sa place
+        var victim = _vm.ActiveProfile;
+        int count = _vm.Profiles.Count;
+        _vm.DeleteProfileCommand.Execute(victim);
+        await Delay(300);
+        if (_vm.Profiles.Count != count - 1) throw new InvalidOperationException("Suppression de profil KO");
+        Capture(_window, "4b-profil-supprime-toast");
+        var undo = _vm.Notifications.LastOrDefault(n => n.ActionCommand is not null)
+                   ?? throw new InvalidOperationException("Toast « Annuler » absent");
+        undo.ActionCommand!.Execute(null);
+        await Delay(200);
+        if (_vm.Profiles.Count != count || !_vm.Profiles.Contains(victim!)) throw new InvalidOperationException("Annulation de suppression KO");
+        Log("Suppression + Annuler : OK");
+
         _vm.SaveNow();
         var repo = new Core.Profiles.ProfileRepository(_host.Paths);
         var reloaded = repo.LoadProfiles();
