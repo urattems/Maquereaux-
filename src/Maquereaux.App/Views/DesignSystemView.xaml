@@ -28,7 +28,7 @@
             <ContentPresenter ContentTemplate="{StaticResource Logo}" Width="40" Height="40" />
             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
                 <TextBlock Text="Design system Maquereaux" Style="{StaticResource Text.Headline}" />
-                <TextBlock Text="Océan de nuit · Écume — tokens, typographie, contrôles et états" Style="{StaticResource Text.Secondary}" />
+                <TextBlock Text="Océan de nuit · Écume — tokens, typographie, contrôles et états" Style="{StaticResource Text.Supporting}" />
             </StackPanel>
         </StackPanel>
 

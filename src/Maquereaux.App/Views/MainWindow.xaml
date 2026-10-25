@@ -170,7 +170,7 @@
                         <!-- En-tête de page -->
                         <StackPanel DockPanel.Dock="Top" Margin="32,24,32,16">
                             <TextBlock Text="{Binding CurrentPage.Label}" Style="{StaticResource Text.Headline}" />
-                            <TextBlock Text="{Binding CurrentPage.Subtitle}" Style="{StaticResource Text.Secondary}" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding CurrentPage.Subtitle}" Style="{StaticResource Text.Supporting}" Margin="0,4,0,0" />
                         </StackPanel>
 
                         <TabControl x:Name="Tabs" Style="{StaticResource Tabs.Headless}" SelectedIndex="{Binding SelectedPageIndex}" Margin="32,0,32,24">

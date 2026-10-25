@@ -3,6 +3,9 @@
 - Dans un dictionnaire de Themes/ : la clé doit être définie AVANT, dans le même fichier (les dictionnaires voisins
   ne sont pas visibles au chargement).
 - Dans une vue : la clé doit exister dans un dictionnaire de l'appli, ou dans le fichier lui-même.
+- Aucune clé ne doit être définie dans deux dictionnaires de l'appli (Light.xaml exclu : il double Dark.xaml exprès).
+  Sinon le dernier dictionnaire fusionné gagne : ex. un Style « Text.Secondary » qui masque le pinceau du même nom
+  → « Style is not a valid value for property Foreground » au premier affichage.
 Usage : python3 tools/check_xaml.py   (code de sortie 1 en cas d'erreur)"""
 import re, glob, sys, os
 ROOT = "src/Maquereaux.App"
@@ -27,6 +30,12 @@ for f in themes:
         elif m.group(2) not in defined and not m.group(2).startswith("{"):
             line = s[:m.start()].count("\n") + 1
             errors.append(f"{f}:{line}: StaticResource '{m.group(2)}' non défini avant dans ce dictionnaire")
+owner = {}
+for f in [f"{ROOT}/App.xaml"] + [t for t in themes if not t.endswith("Light.xaml")]:
+    for k in KEY.findall(read(f)):
+        if k in owner and owner[k] != f:
+            errors.append(f"{f}: clé '{k}' déjà définie dans {owner[k]} (collision : le dernier dictionnaire gagne)")
+        owner.setdefault(k, f)
 for f in glob.glob(f"{ROOT}/Views/*.xaml") + [f"{ROOT}/App.xaml"]:
     s = read(f)
     local = set(KEY.findall(s))

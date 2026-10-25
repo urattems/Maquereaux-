@@ -3,6 +3,29 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.1.0] - 2026-10-25
+
+🎨 « La carrosserie », étape 1 : nouveau design system et nouvelle coque Windows 11. Moteur strictement inchangé.
+
+### Ajouté
+- **Design system** : tokens (couleurs, grille 4/8 px, rayons, ombres, durées), thème sombre « eaux profondes » et thème
+  clair « écume » à parité, dégradé signature bleu-vert → argent → turquoise, couleurs d'état (marche turquoise, pause ambre,
+  erreur corail). Galerie complète capturée en CI (`docs/DESIGN_SYSTEM.md`).
+- **Polices embarquées** Inter (interface) et JetBrains Mono (tous les chiffres qui bougent), licence SIL OFL.
+- **Icônes** Fluent UI System Icons (MIT) en vectoriel, une seule famille, zéro emoji.
+- **Contrôles restylés dans tous leurs états** : boutons (primaire, secondaire, fantôme, danger, icône, puce), champs avec
+  placeholder et état d'erreur, `NumericBox` maison (molette, ↑↓, Maj ×10, saisie tolérante « 16 ms »), interrupteur,
+  contrôle segmenté, curseur, listes, menus, info-bulles, barres de défilement fines.
+- **Coque Windows 11** : barre de titre maison, Mica (Windows 11 22H2+), coins arrondis, Snap Layouts conservés,
+  navigation latérale repliable (Macro · Profils · Labo · Paramètres), pastille d'état globale cliquable, transitions de page.
+- Notifications en toasts empilés (bas droite) avec action optionnelle et fermeture automatique.
+- Nouveau projet de tests `Maquereaux.App.Tests` (logique d'écran et ViewModels).
+
+### Technique
+- Animations décoratives coupées quand la fenêtre est réduite/cachée ou que Windows désactive les animations.
+- Smoke test : crash au démarrage rapporté immédiatement (pile complète) au lieu d'un blocage de 120 s.
+- `tools/check_xaml.py` : détecte les `StaticResource` inter-dictionnaires qui font planter WPF au chargement.
+
 ## [1.0.0] - 2026-10-24
 
 🐟 Première version stable : les 4 jalons du cahier des charges (J1 moteur, J2 timer haute précision, J3 profils,

@@ -139,3 +139,56 @@ Projet mené en **mode autonome** : chaque choix non trivial est noté ici (déc
 - **Décision** : les tests qui observent la fin d'une exécution attendent l'événement `Stopped`, jamais `IsRunning == false`.
 - **Pourquoi** : le moteur passe l'état à Stopped juste avant de lever l'événement ; sous forte charge CPU, un test qui
   sondait l'état lisait la liste des événements trop tôt (échec intermittent repéré puis reproduit sous stress, corrigé, 0/10 sous stress).
+
+---
+
+## Refonte UI/UX v1.x (« la carrosserie »)
+
+### D-028 — Polices embarquées : Inter + JetBrains Mono (SIL OFL 1.1)
+- **Décision** : Inter (Regular/Medium/SemiBold/Bold) pour l'interface, JetBrains Mono pour **tous** les nombres qui bougent,
+  embarquées en `Resource` (pack URI), licences copiées dans `Assets/Fonts/`.
+- **Pourquoi** : Segoe UI a des chiffres proportionnels → les stats « dansent » à 10 Hz. Une mono tabulaire garde chaque chiffre
+  à sa place. Polices libres, lisibles à 100 % comme à 200 %, poids raisonnable (~1,5 Mo dans l'exe).
+- **Écarté** : Cascadia Mono (pas garantie hors Windows 11), polices variables (support WPF partiel).
+
+### D-029 — Icônes : Fluent UI System Icons (MIT), converties en `Geometry`
+- **Décision** : une seule famille (Fluent, 20 px regular + quelques filled), générée par `tools/gen_icons.py` en `Themes/Icons.xaml`.
+- **Pourquoi** : cohérente avec Windows 11, licence MIT, vectorielle (net à tous les DPI), recolorable par `Foreground`.
+  Le script normalise les drapeaux d'arcs SVG compacts (`a1 1 0 011 1`) que le mini-langage WPF ne lit pas.
+- **Écarté** : police d'icônes Segoe Fluent (absente de Windows 10), emojis (interdits par la DA).
+
+### D-030 — Tokens + DynamicResource partout ; StaticResource seulement intra-fichier
+- **Décision** : couleurs, espacements (grille 4/8), rayons, tailles de police, durées et ombres sont des clés de `Tokens.xaml`
+  et des dictionnaires de thème. Dans les dictionnaires de thème, toute référence à une clé d'un **autre** dictionnaire fusionné
+  est en `DynamicResource` ; `tools/check_xaml.py` le vérifie avant chaque push.
+- **Pourquoi** : une `StaticResource` vers un dictionnaire frère fait planter le chargement des ressources de l'App
+  (constaté en CI : appli figée, aucune capture). Le thème se change à chaud en remplaçant le dictionnaire de couleurs.
+
+### D-031 — Coque Windows 11 : WindowChrome + Mica + Snap Layouts
+- **Décision** : `WindowChrome` (barre de titre maison de 44 px), Mica via `DwmSetWindowAttribute` (build ≥ 22621, sinon fond uni),
+  coins arrondis DWM, et `WM_NCHITTEST` → `HTMAXBUTTON` au-dessus du bouton Agrandir pour garder les Snap Layouts.
+- **Pourquoi** : rendu natif Windows 11 sans dépendance (pas de WPF-UI / ModernWpf), dégradation propre sur Windows 10.
+
+### D-032 — Navigation latérale + onglets « headless »
+- **Décision** : sidebar repliable (232 / 56 px, état persistant) qui pilote un `TabControl` sans en-têtes ; transition fondu + glissé 8 px.
+- **Pourquoi** : garde le cycle de vie des vues existantes (aucune régression fonctionnelle) tout en changeant totalement la navigation.
+
+### D-033 — Projet `Maquereaux.App.Tests` (net8.0-windows)
+- **Décision** : la logique d'écran testable (presets, équivalences, conseils, parsing du NumericBox, édition de séquence du
+  ViewModel) vit dans des classes sans dépendance visuelle, testées par xUnit sur Windows (CI). Sous Linux le projet compile
+  mais n'est pas exécuté (`IsTestProject=false`).
+- **Pourquoi** : les ViewModels référencent WPF (ObservableObject + types WPF) → impossible à exécuter sous Linux.
+
+### D-034 — Curseur d'intervalle logarithmique (1 ms – 1 s), aimanté sur les presets
+- **Décision** : position = log₁₀(ms) / 3 ; aimantation à ±1 % de course autour de 10/16/33/50/100 ms ; au-delà de 1 s,
+  saisie clavier seulement (le curseur ne réécrit jamais un intervalle long saisi à la main).
+- **Pourquoi** : en linéaire, 1–20 ms (là où tout se joue) occuperait 2 % de la piste.
+
+### D-035 — Animations décoratives coupées quand la fenêtre est cachée
+- **Décision** : singleton `Motion` = `SystemParameters.ClientAreaAnimation` ET fenêtre visible/non réduite. Halos et pulsations
+  s'arrêtent (storyboard stoppé, pas juste masqué) dès que `Enabled` passe à false. Les stats restent rafraîchies à 10 Hz.
+- **Pourquoi** : exigence « performance non négociable » : zéro coût de rendu pendant qu'une macro tourne en arrière-plan.
+
+### D-036 — Carte héros = un seul gros bouton
+- **Décision** : toute la carte héros est un `Button` (Start/Stop), son contenu n'a aucun contrôle interactif.
+- **Pourquoi** : cible de clic énorme, accessible au clavier (Tab + Espace), lu « Démarrer ou arrêter la macro » par le lecteur d'écran.

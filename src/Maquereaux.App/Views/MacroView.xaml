@@ -281,7 +281,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,4,0,16">
                             <TextBlock VerticalAlignment="Center">
                                 <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Secondary}">
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Supporting}">
                                         <Setter Property="Text" Value="Clique ici pour lancer, ou appuie sur" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsRunning}" Value="True">
@@ -385,7 +385,7 @@
                     </DockPanel>
                     <TextBlock Margin="0,0,0,16" TextWrapping="Wrap">
                         <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Secondary}">
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Supporting}">
                                 <Setter Property="Text" Value="Cycle : une touche par tick, dans l'ordre (A → Z → E → A…)." />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsBurst}" Value="True">
@@ -456,7 +456,7 @@
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <TextBlock Text="Cadence" Style="{StaticResource Section.Header}" />
-                        <TextBlock Text="Temps entre deux ticks. Plus c'est court, plus ça spamme." Style="{StaticResource Text.Secondary}" Margin="0,0,0,16" />
+                        <TextBlock Text="Temps entre deux ticks. Plus c'est court, plus ça spamme." Style="{StaticResource Text.Supporting}" Margin="0,0,0,16" />
 
                         <DockPanel>
                             <c:NumericBox DockPanel.Dock="Left" Value="{Binding IntervalMs}" Minimum="1" Maximum="60000" Unit="ms" Width="128"
@@ -508,7 +508,7 @@
                         <DockPanel>
                             <c:NumericBox DockPanel.Dock="Left" Value="{Binding RepeatCount}" Minimum="0" Maximum="1000000" Width="128"
                                           AutomationProperties.Name="Nombre de répétitions, 0 pour infini" />
-                            <TextBlock Text="{Binding RepeatText}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Margin="16,0,0,0"
+                            <TextBlock Text="{Binding RepeatText}" Style="{StaticResource Text.Supporting}" VerticalAlignment="Center" Margin="16,0,0,0"
                                        TextWrapping="Wrap" />
                         </DockPanel>
                         <TextBlock Text="0 = en boucle. Un cycle = toute la séquence une fois." Style="{StaticResource Field.Help}" />
@@ -519,7 +519,7 @@
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <TextBlock Text="Comportement" Style="{StaticResource Section.Header}" />
-                        <TextBlock Text="Comment la séquence part, et quand elle s'arrête." Style="{StaticResource Text.Secondary}" Margin="0,0,0,16" />
+                        <TextBlock Text="Comment la séquence part, et quand elle s'arrête." Style="{StaticResource Text.Supporting}" Margin="0,0,0,16" />
 
                         <TextBlock Text="Mode d'envoi" Style="{StaticResource Field.Label}" />
                         <Border Style="{StaticResource Segmented}">

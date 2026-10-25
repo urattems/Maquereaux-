@@ -28,3 +28,15 @@ Chaque ajout reste dans l'esprit du projet et respecte la section « Hors périm
 | A-22 | Modifications du profil en cours appliquées à chaud | Plus besoin d'arrêter/relancer pour ajuster l'intervalle pendant un test. |
 | A-23 | Position/taille de fenêtre mémorisées (avec garde-fou multi-écran) | Confort ; pas de fenêtre « perdue » hors écran. |
 | A-24 | Contrôles (cases, radios, scrollbars) thémés | Cohérence visuelle en sombre comme en clair. |
+
+### Refonte UI v1.x
+
+| # | Bonus | Pourquoi |
+|---|---|---|
+| A-25 | Linter `tools/check_xaml.py` (StaticResource inter-dictionnaires) | Le crash le plus sournois de WPF détecté avant la CI. |
+| A-26 | Smoke test qui sort immédiatement (code 4/5) et écrit la pile en cas de crash au démarrage | Plus de CI figée 120 s sur une boîte de dialogue Windows invisible. |
+| A-27 | Galerie du design system capturée en CI (sombre, clair, 150 %) | Chaque contrôle dans chaque état, vérifiable à chaque push. |
+| A-28 | Curseur d'intervalle logarithmique aimanté sur les presets | 1–20 ms occupe un tiers de la piste au lieu de 2 %. |
+| A-29 | Annuler la dernière suppression de touche (lien + Ctrl+Z futur) | Une suppression par erreur se rattrape en un clic. |
+| A-30 | Carte héros cliquable en entier, avec mini courbe et repère de la cible | Le bouton le plus important est aussi le plus gros. |
+| A-31 | Halo pulsé coupé quand la fenêtre est réduite ou les animations Windows désactivées | Zéro coût de rendu en arrière-plan. |
