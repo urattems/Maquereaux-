@@ -6,7 +6,11 @@
 
 Projet d'apprentissage (Win32, timers, threading, MVVM) — 100 % local, aucune télémétrie, aucune connexion réseau.
 
-![Onglet Macro en cours d'exécution](docs/screenshots/running.png)
+![Écran Macro en cours d'exécution](docs/ui/after/0-running.png)
+
+> 🎨 **v1.x « la carrosserie »** : nouvelle interface Windows 11 (Mica, Snap Layouts), thèmes sombre « eaux profondes » et
+> clair « écume », séquence en keycaps, Labo avec graphique interactif et verdict A/B. Galerie avant/après :
+> [`docs/UI_REVAMP.md`](docs/UI_REVAMP.md) · design system : [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md).
 
 ---
 
@@ -34,21 +38,21 @@ Configuration requise : Windows 10 (1803+) ou 11, x64. Les profils et réglages 
 3. Place-toi dans l'appli cible et appuie sur **F6** pour lancer / arrêter.
 4. **Ctrl+Alt+Pause** = arrêt d'urgence, toujours actif.
 
-| Onglet | Ce qu'on y fait |
+| Écran | Ce qu'on y fait |
 |---|---|
-| **Macro** | Séquence (capture, réordonner, durée d'appui, délai par touche), intervalle, mode, répétitions, raccourci, ON/OFF ou **Maintenir**, **fenêtre cible**, stats de timing en direct |
-| **Profils** | Plusieurs configurations, chacune avec son raccourci (F6, F7…) ; créer, renommer, dupliquer, supprimer, import/export JSON |
-| **Labo** | Enregistre tes frappes (et celles de la macro) pendant N secondes, stats par source, graphique, comparaison A/B, export CSV |
-| **Paramètres** | Arrêt d'urgence, précision du timer, garde-fou de durée, thème, zone de notification, droits admin |
+| **Macro** | Carte héros (Start/Stop, stats en direct, mini-courbe), séquence en keycaps (glisser-déposer, Suppr, Ctrl+D, Alt+←/→, double-clic), durée d'appui et délai par touche, cadence (curseur, presets, « = N inputs/s »), Cycle/Burst, raccourci ON/OFF ou **Maintenir**, **fenêtre cible** avec icônes |
+| **Profils** | Une carte par configuration, chacune avec son raccourci (F6, F7…) ; créer, renommer, dupliquer, supprimer (annulable), import/export JSON |
+| **Labo** | Enregistre tes frappes (et celles de la macro) pendant N secondes : stats par source, graphique interactif (zoom, info-bulle, histogramme), comparaison A/B avec verdict, export CSV |
+| **Paramètres** | Arrêt d'urgence, précision du timer (compromis précision/CPU), garde-fou, thème, zone de notification, pastille compacte, visite guidée, droits admin |
 
 <table>
 <tr>
-<td><img src="docs/screenshots/profils.png" alt="Profils" /></td>
-<td><img src="docs/screenshots/labo.png" alt="Labo" /></td>
+<td><img src="docs/ui/after/4-profils-multiples.png" alt="Profils" /></td>
+<td><img src="docs/ui/after/7a-labo-graphique.png" alt="Labo" /></td>
 </tr>
 <tr>
-<td><img src="docs/screenshots/theme-clair.png" alt="Thème clair" /></td>
-<td><img src="docs/screenshots/parametres.png" alt="Paramètres" /><br/><img src="docs/screenshots/compact.png" alt="Mode compact" /></td>
+<td><img src="docs/ui/after/0-running-light.png" alt="Thème clair" /></td>
+<td><img src="docs/ui/after/7d-labo-comparaison.png" alt="Comparaison A/B" /><br/><img src="docs/ui/after/6-compact.png" alt="Pastille compacte" /></td>
 </tr>
 </table>
 
@@ -60,7 +64,8 @@ _Captures générées automatiquement par le smoke test de la CI sur un runner W
   Évite de spammer Discord ou ton navigateur par erreur.
 - **Anti-touche bloquée** : à l'arrêt (normal, urgence, fermeture, crash) toute touche enfoncée est relâchée.
 - **Scan codes** : les touches sont envoyées comme un vrai clavier (position physique), résolues selon ta disposition (AZERTY/QWERTY).
-- **Zone de notification** (pastille verte/orange/rouge), **mode compact** toujours au premier plan, **thème clair/sombre**.
+- **Zone de notification** (pastille turquoise en marche / ambre en pause / grise à l'arrêt), **pastille compacte** flottante
+  à opacité réglable, **thème clair/sombre**, **visite guidée** au premier lancement.
 - **Garde-fou** : arrêt automatique après N minutes (60 par défaut) — Maquereaux n'est pas fait pour tourner sans surveillance.
 
 ---
