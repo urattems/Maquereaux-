@@ -3,6 +3,39 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.3.0] - 2026-10-25
+
+🔬 « La carrosserie », étape 3 : le Labo. Moteur strictement inchangé.
+
+### Ajouté
+- **Barre d'enregistrement** : gros bouton Enregistrer / Arrêter / Annuler, point REC pulsé + chrono + compteur d'événements,
+  options en interrupteurs (3-2-1, durée fixe avec champ numérique), rappel de confidentialité.
+- **Compte à rebours géant** 3-2-1 en surimpression, chaque chiffre « tombe » (animation coupée si Windows désactive les animations).
+- **Cartes de stats par source** (physique / Maquereaux / autre / toutes) : inputs/s en grand, appuis, intervalle moyen, p95, jitter, appui moyen.
+- **Nouveau graphique** : ligne de l'intervalle cible, bande p5–p95, info-bulle au survol (valeur, source, instant),
+  zoom Ctrl+molette autour du curseur, glisser pour défiler, double-clic pour tout revoir, mode histogramme.
+- **Comparaison A/B** avec écarts colorés (turquoise = mieux, corail = moins bien) et **verdict en une phrase**
+  (« Maquereaux est 23× plus régulier que Manuel (σ 0,25 ms contre 5,8 ms) et 12× plus rapide. »). Tableau masqué si une session est vide.
+- États vides dessinés (aucune session, rien de sélectionné).
+
+## [1.2.0] - 2026-10-25
+
+🗂️ « La carrosserie », étape 2 : Profils, Paramètres et finitions de l'écran Macro. Moteur strictement inchangé.
+
+### Ajouté
+- **Profils en cartes** : nom renommable, raccourci en keycap, aperçu des touches en mini-keycaps (+N au-delà de 6), mode,
+  intervalle et fenêtre cible en un coup d'œil, alertes intégrées, actions Éditer / Dupliquer / Exporter / Supprimer.
+- **Suppression sans boîte de dialogue** : le profil disparaît tout de suite et un toast « Annuler » le remet à sa place
+  (sans son raccourci s'il a été repris entre-temps).
+- **Sélecteur de fenêtre cible** : liste des applis ouvertes avec leur icône et le titre de leur fenêtre, recherche instantanée,
+  ↑↓ + Entrée, saisie libre d'un nom d'exe pour une appli pas encore lancée, « Toutes les fenêtres ».
+- **Paramètres en sections** (Général, Raccourcis, Timing, Sécurité, Apparence, Avancé) avec interrupteurs ; choix du timer
+  en cartes avec jauges précision / coût CPU.
+- Écran Macro : curseur d'intervalle logarithmique aimanté sur les presets ; puces des keycaps sur deux lignes si besoin.
+
+### Corrigé
+- Après la suppression du profil actif, un autre profil redevient bien actif.
+
 ## [1.1.0] - 2026-10-25
 
 🎨 « La carrosserie », étape 1 : nouveau design system et nouvelle coque Windows 11. Moteur strictement inchangé.
