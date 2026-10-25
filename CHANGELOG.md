@@ -3,6 +3,21 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.3.0] - 2026-10-25
+
+🔬 « La carrosserie », étape 3 : le Labo. Moteur strictement inchangé.
+
+### Ajouté
+- **Barre d'enregistrement** : gros bouton Enregistrer / Arrêter / Annuler, point REC pulsé + chrono + compteur d'événements,
+  options en interrupteurs (3-2-1, durée fixe avec champ numérique), rappel de confidentialité.
+- **Compte à rebours géant** 3-2-1 en surimpression, chaque chiffre « tombe » (animation coupée si Windows désactive les animations).
+- **Cartes de stats par source** (physique / Maquereaux / autre / toutes) : inputs/s en grand, appuis, intervalle moyen, p95, jitter, appui moyen.
+- **Nouveau graphique** : ligne de l'intervalle cible, bande p5–p95, info-bulle au survol (valeur, source, instant),
+  zoom Ctrl+molette autour du curseur, glisser pour défiler, double-clic pour tout revoir, mode histogramme.
+- **Comparaison A/B** avec écarts colorés (turquoise = mieux, corail = moins bien) et **verdict en une phrase**
+  (« Maquereaux est 23× plus régulier que Manuel (σ 0,25 ms contre 5,8 ms) et 12× plus rapide. »). Tableau masqué si une session est vide.
+- États vides dessinés (aucune session, rien de sélectionné).
+
 ## [1.2.0] - 2026-10-25
 
 🗂️ « La carrosserie », étape 2 : Profils, Paramètres et finitions de l'écran Macro. Moteur strictement inchangé.

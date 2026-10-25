@@ -188,7 +188,7 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="{x:Type vm:SourceRow}">
-                                            <Border Style="{StaticResource Card.Sunken}" Width="196" Margin="0,0,10,10" Padding="14,12">
+                                            <Border Style="{StaticResource Card.Sunken}" Width="224" Margin="0,0,10,10" Padding="14,12">
                                                 <StackPanel>
                                                     <StackPanel Orientation="Horizontal">
                                                         <Ellipse Style="{StaticResource SourceDot}" VerticalAlignment="Center" Margin="0,0,8,0" />
@@ -286,7 +286,7 @@
                                 </Grid>
 
                                 <!-- Verdict en une phrase -->
-                                <Border Background="{DynamicResource Accent.Subtle}" CornerRadius="{DynamicResource Radius.M}" Padding="14,12" Margin="0,16,0,0"
+                                <Border x:Name="VerdictBanner" Background="{DynamicResource Accent.Subtle}" CornerRadius="{DynamicResource Radius.M}" Padding="14,12" Margin="0,16,0,0"
                                         Visibility="{Binding HasComparison, Converter={StaticResource BoolToVis}}">
                                     <DockPanel>
                                         <c:Icon Glyph="{StaticResource Icon.Sparkle}" Width="18" Height="18" Foreground="{DynamicResource Accent}" VerticalAlignment="Top" Margin="0,1,12,0" />
@@ -295,7 +295,7 @@
                                 </Border>
 
                                 <!-- Tableau -->
-                                <Grid Margin="0,16,0,6" Visibility="{Binding HasComparison, Converter={StaticResource BoolToVis}}">
+                                <Grid Margin="0,16,0,6" Visibility="{Binding CanCompare, Converter={StaticResource BoolToVis}}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="1.4*" />
                                         <ColumnDefinition Width="*" />
@@ -307,7 +307,7 @@
                                     <TextBlock Grid.Column="2" Text="B" Style="{StaticResource Text.Overline}" HorizontalAlignment="Right" />
                                     <TextBlock Grid.Column="3" Text="Écart B − A" Style="{StaticResource Text.Overline}" HorizontalAlignment="Right" />
                                 </Grid>
-                                <ItemsControl ItemsSource="{Binding ComparisonRows}" Focusable="False">
+                                <ItemsControl ItemsSource="{Binding ComparisonRows}" Focusable="False" Visibility="{Binding CanCompare, Converter={StaticResource BoolToVis}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Border Padding="0,6" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Border.Subtle}">
@@ -328,7 +328,7 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
 
-                                <Grid Margin="0,12,0,0" Visibility="{Binding HasComparison, Converter={StaticResource BoolToVis}}">
+                                <Grid Margin="0,12,0,0" Visibility="{Binding CanCompare, Converter={StaticResource BoolToVis}}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="12" />
@@ -346,7 +346,7 @@
 
         <!-- ===================== Compte à rebours géant ===================== -->
         <Grid x:Name="CountdownOverlay" Visibility="{Binding IsCountingDown, Converter={StaticResource BoolToVis}}">
-            <Border Background="{DynamicResource Scrim}" CornerRadius="{DynamicResource Radius.L}" />
+            <Border Background="{DynamicResource Bg.Layer}" Opacity="0.95" CornerRadius="{DynamicResource Radius.L}" />
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock x:Name="CountdownText" Text="{Binding Countdown}" FontFamily="{DynamicResource Font.Mono}" FontSize="160" FontWeight="Bold"
                            Foreground="{DynamicResource Accent}" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">

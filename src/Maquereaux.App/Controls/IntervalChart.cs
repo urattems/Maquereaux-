@@ -253,7 +253,7 @@ public sealed class IntervalChart : FrameworkElement
         // Bande p5–p95 : 90 % des appuis tombent dedans (plus elle est fine, plus le rythme est régulier)
         var band = new Rect(plot.Left, Y(p95), plot.Width, Math.Max(1, Y(p5) - Y(p95)));
         dc.DrawRectangle(Res("Chart.Band", Brushes.DarkSlateGray), null, band);
-        DrawText(dc, "p5–p95", new Point(plot.Right - 4, band.Top + 2), text, 10, ppd, TextAlignment.Right);
+        DrawText(dc, "p5–p95", new Point(plot.Right - 4, band.Top - 14), text, 10, ppd, TextAlignment.Right);
 
         for (int i = 0; i <= 4; i++)
         {
