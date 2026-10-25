@@ -17,10 +17,18 @@ public class TimerTests
         using var s = new HighResolutionSleeper(StopwatchClock.Instance);
         Assert.True(s.IsHighResolution);
         Assert.Contains("waitable", s.Name);
-        var target = StopwatchClock.Instance.NowMs + 5;
-        Assert.True(s.SleepUntil(target, CancellationToken.None));
-        var late = StopwatchClock.Instance.NowMs - target;
-        Assert.InRange(late, 0, 8); // jamais en avance ; retard raisonnable même sur une VM chargée
+        // 5 essais : une seule mesure peut tomber sur une préemption du runner partagé (vu en CI : 9,8 ms une fois).
+        // Jamais en avance, et retard médian raisonnable même sur une VM chargée.
+        var lates = new List<double>();
+        for (int i = 0; i < 5; i++)
+        {
+            var target = StopwatchClock.Instance.NowMs + 5;
+            Assert.True(s.SleepUntil(target, CancellationToken.None));
+            lates.Add(StopwatchClock.Instance.NowMs - target);
+        }
+        Assert.All(lates, late => Assert.True(late >= 0, $"réveil en avance de {-late:0.000} ms"));
+        lates.Sort();
+        Assert.InRange(lates[2], 0, 8);
     }
 
     [WindowsFact]

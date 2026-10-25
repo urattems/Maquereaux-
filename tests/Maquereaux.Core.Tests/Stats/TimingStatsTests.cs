@@ -230,10 +230,18 @@ public class HybridSleeperTests
         // Marge de spin (40 ms) > granularité de Thread.Sleep (~16 ms) : même sur une machine chargée,
         // le sommeil grossier se termine avant l'échéance et le spin finit pile à l'heure.
         using var h = new HybridSleeper(new StandardSleeper(StopwatchClock.Instance), StopwatchClock.Instance, 40);
-        var target = StopwatchClock.Instance.NowMs + 50;
-        Assert.True(h.SleepUntil(target, CancellationToken.None));
-        var late = StopwatchClock.Instance.NowMs - target;
-        Assert.InRange(late, 0, 15); // jamais en avance ; tolérance large pour les VM de CI
+        // 5 essais, médiane : une préemption isolée du runner partagé (3 assemblages de tests en parallèle) ne fait plus
+        // échouer le test (vu en CI : 16,8 ms une fois) ; « jamais en avance » reste vérifié sur chaque essai.
+        var lates = new List<double>();
+        for (int i = 0; i < 5; i++)
+        {
+            var target = StopwatchClock.Instance.NowMs + 50;
+            Assert.True(h.SleepUntil(target, CancellationToken.None));
+            lates.Add(StopwatchClock.Instance.NowMs - target);
+        }
+        Assert.All(lates, late => Assert.True(late >= 0, $"réveil en avance de {-late:0.000} ms"));
+        lates.Sort();
+        Assert.InRange(lates[2], 0, 15);
     }
 
     private sealed class AdvancingClock : IClock
