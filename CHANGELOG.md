@@ -3,6 +3,26 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.4.0] - 2026-10-25
+
+🫧 « La carrosserie », étape 4 : pastille compacte, zone de notification, visite guidée, nouvelle icône. Moteur strictement inchangé.
+
+### Ajouté
+- **Pastille compacte** flottante : bouton rond Start/Stop, état + profil + raccourci, déplaçable, toujours au premier plan,
+  **opacité réglable** (clic droit ou Paramètres, 30 → 100 %), redevient opaque au survol, **double-clic** pour revenir.
+- **Icône de la zone de notification** aux couleurs d'état : turquoise en marche, ambre en pause, grise à l'arrêt ; textes en français.
+- **Visite guidée** en 3 étapes au premier lancement (passable, Échap, rejouable depuis Paramètres → Général).
+- **Nouvelle icône d'application** multi-résolution (16 → 256 px, version simplifiée en petit format), générée depuis le logo
+  par `tools/gen_icon.py`.
+
+### Accessibilité
+- Contrastes **AA** vérifiés par calcul dans les deux thèmes : accent du thème clair assombri (`#077A70`), pause et textes
+  tertiaires ajustés.
+
+### Technique
+- Suppression des anciennes clés de style v1.0 (toutes les vues sont refondues).
+- Deux tests temps réel fiabilisés (médiane de 5 réveils au lieu d'une mesure unique, sensible aux préemptions du runner CI).
+
 ## [1.3.0] - 2026-10-25
 
 🔬 « La carrosserie », étape 3 : le Labo. Moteur strictement inchangé.
