@@ -173,6 +173,9 @@
                                                 <DataTrigger Binding="{Binding IsRunning}" Value="True">
                                                     <Setter Property="Text" Value="pour arrêter" />
                                                 </DataTrigger>
+                                                <DataTrigger Binding="{Binding ActiveProfile.ActivationMode}" Value="Hold">
+                                                    <Setter Property="Text" Value="maintenu" />
+                                                </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </TextBlock.Style>
