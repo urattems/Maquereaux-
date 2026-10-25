@@ -42,6 +42,7 @@ public sealed class ProfileRepository
         if (s.EmergencyStopHotkey is null || !s.EmergencyStopHotkey.IsValid) s.EmergencyStopHotkey = Hotkey.DefaultEmergencyStop;
         if (!Enum.IsDefined(s.TimerStrategy)) s.TimerStrategy = Engine.TimerStrategy.HighResolution;
         if (!Enum.IsDefined(s.Theme)) s.Theme = AppTheme.Dark;
+        s.CompactOpacity = double.IsFinite(s.CompactOpacity) ? Math.Clamp(s.CompactOpacity, AppSettings.MinCompactOpacity, 1) : 0.95;
         s.SafetyTimeoutMinutes = Math.Clamp(s.SafetyTimeoutMinutes, AppSettings.MinSafetyTimeoutMinutes, AppSettings.MaxSafetyTimeoutMinutes);
         return s;
     }

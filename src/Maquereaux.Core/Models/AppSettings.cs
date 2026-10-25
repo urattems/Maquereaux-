@@ -41,5 +41,18 @@ public sealed class AppSettings
     /// <summary>Dernière position/taille de la fenêtre principale (null = centrée, taille par défaut).</summary>
     public WindowPlacement? Window { get; set; }
 
+    // ---------- Interface (v1.1+) ----------
+
+    /// <summary>Barre de navigation latérale repliée (icônes seules).</summary>
+    public bool SidebarCollapsed { get; set; }
+
+    public const double MinCompactOpacity = 0.3;
+
+    /// <summary>Opacité de la pastille flottante du mode compact (0,3 à 1).</summary>
+    public double CompactOpacity { get; set; } = 0.95;
+
+    /// <summary>L'assistant de premier lancement a été terminé ou passé.</summary>
+    public bool OnboardingCompleted { get; set; }
+
     public AppSettings Clone() => (AppSettings)MemberwiseClone();
 }

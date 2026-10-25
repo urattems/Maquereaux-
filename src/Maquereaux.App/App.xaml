@@ -8,7 +8,13 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Index 0 = palette de couleurs (remplacée à chaud par Light.xaml / Dark.xaml) -->
                 <ResourceDictionary Source="Themes/Dark.xaml" />
-                <ResourceDictionary Source="Themes/Styles.xaml" />
+                <ResourceDictionary Source="Themes/Tokens.xaml" />
+                <ResourceDictionary Source="Themes/Icons.xaml" />
+                <ResourceDictionary Source="Themes/Logo.xaml" />
+                <ResourceDictionary Source="Themes/Typography.xaml" />
+                <ResourceDictionary Source="Themes/Controls.xaml" />
+                <ResourceDictionary Source="Themes/Controls.Lists.xaml" />
+                <ResourceDictionary Source="Themes/Legacy.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <conv:EngineStateToTextConverter x:Key="StateToText" />

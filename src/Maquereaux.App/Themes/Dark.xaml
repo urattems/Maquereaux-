@@ -1,24 +1,114 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Palette sombre (défaut). Toutes les vues utilisent ces clés en DynamicResource → thème changeable à chaud. -->
-    <SolidColorBrush x:Key="Brush.Background" Color="#11151E" />
-    <SolidColorBrush x:Key="Brush.Surface" Color="#1A202C" />
-    <SolidColorBrush x:Key="Brush.SurfaceAlt" Color="#232B3A" />
-    <SolidColorBrush x:Key="Brush.SurfaceHover" Color="#2C3648" />
-    <SolidColorBrush x:Key="Brush.Border" Color="#334055" />
-    <SolidColorBrush x:Key="Brush.Text" Color="#E6EDF3" />
-    <SolidColorBrush x:Key="Brush.TextMuted" Color="#8B98AD" />
-    <SolidColorBrush x:Key="Brush.Accent" Color="#00C88C" />
-    <SolidColorBrush x:Key="Brush.AccentText" Color="#06281D" />
-    <SolidColorBrush x:Key="Brush.Running" Color="#1FD17A" />
-    <SolidColorBrush x:Key="Brush.RunningBg" Color="#0F3324" />
-    <SolidColorBrush x:Key="Brush.Stopped" Color="#FF5468" />
-    <SolidColorBrush x:Key="Brush.StoppedBg" Color="#3A1820" />
-    <SolidColorBrush x:Key="Brush.Paused" Color="#FFB020" />
-    <SolidColorBrush x:Key="Brush.PausedBg" Color="#3A2C10" />
-    <SolidColorBrush x:Key="Brush.Info" Color="#4DA3FF" />
-    <SolidColorBrush x:Key="Brush.Selection" Color="#1E4D3F" />
-    <SolidColorBrush x:Key="Brush.Chart.Physical" Color="#4DA3FF" />
-    <SolidColorBrush x:Key="Brush.Chart.Injected" Color="#00C88C" />
-    <SolidColorBrush x:Key="Brush.Chart.Grid" Color="#2A3445" />
+    <!--
+        🐟 Thème « Océan de nuit » (sombre, principal).
+        Toutes les vues utilisent ces clés en DynamicResource → changement de thème à chaud.
+        Les surfaces sont teintées de bleu (jamais du gris neutre) ; l'accent turquoise est réservé à l'action et à RUNNING.
+    -->
+
+    <!-- ===== Couleurs brutes ===== -->
+    <Color x:Key="Color.Base">#0A1220</Color>
+    <Color x:Key="Color.Layer">#0E1828</Color>
+    <Color x:Key="Color.Surface">#132137</Color>
+    <Color x:Key="Color.Accent">#2BD9C6</Color>
+    <Color x:Key="Color.AccentDeep">#1689C9</Color>
+    <Color x:Key="Color.Silver">#C3D3E2</Color>
+    <Color x:Key="Color.Running">#33E8D0</Color>
+    <Color x:Key="Color.Paused">#F2B24A</Color>
+    <Color x:Key="Color.Danger">#FF7466</Color>
+    <Color x:Key="Color.Shadow">#99000814</Color>
+
+    <!-- ===== Fonds et surfaces ===== -->
+    <SolidColorBrush x:Key="Bg.Base" Color="#0A1220" />               <!-- fond de fenêtre (sous la sidebar) -->
+    <SolidColorBrush x:Key="Bg.BaseTint" Color="#D90A1220" />         <!-- voile sur Mica (85 %) -->
+    <SolidColorBrush x:Key="Bg.Layer" Color="#0E1828" />              <!-- zone de contenu -->
+    <SolidColorBrush x:Key="Surface" Color="#132137" />               <!-- cartes -->
+    <SolidColorBrush x:Key="Surface.Elevated" Color="#1A2A44" />      <!-- popups, menus, survol de carte -->
+    <SolidColorBrush x:Key="Surface.Sunken" Color="#0B1525" />        <!-- champs de saisie, pistes -->
+    <SolidColorBrush x:Key="Surface.Hover" Color="#1D3150" />
+    <SolidColorBrush x:Key="Surface.Pressed" Color="#162740" />
+    <SolidColorBrush x:Key="Surface.Selected" Color="#173A4D" />
+    <SolidColorBrush x:Key="Keycap.Face" Color="#1F3352" />
+    <SolidColorBrush x:Key="Keycap.Side" Color="#0C1729" />
+    <SolidColorBrush x:Key="Keycap.Edge" Color="#2D4A72" />
+
+    <!-- ===== Bordures ===== -->
+    <SolidColorBrush x:Key="Border.Subtle" Color="#18273E" />
+    <SolidColorBrush x:Key="Border.Default" Color="#223754" />
+    <SolidColorBrush x:Key="Border.Strong" Color="#31507A" />
+    <SolidColorBrush x:Key="Border.Focus" Color="#5FEBDB" />
+
+    <!-- ===== Texte ===== -->
+    <SolidColorBrush x:Key="Text.Primary" Color="#E9F2FB" />
+    <SolidColorBrush x:Key="Text.Secondary" Color="#9BB0CA" />
+    <SolidColorBrush x:Key="Text.Tertiary" Color="#6B829F" />
+    <SolidColorBrush x:Key="Text.Disabled" Color="#4A5E7A" />
+    <SolidColorBrush x:Key="Text.OnAccent" Color="#03201D" />
+
+    <!-- ===== Accent signature (reflet irisé du maquereau) ===== -->
+    <SolidColorBrush x:Key="Accent" Color="#2BD9C6" />
+    <SolidColorBrush x:Key="Accent.Hover" Color="#56E5D5" />
+    <SolidColorBrush x:Key="Accent.Pressed" Color="#20B8A8" />
+    <SolidColorBrush x:Key="Accent.Subtle" Color="#1A2BD9C6" />
+    <SolidColorBrush x:Key="Accent.Muted" Color="#3A2BD9C6" />
+    <LinearGradientBrush x:Key="Accent.Gradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#1E9FD8" />
+        <GradientStop Offset="0.55" Color="#2BD9C6" />
+        <GradientStop Offset="1" Color="#7DF2E2" />
+    </LinearGradientBrush>
+    <!-- Signature complète bleu-vert → argent → turquoise : réservée aux détails (logo, rayures, liseré RUNNING) -->
+    <LinearGradientBrush x:Key="Signature.Gradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Offset="0" Color="#1689C9" />
+        <GradientStop Offset="0.45" Color="#C3D3E2" />
+        <GradientStop Offset="1" Color="#2BD9C6" />
+    </LinearGradientBrush>
+
+    <!-- ===== États ===== -->
+    <SolidColorBrush x:Key="State.Running" Color="#33E8D0" />
+    <SolidColorBrush x:Key="State.Running.Bg" Color="#0F2F3A" />
+    <SolidColorBrush x:Key="State.Running.Glow" Color="#6633E8D0" />
+    <SolidColorBrush x:Key="State.Stopped" Color="#8EA3BE" />
+    <SolidColorBrush x:Key="State.Stopped.Bg" Color="#132137" />
+    <SolidColorBrush x:Key="State.Paused" Color="#F2B24A" />
+    <SolidColorBrush x:Key="State.Paused.Bg" Color="#33270F" />
+    <SolidColorBrush x:Key="State.Danger" Color="#FF7466" />
+    <SolidColorBrush x:Key="State.Danger.Bg" Color="#3A1A1C" />
+    <SolidColorBrush x:Key="State.Danger.Hover" Color="#FF8F84" />
+    <SolidColorBrush x:Key="State.Info" Color="#63AEFF" />
+    <SolidColorBrush x:Key="State.Info.Bg" Color="#14263F" />
+    <SolidColorBrush x:Key="State.Success" Color="#33E8D0" />
+
+    <!-- ===== Sources du Labo ===== -->
+    <SolidColorBrush x:Key="Source.Physical" Color="#63AEFF" />
+    <SolidColorBrush x:Key="Source.Maquereaux" Color="#33E8D0" />
+    <SolidColorBrush x:Key="Source.Other" Color="#F2B24A" />
+    <SolidColorBrush x:Key="Chart.Grid" Color="#1C2D46" />
+    <SolidColorBrush x:Key="Chart.Band" Color="#1F33E8D0" />
+    <SolidColorBrush x:Key="Chart.Target" Color="#C3D3E2" />
+
+    <!-- ===== Fenêtre ===== -->
+    <SolidColorBrush x:Key="Caption.CloseHover" Color="#C42B1C" />
+    <SolidColorBrush x:Key="Scrim" Color="#B3050A12" />
+
+    <!-- ===== Alias v1.0 (vues pas encore refondues) ===== -->
+    <SolidColorBrush x:Key="Brush.Background" Color="#0B1525" />
+    <SolidColorBrush x:Key="Brush.Surface" Color="#132137" />
+    <SolidColorBrush x:Key="Brush.SurfaceAlt" Color="#1A2A44" />
+    <SolidColorBrush x:Key="Brush.SurfaceHover" Color="#1D3150" />
+    <SolidColorBrush x:Key="Brush.Border" Color="#223754" />
+    <SolidColorBrush x:Key="Brush.Text" Color="#E9F2FB" />
+    <SolidColorBrush x:Key="Brush.TextMuted" Color="#9BB0CA" />
+    <SolidColorBrush x:Key="Brush.Accent" Color="#2BD9C6" />
+    <SolidColorBrush x:Key="Brush.AccentText" Color="#03201D" />
+    <SolidColorBrush x:Key="Brush.Running" Color="#33E8D0" />
+    <SolidColorBrush x:Key="Brush.RunningBg" Color="#0F2F3A" />
+    <SolidColorBrush x:Key="Brush.Stopped" Color="#FF7466" />
+    <SolidColorBrush x:Key="Brush.StoppedBg" Color="#3A1A1C" />
+    <SolidColorBrush x:Key="Brush.Paused" Color="#F2B24A" />
+    <SolidColorBrush x:Key="Brush.PausedBg" Color="#33270F" />
+    <SolidColorBrush x:Key="Brush.Info" Color="#63AEFF" />
+    <SolidColorBrush x:Key="Brush.Selection" Color="#173A4D" />
+    <SolidColorBrush x:Key="Brush.Chart.Physical" Color="#63AEFF" />
+    <SolidColorBrush x:Key="Brush.Chart.Injected" Color="#33E8D0" />
+    <SolidColorBrush x:Key="Brush.Chart.Grid" Color="#1C2D46" />
 </ResourceDictionary>

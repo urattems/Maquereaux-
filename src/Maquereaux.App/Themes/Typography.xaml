@@ -1,0 +1,176 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Styles de texte (échelle à 6 tailles) et surfaces de base (cartes, keycaps, badges). -->
+
+    <!-- ===== Texte ===== -->
+    <Style x:Key="Text.Display" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.UI}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Display}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    </Style>
+    <Style x:Key="Text.Headline" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.UI}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Headline}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    </Style>
+    <Style x:Key="Text.Title" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Title}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style x:Key="Text.Subtitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Subtitle}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style x:Key="Text.Body" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="Text.BodyStrong" TargetType="TextBlock" BasedOn="{StaticResource Text.Body}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style x:Key="Text.Secondary" TargetType="TextBlock" BasedOn="{StaticResource Text.Body}">
+        <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+    </Style>
+    <Style x:Key="Text.Caption" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Caption}" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <!-- Sur-titre en petites capitales espacées (ex. « TIMING RÉEL ») -->
+    <Style x:Key="Text.Overline" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Caption}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
+    </Style>
+
+    <!-- Chiffres : monospace tabulaire -->
+    <Style x:Key="Num.Small" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Caption}" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+    </Style>
+    <Style x:Key="Num.Body" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    </Style>
+    <Style x:Key="Num.Stat" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Title}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    </Style>
+    <Style x:Key="Num.Hero" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Headline}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    </Style>
+
+    <!-- ===== Cartes ===== -->
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.L}" />
+        <Setter Property="Padding" Value="{DynamicResource Pad.Card}" />
+    </Style>
+    <Style x:Key="Card.Compact" TargetType="Border" BasedOn="{StaticResource Card}">
+        <Setter Property="Padding" Value="{DynamicResource Pad.CardCompact}" />
+    </Style>
+    <Style x:Key="Card.Elevated" TargetType="Border" BasedOn="{StaticResource Card}">
+        <Setter Property="Background" Value="{DynamicResource Surface.Elevated}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border.Default}" />
+        <Setter Property="Effect" Value="{DynamicResource Elevation.2}" />
+    </Style>
+    <Style x:Key="Card.Sunken" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Surface.Sunken}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.M}" />
+        <Setter Property="Padding" Value="{DynamicResource Pad.CardCompact}" />
+    </Style>
+
+    <!-- ===== Badge / puce ===== -->
+    <Style x:Key="Badge" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Accent.Subtle}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.Pill}" />
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Accent}" />
+        <Setter Property="TextElement.FontSize" Value="{DynamicResource FontSize.Caption}" />
+        <Setter Property="TextElement.FontWeight" Value="SemiBold" />
+    </Style>
+    <Style x:Key="Badge.Neutral" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="Background" Value="{DynamicResource Surface.Sunken}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Text.Secondary}" />
+    </Style>
+    <Style x:Key="Badge.Warning" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="Background" Value="{DynamicResource State.Paused.Bg}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource State.Paused}" />
+    </Style>
+    <Style x:Key="Badge.Danger" TargetType="Border" BasedOn="{StaticResource Badge}">
+        <Setter Property="Background" Value="{DynamicResource State.Danger.Bg}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource State.Danger}" />
+    </Style>
+
+    <!-- ===== Keycap (petite touche de clavier, en relief) ===== -->
+    <Style x:Key="Kbd" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Keycap.Face}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Keycap.Edge}" />
+        <Setter Property="BorderThickness" Value="1,1,1,3" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.S}" />
+        <Setter Property="Padding" Value="6,1,6,1" />
+        <Setter Property="MinWidth" Value="22" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextElement.FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="TextElement.FontSize" Value="{DynamicResource FontSize.Caption}" />
+        <Setter Property="TextElement.FontWeight" Value="Medium" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Text.Primary}" />
+    </Style>
+    <!-- ===== Couleurs d'état (DataTriggers + DynamicResource → suivent le thème à chaud) =====
+         RUNNING = turquoise lumineux · STOPPED = neutre calme · PAUSED = ambre. Utilisées partout (pastille, carte héros, compact). -->
+    <Style x:Key="State.Border" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource State.Stopped.Bg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border.Default}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                <Setter Property="Background" Value="{DynamicResource State.Running.Bg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource State.Running}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                <Setter Property="Background" Value="{DynamicResource State.Paused.Bg}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource State.Paused}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="State.Dot" TargetType="Ellipse">
+        <Setter Property="Fill" Value="{DynamicResource State.Stopped}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                <Setter Property="Fill" Value="{DynamicResource State.Running}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                <Setter Property="Fill" Value="{DynamicResource State.Paused}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="State.Text" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource State.Stopped}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                <Setter Property="Foreground" Value="{DynamicResource State.Running}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                <Setter Property="Foreground" Value="{DynamicResource State.Paused}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>

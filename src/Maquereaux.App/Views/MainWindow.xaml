@@ -5,100 +5,235 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:Maquereaux.App.ViewModels"
         xmlns:views="clr-namespace:Maquereaux.App.Views"
+        xmlns:c="clr-namespace:Maquereaux.App.Controls"
         mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}"
-        Title="{Binding Title}" Width="1040" Height="720" MinWidth="820" MinHeight="560"
+        Title="{Binding Title}" Width="1180" Height="780" MinWidth="880" MinHeight="600"
         WindowStartupLocation="CenterScreen"
         Topmost="{Binding AlwaysOnTop}"
         Icon="/Assets/maquereaux.ico"
-        Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Text}"
-        FontFamily="Segoe UI" FontSize="13"
-        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display">
-    <DockPanel>
-        <!-- ===== Bandeau d'état : énorme et coloré, lisible d'un coup d'œil ===== -->
-        <Border DockPanel.Dock="Top" Margin="16,14,16,8" CornerRadius="10" Padding="20,12"
-                Style="{StaticResource State.Border}" BorderThickness="2">
-            <Grid>
+        Background="{DynamicResource Bg.Base}" Foreground="{DynamicResource Text.Primary}"
+        FontFamily="{DynamicResource Font.UI}" FontSize="{DynamicResource FontSize.Body}"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType">
+
+    <!-- Barre de titre maison : le contenu WPF s'étend jusqu'en haut, Windows garde redimensionnement, ombre et Snap -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="44" ResizeBorderThickness="6" GlassFrameThickness="-1" CornerRadius="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Grid x:Name="Root">
+        <!-- Voile teinté : sur Mica il laisse transparaître le fond d'écran, sinon fond uni -->
+        <Border x:Name="Backdrop" Background="{DynamicResource Bg.Base}" />
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="44" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ===================== Barre de titre ===================== -->
+            <Grid x:Name="TitleBar" Grid.ColumnSpan="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="26" Height="26" Style="{StaticResource State.Dot}" Margin="0,0,14,0" />
-                    <TextBlock x:Name="StatusText" Text="{Binding EngineState, Converter={StaticResource StateToText}}" FontSize="36"
-                               Style="{StaticResource State.Text}" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Margin="24,0" VerticalAlignment="Center">
-                    <TextBlock FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis">
-                        <Run Text="Profil :" Foreground="{DynamicResource Brush.TextMuted}" />
-                        <Run Text="{Binding ActiveProfile.Name, Mode=OneWay}" />
-                        <Run Text="  ·  " Foreground="{DynamicResource Brush.TextMuted}" />
-                        <Run Text="{Binding ActiveProfile.HotkeyText, Mode=OneWay}" Foreground="{DynamicResource Brush.Accent}" />
-                    </TextBlock>
-                    <TextBlock Text="{Binding LastStopInfo}" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Foreground="{DynamicResource Brush.TextMuted}" Margin="0,2,0,0" FontSize="12">
-                        <Run Text="Arrêt d'urgence :" />
-                        <Run Text="{Binding EmergencyHotkey, Mode=OneWay}" Foreground="{DynamicResource Brush.Stopped}" FontWeight="SemiBold" />
-                    </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Indicateur d'enregistrement du Labo, visible quel que soit l'onglet -->
-                    <Border CornerRadius="6" Padding="10,6" Margin="0,0,10,0" Background="{DynamicResource Brush.Stopped}"
-                            Visibility="{Binding Lab.IsRecording, Converter={StaticResource BoolToVis}}" ToolTip="Le Labo enregistre les frappes clavier">
-                        <TextBlock Text="● REC" Foreground="White" FontWeight="Bold" FontSize="14" />
+                <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                    <ContentPresenter ContentTemplate="{StaticResource Logo}" Width="24" Height="24" />
+                    <TextBlock Text="Maquereaux" Margin="10,0,0,0" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <Border Style="{StaticResource Badge.Neutral}" Margin="10,0,0,0">
+                        <TextBlock Text="{Binding Version}" FontFamily="{DynamicResource Font.Mono}" />
                     </Border>
-                    <Button Content="Compact" Command="{Binding ToggleCompactCommand}" Margin="0,0,8,0"
-                            ToolTip="Mini-fenêtre toujours au premier plan (état + profil + START/STOP)" />
-                    <ToggleButton IsChecked="{Binding AlwaysOnTop}" ToolTip="Toujours au premier plan" Margin="0,0,8,0" Content="Premier plan" />
-                    <Button Command="{Binding StartStopCommand}" Content="{Binding StartStopLabel}" MinWidth="130" FontSize="16" Padding="16,10">
+                    <!-- Indicateur REC du Labo, visible quel que soit l'écran -->
+                    <Border x:Name="RecBadge" Style="{StaticResource Badge.Danger}" Margin="12,0,0,0"
+                            Visibility="{Binding Lab.IsRecording, Converter={StaticResource BoolToVis}}"
+                            AutomationProperties.Name="Enregistrement du Labo en cours">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="{DynamicResource State.Danger}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="REC" FontWeight="Bold" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Raccourcis d'affichage -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0"
+                            WindowChrome.IsHitTestVisibleInChrome="True">
+                    <ToggleButton IsChecked="{Binding AlwaysOnTop}" Width="32" Height="32" MinHeight="0" Padding="0" Margin="2,0"
+                                  ToolTip="Toujours au premier plan" AutomationProperties.Name="Toujours au premier plan">
+                        <c:Icon Glyph="{StaticResource Icon.Pin}" />
+                    </ToggleButton>
+                    <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Compact}" Command="{Binding ToggleCompactCommand}" Margin="2,0"
+                            ToolTip="Mode compact : pastille flottante toujours visible" AutomationProperties.Name="Mode compact" />
+                    <Button Command="{Binding ToggleThemeCommand}" Margin="2,0"
+                            ToolTip="Basculer thème clair / sombre" AutomationProperties.Name="Changer de thème">
                         <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource Button.Accent}">
+                            <Style TargetType="Button" BasedOn="{StaticResource Btn.Icon}">
+                                <Setter Property="c:Ui.Icon" Value="{StaticResource Icon.Sun}" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource Brush.Stopped}" />
-                                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Stopped}" />
-                                        <Setter Property="Foreground" Value="White" />
+                                    <DataTrigger Binding="{Binding IsLightTheme}" Value="True">
+                                        <Setter Property="c:Ui.Icon" Value="{StaticResource Icon.Moon}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
                     </Button>
                 </StackPanel>
+
+                <!-- Boutons système -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Top" WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="MinButton" Style="{StaticResource Btn.Caption}" c:Ui.Icon="{StaticResource Icon.Minimize}" Click="OnMinimize"
+                            ToolTip="Réduire" AutomationProperties.Name="Réduire" />
+                    <Button x:Name="MaxButton" Style="{StaticResource Btn.Caption}" c:Ui.Icon="{StaticResource Icon.Maximize}" Click="OnMaximize"
+                            ToolTip="Agrandir" AutomationProperties.Name="Agrandir" />
+                    <Button x:Name="CloseButton" Style="{StaticResource Btn.CaptionClose}" c:Ui.Icon="{StaticResource Icon.Close}" Click="OnClose"
+                            ToolTip="Fermer" AutomationProperties.Name="Fermer" />
+                </StackPanel>
             </Grid>
-        </Border>
 
-        <!-- ===== Notifications ===== -->
-        <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding Notifications}" Margin="16,0,16,8">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type vm:NotificationViewModel}">
-                    <Border CornerRadius="6" Padding="10,6" Margin="0,4,0,0" Background="{DynamicResource Brush.SurfaceAlt}"
-                            BorderBrush="{DynamicResource Brush.Paused}" BorderThickness="1">
-                        <DockPanel>
-                            <Button DockPanel.Dock="Right" Content="✕" Style="{StaticResource Button.Icon}"
-                                    Command="{Binding DataContext.DismissNotificationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    CommandParameter="{Binding}" />
-                            <TextBlock Text="{Binding Icon}" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{DynamicResource Brush.Paused}" />
-                            <TextBlock Text="{Binding Message}" TextWrapping="Wrap" VerticalAlignment="Center" />
-                        </DockPanel>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+            <!-- ===================== Navigation latérale ===================== -->
+            <DockPanel x:Name="Sidebar" Grid.Row="1" Margin="8,4,8,12">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Setter Property="Width" Value="232" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSidebarCollapsed}" Value="True">
+                                <Setter Property="Width" Value="56" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
 
-        <!-- ===== Onglets ===== -->
-        <TabControl x:Name="Tabs" Margin="16,0,16,8">
-            <TabItem Header="Macro">
-                <views:MacroView DataContext="{Binding}" Margin="0,10,0,0" />
-            </TabItem>
-            <TabItem Header="Profils">
-                <views:ProfilesView DataContext="{Binding}" Margin="0,10,0,0" />
-            </TabItem>
-            <TabItem Header="Labo">
-                <views:LabView DataContext="{Binding Lab}" Margin="0,10,0,0" />
-            </TabItem>
-            <TabItem Header="Paramètres">
-                <views:SettingsView DataContext="{Binding}" Margin="0,10,0,0" />
-            </TabItem>
-        </TabControl>
-    </DockPanel>
+                <Button DockPanel.Dock="Top" Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Menu}" HorizontalAlignment="Left"
+                        Width="40" Height="36" Margin="0,0,0,8" Command="{Binding ToggleSidebarCommand}"
+                        ToolTip="Replier / déplier la navigation" AutomationProperties.Name="Replier ou déplier la navigation" />
+
+                <!-- Pastille d'état globale : état + profil actif + raccourci ; clic = Start/Stop -->
+                <Button x:Name="StatusPill" DockPanel.Dock="Bottom" Command="{Binding StartStopCommand}" Cursor="Hand" Margin="0,8,0,0"
+                        AutomationProperties.Name="{Binding StateCaption}" ToolTip="Clic : démarrer / arrêter le profil actif">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Style="{StaticResource State.Border}" BorderThickness="1" CornerRadius="{DynamicResource Radius.L}" Padding="12,10">
+                                <ContentPresenter />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.88" />
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Border.Focus}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Width="12" Height="12" VerticalAlignment="Top" Margin="0,4,0,0">
+                            <Ellipse x:Name="Halo" Style="{StaticResource State.Dot}" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                                <Ellipse.RenderTransform>
+                                    <ScaleTransform x:Name="HaloScale" />
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                            <Ellipse Style="{StaticResource State.Dot}" />
+                        </Grid>
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0" x:Name="PillText"
+                                    Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource BoolToVisInverted}}">
+                            <TextBlock Text="{Binding EngineState, Converter={StaticResource StateToText}}" Style="{StaticResource State.Text}"
+                                       FontSize="{DynamicResource FontSize.Caption}" />
+                            <TextBlock Text="{Binding ActiveProfile.Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <Border Style="{StaticResource Kbd}">
+                                    <TextBlock Text="{Binding ActiveProfile.HotkeyText}" />
+                                </Border>
+                                <TextBlock Text="{Binding StateCaption}" Style="{StaticResource Text.Caption}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Button>
+
+                <ListBox x:Name="Nav" ItemsSource="{Binding NavItems}" SelectedIndex="{Binding SelectedPageIndex}"
+                         ItemContainerStyle="{StaticResource Nav.Item}" KeyboardNavigation.DirectionalNavigation="Cycle"
+                         AutomationProperties.Name="Navigation principale" ScrollViewer.VerticalScrollBarVisibility="Disabled" />
+            </DockPanel>
+
+            <!-- ===================== Contenu ===================== -->
+            <Border x:Name="ContentHost" Grid.Row="1" Grid.Column="1" Background="{DynamicResource Bg.Layer}"
+                    BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1,1,0,0" CornerRadius="12,0,0,0">
+                <Grid>
+                    <DockPanel>
+                        <!-- En-tête de page -->
+                        <StackPanel DockPanel.Dock="Top" Margin="32,24,32,16">
+                            <TextBlock Text="{Binding CurrentPage.Label}" Style="{StaticResource Text.Headline}" />
+                            <TextBlock Text="{Binding CurrentPage.Subtitle}" Style="{StaticResource Text.Secondary}" Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <TabControl x:Name="Tabs" Style="{StaticResource Tabs.Headless}" SelectedIndex="{Binding SelectedPageIndex}" Margin="32,0,32,24">
+                            <TabItem Header="Macro">
+                                <views:MacroView DataContext="{Binding}" />
+                            </TabItem>
+                            <TabItem Header="Profils">
+                                <views:ProfilesView DataContext="{Binding}" />
+                            </TabItem>
+                            <TabItem Header="Labo">
+                                <views:LabView DataContext="{Binding Lab}" />
+                            </TabItem>
+                            <TabItem Header="Paramètres">
+                                <views:SettingsView DataContext="{Binding}" />
+                            </TabItem>
+                        </TabControl>
+                    </DockPanel>
+
+                    <!-- ===================== Toasts (empilés en bas à droite) ===================== -->
+                    <ItemsControl ItemsSource="{Binding Notifications}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,24,24"
+                                  Width="380" Focusable="False">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:NotificationViewModel}">
+                                <Border Style="{StaticResource Card.Elevated}" Padding="14,12" Margin="0,8,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <c:Icon x:Name="Ico" Glyph="{StaticResource Icon.InfoFilled}" Width="20" Height="20" VerticalAlignment="Top"
+                                                Foreground="{DynamicResource State.Info}" />
+                                        <StackPanel Grid.Column="1" Margin="12,0,8,0">
+                                            <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Body}" />
+                                            <Button Content="{Binding ActionLabel}" Command="{Binding ActionCommand}" Style="{StaticResource Btn.Ghost}"
+                                                    Foreground="{DynamicResource Accent}" HorizontalAlignment="Left" Padding="0,2" MinHeight="0" Margin="0,6,0,0"
+                                                    Visibility="{Binding ActionLabel, Converter={StaticResource NullToVis}}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Style="{StaticResource Btn.Icon}" Width="24" Height="24" VerticalAlignment="Top"
+                                                c:Ui.Icon="{StaticResource Icon.Close}" ToolTip="Fermer" AutomationProperties.Name="Fermer la notification"
+                                                Command="{Binding DataContext.DismissNotificationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Level}" Value="Warning">
+                                        <Setter TargetName="Ico" Property="Glyph" Value="{StaticResource Icon.WarningFilled}" />
+                                        <Setter TargetName="Ico" Property="Foreground" Value="{DynamicResource State.Paused}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Level}" Value="Error">
+                                        <Setter TargetName="Ico" Property="Glyph" Value="{StaticResource Icon.DismissCircle}" />
+                                        <Setter TargetName="Ico" Property="Foreground" Value="{DynamicResource State.Danger}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Level}" Value="Success">
+                                        <Setter TargetName="Ico" Property="Glyph" Value="{StaticResource Icon.CheckCircle}" />
+                                        <Setter TargetName="Ico" Property="Foreground" Value="{DynamicResource State.Success}" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </Window>

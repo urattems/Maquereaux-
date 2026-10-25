@@ -173,6 +173,26 @@ public class ProfileRepositoryTests : IDisposable
     }
 
     [Fact]
+    public void Ui_settings_roundtrip_and_clamping()
+    {
+        var fresh = new AppSettings();
+        Assert.False(fresh.SidebarCollapsed);
+        Assert.False(fresh.OnboardingCompleted);
+        Assert.Equal(0.95, fresh.CompactOpacity);
+
+        _repo.SaveSettings(new AppSettings { SidebarCollapsed = true, OnboardingCompleted = true, CompactOpacity = 0.5 });
+        var s = _repo.LoadSettings();
+        Assert.True(s.SidebarCollapsed);
+        Assert.True(s.OnboardingCompleted);
+        Assert.Equal(0.5, s.CompactOpacity);
+
+        File.WriteAllText(_dir.File("settings.json"), "{\"compactOpacity\": 0.01}");
+        Assert.Equal(AppSettings.MinCompactOpacity, _repo.LoadSettings().CompactOpacity);
+        File.WriteAllText(_dir.File("settings.json"), "{\"compactOpacity\": 7}");
+        Assert.Equal(1, _repo.LoadSettings().CompactOpacity);
+    }
+
+    [Fact]
     public void Settings_with_invalid_emergency_hotkey_is_repaired()
     {
         File.WriteAllText(_dir.File("settings.json"), "{\"emergencyStopHotkey\": {\"modifiers\": \"None\", \"virtualKey\": 0}, \"timerStrategy\": \"Hybrid\"}");

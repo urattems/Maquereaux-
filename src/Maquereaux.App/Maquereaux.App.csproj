@@ -35,6 +35,8 @@
 
   <ItemGroup>
     <Resource Include="..\..\assets\maquereaux.ico" Link="Assets\maquereaux.ico" />
+    <!-- Polices embarquées (SIL OFL 1.1) : rendu identique sur tous les PC -->
+    <Resource Include="Assets\Fonts\*.ttf" />
   </ItemGroup>
 
   <ItemGroup>

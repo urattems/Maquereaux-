@@ -45,6 +45,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _isLightTheme = _settings.Theme == AppTheme.Light;
         _safetyTimeoutMinutes = _settings.SafetyTimeoutMinutes;
         _minimizeToTray = _settings.MinimizeToTray;
+        _isSidebarCollapsed = _settings.SidebarCollapsed;
         _host.TimerStrategy = _timerStrategy;
         _host.Engine.MaxRunDuration = TimeSpan.FromMinutes(_safetyTimeoutMinutes);
         _loading = false;
@@ -87,6 +88,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     public string Title => $"Maquereaux {AppInfo.Version}";
+    public string Version => "v" + AppInfo.Version;
 
     public ObservableCollection<ProfileViewModel> Profiles { get; } = new();
     public ObservableCollection<NotificationViewModel> Notifications { get; } = new();
@@ -101,6 +103,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRunning))]
     [NotifyPropertyChangedFor(nameof(StartStopLabel))]
+    [NotifyPropertyChangedFor(nameof(StateCaption))]
     private EngineState _engineState = EngineState.Stopped;
 
     [ObservableProperty]
@@ -142,6 +145,53 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private bool _isCompact;
+
+    // ---------- Navigation (coque v1.1) ----------
+
+    /// <summary>Pages de la navigation latérale (même ordre que les onglets de la fenêtre).</summary>
+    public IReadOnlyList<NavItem> NavItems { get; } = new[]
+    {
+        new NavItem("Macro", "Compose ta séquence, règle la cadence et lance-la.", "Icon.Keyboard"),
+        new NavItem("Profils", "Une configuration par usage, chacune avec son raccourci.", "Icon.Profiles"),
+        new NavItem("Labo", "Mesure ton timing et compare manuel contre automatique.", "Icon.Lab"),
+        new NavItem("Paramètres", "Raccourcis, précision du timer, sécurité et apparence.", "Icon.Settings"),
+    };
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CurrentPage))]
+    private int _selectedPageIndex;
+
+    public NavItem CurrentPage => NavItems[Math.Clamp(SelectedPageIndex, 0, NavItems.Count - 1)];
+
+    [ObservableProperty]
+    private bool _isSidebarCollapsed;
+
+    partial void OnIsSidebarCollapsedChanged(bool value)
+    {
+        _settings.SidebarCollapsed = value;
+        MarkDirty();
+    }
+
+    [RelayCommand]
+    private void ToggleSidebar() => IsSidebarCollapsed = !IsSidebarCollapsed;
+
+    [RelayCommand]
+    private void ToggleTheme() => IsLightTheme = !IsLightTheme;
+
+    [RelayCommand]
+    private void Navigate(string? page)
+    {
+        var i = NavItems.ToList().FindIndex(n => n.Label == page);
+        if (i >= 0) SelectedPageIndex = i;
+    }
+
+    /// <summary>Description courte de l'état pour la pastille globale (ex. « Profil 1 · F6 »).</summary>
+    public string StateCaption => EngineState switch
+    {
+        EngineState.Running => "En marche",
+        EngineState.Paused => "En pause",
+        _ => "À l'arrêt",
+    };
 
     public bool IsHybridTimer => TimerStrategy == TimerStrategy.Hybrid;
     public string TimerStrategyDescription => SleeperFactory.Describe(TimerStrategy);
@@ -527,19 +577,26 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                "Relance Maquereaux en administrateur (Paramètres) si tu en as besoin.", NotificationLevel.Warning);
     }
 
-    public void Notify(string message, NotificationLevel level = NotificationLevel.Info)
+    public void Notify(string message, NotificationLevel level = NotificationLevel.Info) => Notify(message, level, null, null);
+
+    /// <summary>
+    /// Affiche un toast. Info/Success disparaissent seuls (6 s, 8 s s'il y a une action) ; Warning/Error restent jusqu'à fermeture.
+    /// Retourne le toast (permet de le retirer, ex. après « Annuler »).
+    /// </summary>
+    public NotificationViewModel? Notify(string message, NotificationLevel level, string? actionLabel, System.Windows.Input.ICommand? action)
     {
         // Pas de doublon : le même message déjà affiché n'est pas répété
-        if (Notifications.Any(n => n.Message == message)) return;
-        var n = new NotificationViewModel(message, level);
-        Notifications.Insert(0, n);
-        while (Notifications.Count > 5) Notifications.RemoveAt(Notifications.Count - 1);
-        if (level == NotificationLevel.Info)
+        if (Notifications.Any(n => n.Message == message)) return null;
+        var n = new NotificationViewModel(message, level, actionLabel, action);
+        Notifications.Add(n); // le plus récent en bas, au plus près de l'œil
+        while (Notifications.Count > 4) Notifications.RemoveAt(0);
+        if (level is NotificationLevel.Info or NotificationLevel.Success)
         {
-            var t = new DispatcherTimer { Interval = TimeSpan.FromSeconds(6) };
+            var t = new DispatcherTimer { Interval = TimeSpan.FromSeconds(actionLabel is null ? 6 : 8) };
             t.Tick += (_, _) => { t.Stop(); Notifications.Remove(n); };
             t.Start();
         }
+        return n;
     }
 
     public void Dispose()

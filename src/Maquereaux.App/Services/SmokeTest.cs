@@ -40,15 +40,8 @@ internal sealed class SmokeTest
             Log($"Version {Core.AppInfo.Version}, données {_host.Paths.DataDir}");
             await Delay(800);
 
-            var tabs = _window.Tabs.Items.OfType<TabItem>().ToList();
-            for (int i = 0; i < tabs.Count; i++)
-            {
-                _window.Tabs.SelectedIndex = i;
-                await Delay(500);
-                var name = $"{i + 1}-{Sanitize(tabs[i].Header?.ToString() ?? "tab")}";
-                Capture(_window, name);
-                Log($"Onglet « {tabs[i].Header} » OK");
-            }
+            await CaptureDesignSystemAsync();
+            await CapturePagesAsync();
 
             await RunExtraChecksAsync();
             await RunUiChecksAsync();
@@ -204,18 +197,80 @@ internal sealed class SmokeTest
         _window.Tabs.SelectedItem = tab;
     }
 
-    private void Capture(Window window, string name)
+    /// <summary>Galerie du design system, dans les deux thèmes, à 100 % et 150 %.</summary>
+    private async Task CaptureDesignSystemAsync()
+    {
+        var gallery = new Window
+        {
+            Width = 1180, SizeToContent = SizeToContent.Height, WindowStyle = WindowStyle.None, ShowInTaskbar = false,
+            Left = 0, Top = 0, Content = new DesignSystemView(),
+        };
+        gallery.SetResourceReference(Window.BackgroundProperty, "Bg.Layer");
+        gallery.Show();
+        foreach (var light in new[] { false, true })
+        {
+            _vm.IsLightTheme = light;
+            await Delay(400);
+            var theme = light ? "light" : "dark";
+            Capture(gallery, $"ds-{theme}");
+            if (!light) Capture(gallery, $"ds-{theme}@150", 1.5);
+        }
+        _vm.IsLightTheme = false;
+        gallery.Close();
+        Log("Galerie du design system : OK");
+    }
+
+    /// <summary>Chaque page dans chaque thème (+ 150 % et taille minimale en sombre).</summary>
+    private async Task CapturePagesAsync()
+    {
+        var tabs = _window.Tabs.Items.OfType<TabItem>().ToList();
+        foreach (var light in new[] { false, true })
+        {
+            _vm.IsLightTheme = light;
+            var theme = light ? "light" : "dark";
+            for (int i = 0; i < tabs.Count; i++)
+            {
+                _window.Tabs.SelectedIndex = i;
+                await Delay(450);
+                var page = Sanitize(tabs[i].Header?.ToString() ?? "tab");
+                Capture(_window, $"{theme}-{i + 1}-{page}");
+                if (!light && i == 0) Capture(_window, $"{theme}-{i + 1}-{page}@150", 1.5);
+                Log($"Page « {tabs[i].Header} » ({theme}) OK");
+            }
+        }
+        _vm.IsLightTheme = false;
+
+        // Taille minimale : rien ne doit déborder ni être tronqué
+        var (w, h) = (_window.Width, _window.Height);
+        _window.Width = _window.MinWidth;
+        _window.Height = _window.MinHeight;
+        _window.Tabs.SelectedIndex = 0;
+        await Delay(500);
+        Capture(_window, "dark-min-macro");
+        _vm.IsSidebarCollapsed = true;
+        await Delay(400);
+        Capture(_window, "dark-min-sidebar-repliee");
+        _vm.IsSidebarCollapsed = false;
+        _window.Width = w;
+        _window.Height = h;
+        await Delay(300);
+    }
+
+    /// <summary>Capture PNG d'une fenêtre ; <paramref name="scale"/> = 1,5 simule un écran à 150 % de DPI.</summary>
+    private void Capture(Window window, string name, double scale = 1.0)
     {
         if (window.Content is not FrameworkElement root || root.ActualWidth < 1) return;
         var dpi = VisualTreeHelper.GetDpi(window);
+        double sx = dpi.DpiScaleX * scale, sy = dpi.DpiScaleY * scale;
         var rtb = new RenderTargetBitmap(
-            (int)(root.ActualWidth * dpi.DpiScaleX), (int)(root.ActualHeight * dpi.DpiScaleY),
-            dpi.PixelsPerInchX, dpi.PixelsPerInchY, PixelFormats.Pbgra32);
-        // Fond explicite (sinon les zones transparentes sortent noires dans le PNG)
+            (int)(root.ActualWidth * sx), (int)(root.ActualHeight * sy),
+            96 * sx, 96 * sy, PixelFormats.Pbgra32);
+        // Fond explicite : sur Mica la fenêtre est transparente (le PNG sortirait noir/transparent)
         var dv = new DrawingVisual();
         using (var dc = dv.RenderOpen())
         {
-            dc.DrawRectangle(window.Background, null, new Rect(0, 0, root.ActualWidth, root.ActualHeight));
+            var bg = window.TryFindResource("Bg.Base") as Brush ?? window.Background;
+            dc.DrawRectangle(bg, null, new Rect(0, 0, root.ActualWidth, root.ActualHeight));
             dc.DrawRectangle(new VisualBrush(root), null, new Rect(0, 0, root.ActualWidth, root.ActualHeight));
         }
         rtb.Render(dv);

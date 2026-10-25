@@ -1,0 +1,287 @@
+<UserControl x:Class="Maquereaux.App.Views.DesignSystemView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Maquereaux.App.Controls"
+             Background="{DynamicResource Bg.Layer}" Foreground="{DynamicResource Text.Primary}"
+             FontFamily="{DynamicResource Font.UI}" FontSize="{DynamicResource FontSize.Body}"
+             TextOptions.TextFormattingMode="Display">
+    <!--
+        Galerie du design system : chaque contrôle dans ses états (normal, survol, pressé, focus, désactivé, erreur).
+        Les états de survol/pression/focus sont forcés via c:Ui.ForceHover / ForcePressed / ForceFocus.
+        Capturée automatiquement par le smoke test (docs/DESIGN_SYSTEM.md).
+    -->
+    <UserControl.Resources>
+        <Style x:Key="Cell" TargetType="StackPanel">
+            <Setter Property="Margin" Value="0,0,16,16" />
+            <Setter Property="MinWidth" Value="120" />
+        </Style>
+        <Style x:Key="CellLabel" TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style x:Key="Section" TargetType="TextBlock" BasedOn="{StaticResource Text.Overline}">
+            <Setter Property="Margin" Value="0,8,0,10" />
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel Margin="32,24">
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <ContentPresenter ContentTemplate="{StaticResource Logo}" Width="40" Height="40" />
+            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Design system Maquereaux" Style="{StaticResource Text.Headline}" />
+                <TextBlock Text="Océan de nuit · Écume — tokens, typographie, contrôles et états" Style="{StaticResource Text.Secondary}" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- ===== Typographie ===== -->
+        <TextBlock Text="Typographie — Inter + JetBrains Mono" Style="{StaticResource Section}" />
+        <Border Style="{StaticResource Card}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Display 40 — RUNNING" Style="{StaticResource Text.Display}" />
+                    <TextBlock Text="Headline 28 — Macro" Style="{StaticResource Text.Headline}" />
+                    <TextBlock Text="Title 20 — Séquence" Style="{StaticResource Text.Title}" />
+                    <TextBlock Text="Subtitle 16 — Réglages du profil" Style="{StaticResource Text.Subtitle}" />
+                    <TextBlock Text="Body 14 — Une touche par tick, en boucle, à la milliseconde près." Style="{StaticResource Text.Body}" />
+                    <TextBlock Text="Caption 12 — Texte d'aide sous un réglage." Style="{StaticResource Text.Caption}" />
+                    <TextBlock Text="Overline — timing réel" Style="{StaticResource Text.Overline}" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                    <TextBlock Text="10,000 ms" Style="{StaticResource Num.Hero}" HorizontalAlignment="Right" />
+                    <TextBlock Text="100,0 /s" Style="{StaticResource Num.Stat}" HorizontalAlignment="Right" />
+                    <TextBlock Text="p95 10,338" Style="{StaticResource Num.Body}" HorizontalAlignment="Right" />
+                    <TextBlock Text="0123456789" Style="{StaticResource Num.Small}" HorizontalAlignment="Right" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===== Couleurs ===== -->
+        <TextBlock Text="Couleurs sémantiques" Style="{StaticResource Section}" />
+        <WrapPanel>
+            <WrapPanel.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="Width" Value="96" />
+                    <Setter Property="Height" Value="56" />
+                    <Setter Property="CornerRadius" Value="8" />
+                    <Setter Property="Margin" Value="0,0,8,8" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                    <Setter Property="Padding" Value="8,6" />
+                </Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="11" />
+                    <Setter Property="VerticalAlignment" Value="Bottom" />
+                </Style>
+            </WrapPanel.Resources>
+            <Border Background="{DynamicResource Bg.Base}"><TextBlock Text="Bg.Base" /></Border>
+            <Border Background="{DynamicResource Bg.Layer}"><TextBlock Text="Bg.Layer" /></Border>
+            <Border Background="{DynamicResource Surface}"><TextBlock Text="Surface" /></Border>
+            <Border Background="{DynamicResource Surface.Elevated}"><TextBlock Text="Élevée" /></Border>
+            <Border Background="{DynamicResource Surface.Sunken}"><TextBlock Text="Creusée" /></Border>
+            <Border Background="{DynamicResource Accent.Gradient}"><TextBlock Text="Accent" Foreground="{DynamicResource Text.OnAccent}" /></Border>
+            <Border Background="{DynamicResource Signature.Gradient}"><TextBlock Text="Signature" Foreground="#0B2340" /></Border>
+            <Border Background="{DynamicResource State.Running.Bg}"><TextBlock Text="Running" Foreground="{DynamicResource State.Running}" /></Border>
+            <Border Background="{DynamicResource State.Paused.Bg}"><TextBlock Text="Paused" Foreground="{DynamicResource State.Paused}" /></Border>
+            <Border Background="{DynamicResource State.Danger.Bg}"><TextBlock Text="Danger" Foreground="{DynamicResource State.Danger}" /></Border>
+            <Border Background="{DynamicResource State.Info.Bg}"><TextBlock Text="Info" Foreground="{DynamicResource State.Info}" /></Border>
+        </WrapPanel>
+
+        <!-- ===== Boutons ===== -->
+        <TextBlock Text="Boutons — normal · survol · pressé · focus clavier · désactivé" Style="{StaticResource Section}" />
+        <Border Style="{StaticResource Card}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="110" /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Margin" Value="0,0,12,12" />
+                        <Setter Property="HorizontalAlignment" Value="Left" />
+                    </Style>
+                </Grid.Resources>
+                <TextBlock Grid.Row="0" Text="Primaire" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                <Button Grid.Row="0" Grid.Column="1" Style="{StaticResource Btn.Primary}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Démarrer" c:Ui.Icon="{StaticResource Icon.Play}" />
+                <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource Btn.Primary}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Démarrer" c:Ui.Icon="{StaticResource Icon.Play}" c:Ui.ForceHover="True" />
+                <Button Grid.Row="0" Grid.Column="3" Style="{StaticResource Btn.Primary}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Démarrer" c:Ui.Icon="{StaticResource Icon.Play}" c:Ui.ForcePressed="True" />
+                <Button Grid.Row="0" Grid.Column="4" Style="{StaticResource Btn.Primary}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Démarrer" c:Ui.Icon="{StaticResource Icon.Play}" c:Ui.ForceFocus="True" />
+                <Button Grid.Row="0" Grid.Column="5" Style="{StaticResource Btn.Primary}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Démarrer" c:Ui.Icon="{StaticResource Icon.Play}" IsEnabled="False" />
+
+                <TextBlock Grid.Row="1" Text="Secondaire" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                <Button Grid.Row="1" Grid.Column="1" Content="Importer" c:Ui.Icon="{StaticResource Icon.Import}" />
+                <Button Grid.Row="1" Grid.Column="2" Content="Importer" c:Ui.Icon="{StaticResource Icon.Import}" c:Ui.ForceHover="True" />
+                <Button Grid.Row="1" Grid.Column="3" Content="Importer" c:Ui.Icon="{StaticResource Icon.Import}" c:Ui.ForcePressed="True" />
+                <Button Grid.Row="1" Grid.Column="4" Content="Importer" c:Ui.Icon="{StaticResource Icon.Import}" c:Ui.ForceFocus="True" />
+                <Button Grid.Row="1" Grid.Column="5" Content="Importer" c:Ui.Icon="{StaticResource Icon.Import}" IsEnabled="False" />
+
+                <TextBlock Grid.Row="2" Text="Fantôme" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                <Button Grid.Row="2" Grid.Column="1" Style="{StaticResource Btn.Ghost}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Tout effacer" />
+                <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource Btn.Ghost}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Tout effacer" c:Ui.ForceHover="True" />
+                <Button Grid.Row="2" Grid.Column="3" Style="{StaticResource Btn.Ghost}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Tout effacer" c:Ui.ForcePressed="True" />
+                <Button Grid.Row="2" Grid.Column="4" Style="{StaticResource Btn.Ghost}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Tout effacer" c:Ui.ForceFocus="True" />
+                <Button Grid.Row="2" Grid.Column="5" Style="{StaticResource Btn.Ghost}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Tout effacer" IsEnabled="False" />
+
+                <TextBlock Grid.Row="3" Text="Danger" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                <Button Grid.Row="3" Grid.Column="1" Style="{StaticResource Btn.Danger}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Supprimer" c:Ui.Icon="{StaticResource Icon.Delete}" />
+                <Button Grid.Row="3" Grid.Column="2" Style="{StaticResource Btn.Danger}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Supprimer" c:Ui.Icon="{StaticResource Icon.Delete}" c:Ui.ForceHover="True" />
+                <Button Grid.Row="3" Grid.Column="3" Style="{StaticResource Btn.Danger}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Supprimer" c:Ui.Icon="{StaticResource Icon.Delete}" c:Ui.ForcePressed="True" />
+                <Button Grid.Row="3" Grid.Column="4" Style="{StaticResource Btn.Danger}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Supprimer" c:Ui.Icon="{StaticResource Icon.Delete}" c:Ui.ForceFocus="True" />
+                <Button Grid.Row="3" Grid.Column="5" Style="{StaticResource Btn.Danger}" Margin="0,0,12,12" HorizontalAlignment="Left" Content="Supprimer" c:Ui.Icon="{StaticResource Icon.Delete}" IsEnabled="False" />
+
+                <TextBlock Grid.Row="4" Text="Icône seule" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                <Button Grid.Row="4" Grid.Column="1" Style="{StaticResource Btn.Icon}" Margin="0,0,12,12" HorizontalAlignment="Left" c:Ui.Icon="{StaticResource Icon.Copy}" ToolTip="Dupliquer" />
+                <Button Grid.Row="4" Grid.Column="2" Style="{StaticResource Btn.Icon}" Margin="0,0,12,12" HorizontalAlignment="Left" c:Ui.Icon="{StaticResource Icon.Copy}" c:Ui.ForceHover="True" />
+                <Button Grid.Row="4" Grid.Column="3" Style="{StaticResource Btn.Icon}" Margin="0,0,12,12" HorizontalAlignment="Left" c:Ui.Icon="{StaticResource Icon.Copy}" c:Ui.ForcePressed="True" />
+                <Button Grid.Row="4" Grid.Column="4" Style="{StaticResource Btn.Icon}" Margin="0,0,12,12" HorizontalAlignment="Left" c:Ui.Icon="{StaticResource Icon.Copy}" c:Ui.ForceFocus="True" />
+                <Button Grid.Row="4" Grid.Column="5" Style="{StaticResource Btn.Icon}" Margin="0,0,12,12" HorizontalAlignment="Left" c:Ui.Icon="{StaticResource Icon.Copy}" IsEnabled="False" />
+
+                <TextBlock Grid.Row="5" Text="Puces (presets)" Style="{StaticResource Text.Caption}" VerticalAlignment="Center" />
+                <StackPanel Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="5" Orientation="Horizontal">
+                    <Button Style="{StaticResource Btn.Chip}" Content="10 ms" Margin="0,0,8,0" />
+                    <Button Style="{StaticResource Btn.Chip}" Content="16 ms" Margin="0,0,8,0" c:Ui.ForceHover="True" />
+                    <Button Style="{StaticResource Btn.Chip}" Content="33 ms" Margin="0,0,8,0" />
+                    <Button Style="{StaticResource Btn.Chip}" Content="50 ms" Margin="0,0,8,0" />
+                    <Button Style="{StaticResource Btn.Chip}" Content="100 ms" Margin="0,0,8,0" IsEnabled="False" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===== Champs ===== -->
+        <TextBlock Text="Champs de saisie" Style="{StaticResource Section}" />
+        <Border Style="{StaticResource Card}">
+            <WrapPanel>
+                <StackPanel Style="{StaticResource Cell}" Width="190"><TextBlock Text="Texte" Style="{StaticResource CellLabel}" /><TextBox Text="Profil 1" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}" Width="190"><TextBlock Text="Survol" Style="{StaticResource CellLabel}" /><TextBox Text="Profil 1" c:Ui.ForceHover="True" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}" Width="190"><TextBlock Text="Focus" Style="{StaticResource CellLabel}" /><TextBox Text="Profil 1" c:Ui.ForceFocus="True" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}" Width="190"><TextBlock Text="Placeholder" Style="{StaticResource CellLabel}" /><TextBox c:Ui.Placeholder="Rechercher une appli…" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}" Width="190"><TextBlock Text="Erreur" Style="{StaticResource CellLabel}" /><TextBox Text="abc" c:Ui.HasError="True" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}" Width="190"><TextBlock Text="Désactivé" Style="{StaticResource CellLabel}" /><TextBox Text="Profil 1" IsEnabled="False" /></StackPanel>
+
+                <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Numérique" Style="{StaticResource CellLabel}" /><c:NumericBox Value="100" Minimum="1" Maximum="60000" Unit="ms" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Focus" Style="{StaticResource CellLabel}" /><c:NumericBox Value="16" Unit="ms" c:Ui.ForceFocus="True" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Vide (auto)" Style="{StaticResource CellLabel}" /><c:NumericBox AllowEmpty="True" Value="{x:Null}" Unit="ms" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Erreur" Style="{StaticResource CellLabel}" /><c:NumericBox Value="0" Unit="ms" c:Ui.HasError="True" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Désactivé" Style="{StaticResource CellLabel}" /><c:NumericBox Value="60" Unit="min" IsEnabled="False" /></StackPanel>
+                <StackPanel Style="{StaticResource Cell}" Width="200">
+                    <TextBlock Text="Liste déroulante" Style="{StaticResource CellLabel}" />
+                    <ComboBox SelectedIndex="0">
+                        <ComboBoxItem Content="notepad.exe" />
+                        <ComboBoxItem Content="game.exe" />
+                    </ComboBox>
+                </StackPanel>
+            </WrapPanel>
+        </Border>
+
+        <!-- ===== Sélection ===== -->
+        <TextBlock Text="Sélection — interrupteurs, cases, radios, contrôle segmenté, curseur" Style="{StaticResource Section}" />
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <WrapPanel>
+                    <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Interrupteur OFF" Style="{StaticResource CellLabel}" /><CheckBox Style="{StaticResource Toggle}" Content="Premier plan" /></StackPanel>
+                    <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Interrupteur ON" Style="{StaticResource CellLabel}" /><CheckBox Style="{StaticResource Toggle}" Content="Premier plan" IsChecked="True" /></StackPanel>
+                    <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Survol" Style="{StaticResource CellLabel}" /><CheckBox Style="{StaticResource Toggle}" Content="Premier plan" c:Ui.ForceHover="True" /></StackPanel>
+                    <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Désactivé" Style="{StaticResource CellLabel}" /><CheckBox Style="{StaticResource Toggle}" Content="Premier plan" IsChecked="True" IsEnabled="False" /></StackPanel>
+                    <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Case" Style="{StaticResource CellLabel}" /><CheckBox Content="3-2-1" /></StackPanel>
+                    <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Cochée" Style="{StaticResource CellLabel}" /><CheckBox Content="3-2-1" IsChecked="True" /></StackPanel>
+                    <StackPanel Style="{StaticResource Cell}"><TextBlock Text="Radio" Style="{StaticResource CellLabel}" />
+                        <StackPanel Orientation="Horizontal"><RadioButton GroupName="g1" Content="A" IsChecked="True" Margin="0,0,16,0" /><RadioButton GroupName="g1" Content="B" /></StackPanel>
+                    </StackPanel>
+                </WrapPanel>
+                <WrapPanel>
+                    <StackPanel Style="{StaticResource Cell}">
+                        <TextBlock Text="Contrôle segmenté" Style="{StaticResource CellLabel}" />
+                        <Border Style="{StaticResource Segmented}">
+                            <UniformGrid Rows="1">
+                                <RadioButton Style="{StaticResource Segment}" GroupName="seg" Content="Cycle" IsChecked="True" c:Ui.Icon="{StaticResource Icon.Refresh}" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="seg" Content="Burst" c:Ui.Icon="{StaticResource Icon.Flash}" />
+                            </UniformGrid>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource Cell}">
+                        <TextBlock Text="Segmenté (3)" Style="{StaticResource CellLabel}" />
+                        <Border Style="{StaticResource Segmented}">
+                            <UniformGrid Rows="1">
+                                <RadioButton Style="{StaticResource Segment}" GroupName="seg2" Content="Standard" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="seg2" Content="Précis" IsChecked="True" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="seg2" Content="Extrême" />
+                            </UniformGrid>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource Cell}" Width="260">
+                        <TextBlock Text="Curseur" Style="{StaticResource CellLabel}" />
+                        <Slider Minimum="1" Maximum="200" Value="60" />
+                    </StackPanel>
+                    <StackPanel Style="{StaticResource Cell}" Width="260">
+                        <TextBlock Text="Curseur désactivé" Style="{StaticResource CellLabel}" />
+                        <Slider Minimum="1" Maximum="200" Value="120" IsEnabled="False" />
+                    </StackPanel>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- ===== Listes, badges, keycaps, toasts ===== -->
+        <TextBlock Text="Listes, badges, keycaps, info-bulle, menu, toast" Style="{StaticResource Section}" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <ListBox SelectedIndex="1">
+                        <ListBoxItem Content="Élément de liste" />
+                        <ListBoxItem Content="Élément sélectionné" />
+                        <ListBoxItem Content="Élément désactivé" IsEnabled="False" />
+                    </ListBox>
+                    <WrapPanel Margin="0,12,0,0">
+                        <Border Style="{StaticResource Badge}" Margin="0,0,8,8"><TextBlock Text="Accent" /></Border>
+                        <Border Style="{StaticResource Badge.Neutral}" Margin="0,0,8,8"><TextBlock Text="Neutre" /></Border>
+                        <Border Style="{StaticResource Badge.Warning}" Margin="0,0,8,8"><TextBlock Text="Attention" /></Border>
+                        <Border Style="{StaticResource Badge.Danger}" Margin="0,0,8,8"><TextBlock Text="REC" /></Border>
+                        <Border Style="{StaticResource Kbd}" Margin="0,0,8,8"><TextBlock Text="F6" /></Border>
+                        <Border Style="{StaticResource Kbd}" Margin="0,0,8,8"><TextBlock Text="Ctrl+Alt+Pause" /></Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+            <StackPanel Grid.Column="2">
+                <!-- Info-bulle et menu rendus « à plat » (les vrais sont des popups) -->
+                <Border Background="{DynamicResource Surface.Elevated}" BorderBrush="{DynamicResource Border.Default}" BorderThickness="1"
+                        CornerRadius="{DynamicResource Radius.M}" Padding="10,6" HorizontalAlignment="Left" Effect="{DynamicResource Elevation.1}">
+                    <TextBlock Text="Info-bulle : Dupliquer (Ctrl+D)" FontSize="{DynamicResource FontSize.Caption}" />
+                </Border>
+                <Border Background="{DynamicResource Surface.Elevated}" BorderBrush="{DynamicResource Border.Default}" BorderThickness="1"
+                        CornerRadius="{DynamicResource Radius.M}" Padding="4" Margin="0,12,0,0" Width="220" HorizontalAlignment="Left" Effect="{DynamicResource Elevation.2}">
+                    <StackPanel>
+                        <Border Padding="10,7" CornerRadius="4" Background="{DynamicResource Surface.Hover}">
+                            <StackPanel Orientation="Horizontal"><c:Icon Glyph="{StaticResource Icon.Copy}" Margin="0,0,10,0" /><TextBlock Text="Dupliquer" /></StackPanel>
+                        </Border>
+                        <Border Padding="10,7"><StackPanel Orientation="Horizontal"><c:Icon Glyph="{StaticResource Icon.Export}" Margin="0,0,10,0" /><TextBlock Text="Exporter…" /></StackPanel></Border>
+                        <Border Padding="10,7"><StackPanel Orientation="Horizontal"><c:Icon Glyph="{StaticResource Icon.Delete}" Margin="0,0,10,0" Foreground="{DynamicResource State.Danger}" /><TextBlock Text="Supprimer" Foreground="{DynamicResource State.Danger}" /></StackPanel></Border>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card.Elevated}" Padding="14,12" Margin="0,12,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <c:Icon Glyph="{StaticResource Icon.CheckCircle}" Width="20" Height="20" Foreground="{DynamicResource State.Success}" VerticalAlignment="Top" />
+                        <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                            <TextBlock Text="Profil « Rotation » supprimé." Style="{StaticResource Text.Body}" />
+                            <TextBlock Text="Annuler" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- ===== Icônes ===== -->
+        <TextBlock Text="Icônes — Fluent UI System Icons (MIT)" Style="{StaticResource Section}" />
+        <Border Style="{StaticResource Card}">
+            <WrapPanel x:Name="IconGrid" />
+        </Border>
+    </StackPanel>
+</UserControl>
