@@ -168,6 +168,17 @@ internal sealed class SmokeTest
     {
         var lab = _vm.Lab;
         SelectTab("Labo");
+
+        // Compte à rebours géant (capturé puis annulé)
+        lab.UseCountdown = true;
+        lab.ToggleRecordCommand.Execute(null);
+        await Delay(400);
+        if (!lab.IsCountingDown) throw new InvalidOperationException("Le compte à rebours n'a pas démarré");
+        Capture(_window, "labo-compte-a-rebours");
+        lab.ToggleRecordCommand.Execute(null);
+        await Delay(200);
+        if (lab.IsCountingDown || lab.IsRecording) throw new InvalidOperationException("Annulation du compte à rebours KO");
+
         lab.UseCountdown = false;
         lab.UseFixedDuration = true;
         lab.DurationSeconds = 2;
@@ -209,6 +220,17 @@ internal sealed class SmokeTest
         s.Note = "Smoke test CI : F24 à 10 ms pendant 2 s";
         await Delay(500);
         Capture(_window, "7-labo-resultats");
+        Log($"Verdict A/B : « {lab.Verdict} »");
+
+        var chart = FindVisual<IntervalChart>(_window) ?? throw new InvalidOperationException("Graphique du Labo introuvable");
+        chart.Mode = ChartMode.Histogram;
+        await Delay(300);
+        Capture(_window, "7b-labo-histogramme");
+        chart.Mode = ChartMode.Scatter;
+        _vm.IsLightTheme = true;
+        await Delay(300);
+        Capture(_window, "7c-labo-clair");
+        _vm.IsLightTheme = false;
     }
 
     private void SelectTab(string header)
