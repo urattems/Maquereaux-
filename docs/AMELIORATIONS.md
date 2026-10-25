@@ -40,3 +40,10 @@ Chaque ajout reste dans l'esprit du projet et respecte la section « Hors périm
 | A-29 | Annuler la dernière suppression de touche (lien + Ctrl+Z futur) | Une suppression par erreur se rattrape en un clic. |
 | A-30 | Carte héros cliquable en entier, avec mini courbe et repère de la cible | Le bouton le plus important est aussi le plus gros. |
 | A-31 | Halo pulsé coupé quand la fenêtre est réduite ou les animations Windows désactivées | Zéro coût de rendu en arrière-plan. |
+| A-32 | Sélecteur de fenêtre cible avec icônes, titres de fenêtre et recherche | Fini les noms d'exe tapés de mémoire. |
+| A-33 | Verdict A/B en une phrase dans le Labo | La conclusion sans lire le tableau. |
+| A-34 | Zoom / défilement / info-bulle sur le graphique, mode histogramme | On voit exactement où un appui a dérapé. |
+| A-35 | Pastille compacte : opacité réglable (clic droit / Paramètres), opaque au survol, double-clic pour revenir | Reste visible sans gêner. |
+| A-36 | Visite guidée en 3 étapes, rejouable | Prise en main en 30 s. |
+| A-37 | Contrastes AA calculés par script | Lisible pour tout le monde, dans les deux thèmes. |
+| A-38 | Générateur d'icône multi-résolution depuis le logo | Icône nette de 16 à 256 px. |

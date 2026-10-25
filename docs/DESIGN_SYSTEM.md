@@ -27,14 +27,25 @@ Toutes les valeurs vivent dans `src/Maquereaux.App/Themes/`. **Aucune valeur en 
 | `Bg.Base` | `#0A1220` | `#EEF4F8` | Fond de fenêtre (sous Mica) |
 | `Surface` | `#132137` | `#FFFFFF` | Cartes |
 | `Surface.Sunken` | — | — | Champs, pistes, zones creuses |
-| `Accent` | `#2BD9C6` | `#0B9C90` | Action principale, focus, sélection |
+| `Accent` | `#2BD9C6` | `#077A70` | Action principale, focus, sélection |
 | `State.Running` | `#33E8D0` | — | Macro en marche (avec halo) |
 | `State.Paused` | `#F2B24A` | — | Pause automatique (fenêtre cible inactive) |
 | `State.Danger` | `#FF7466` | — | Erreurs, REC, suppression |
 | `Signature.Gradient` | `#1689C9 → #C3D3E2 → #2BD9C6` | idem assombri | **Avec parcimonie** : logo, bouton primaire, rayures |
 
-Contraste : textes primaire et secondaire ≥ 4,5:1 sur `Surface` dans les deux thèmes (AA) ; le tertiaire est réservé
-aux libellés non essentiels (chiffres d'index, unités).
+### Contrastes (WCAG 2.1, vérifiés par script sur les valeurs des thèmes)
+
+| Texte | Sombre (sur Surface / Élevée) | Clair (sur Surface / Creusée) |
+|---|---|---|
+| `Text.Primary` | 14,3 / 12,7 | 17,2 / 15,5 |
+| `Text.Secondary` | 7,3 / 6,5 | 6,5 / 5,9 |
+| `Text.Tertiary` | 5,1 / 4,6 | 5,1 / 4,6 |
+| `Accent` | 9,1 / 8,1 | 5,2 / 4,7 |
+| `State.Paused` | 8,6 / 7,7 | 5,4 / 4,9 |
+| `State.Danger` | 6,1 / 5,4 | 5,0 / 4,5 |
+
+Tout le texte passe **AA (≥ 4,5:1)** dans les deux thèmes. En clair, l'accent est volontairement plus sombre (`#077A70`)
+que la teinte décorative des dégradés (`#0B9C90`), qui elle ne porte jamais de texte fin.
 
 ## Typographie
 

@@ -41,7 +41,7 @@
     <!-- ===== Texte ===== -->
     <SolidColorBrush x:Key="Text.Primary" Color="#E9F2FB" />
     <SolidColorBrush x:Key="Text.Secondary" Color="#9BB0CA" />
-    <SolidColorBrush x:Key="Text.Tertiary" Color="#6B829F" />
+    <SolidColorBrush x:Key="Text.Tertiary" Color="#7C93B0" />
     <SolidColorBrush x:Key="Text.Disabled" Color="#4A5E7A" />
     <SolidColorBrush x:Key="Text.OnAccent" Color="#03201D" />
 

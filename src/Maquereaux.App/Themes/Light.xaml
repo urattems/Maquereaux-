@@ -8,10 +8,10 @@
     <Color x:Key="Color.Base">#E9F1F7</Color>
     <Color x:Key="Color.Layer">#F3F8FB</Color>
     <Color x:Key="Color.Surface">#FFFFFF</Color>
-    <Color x:Key="Color.Accent">#0B9C90</Color>
+    <Color x:Key="Color.Accent">#077A70</Color>
     <Color x:Key="Color.AccentDeep">#0F6FA8</Color>
     <Color x:Key="Color.Silver">#8FA6BC</Color>
-    <Color x:Key="Color.Running">#0B9C90</Color>
+    <Color x:Key="Color.Running">#077A70</Color>
     <Color x:Key="Color.Paused">#B8780A</Color>
     <Color x:Key="Color.Danger">#D2463A</Color>
     <Color x:Key="Color.Shadow">#2E1A3550</Color>
@@ -32,15 +32,15 @@
     <SolidColorBrush x:Key="Border.Subtle" Color="#E1EAF2" />
     <SolidColorBrush x:Key="Border.Default" Color="#CFDDE8" />
     <SolidColorBrush x:Key="Border.Strong" Color="#A9BFD3" />
-    <SolidColorBrush x:Key="Border.Focus" Color="#0B9C90" />
+    <SolidColorBrush x:Key="Border.Focus" Color="#077A70" />
 
     <SolidColorBrush x:Key="Text.Primary" Color="#0E1C2E" />
     <SolidColorBrush x:Key="Text.Secondary" Color="#46607C" />
-    <SolidColorBrush x:Key="Text.Tertiary" Color="#6E849C" />
+    <SolidColorBrush x:Key="Text.Tertiary" Color="#56708C" />
     <SolidColorBrush x:Key="Text.Disabled" Color="#A3B4C6" />
     <SolidColorBrush x:Key="Text.OnAccent" Color="#FFFFFF" />
 
-    <SolidColorBrush x:Key="Accent" Color="#0B9C90" />
+    <SolidColorBrush x:Key="Accent" Color="#077A70" />
     <SolidColorBrush x:Key="Accent.Hover" Color="#0CB0A2" />
     <SolidColorBrush x:Key="Accent.Pressed" Color="#08857B" />
     <SolidColorBrush x:Key="Accent.Subtle" Color="#140B9C90" />
@@ -56,19 +56,19 @@
         <GradientStop Offset="1" Color="#0B9C90" />
     </LinearGradientBrush>
 
-    <SolidColorBrush x:Key="State.Running" Color="#0B9C90" />
+    <SolidColorBrush x:Key="State.Running" Color="#077A70" />
     <SolidColorBrush x:Key="State.Running.Bg" Color="#DDF4F1" />
     <SolidColorBrush x:Key="State.Running.Glow" Color="#550B9C90" />
     <SolidColorBrush x:Key="State.Stopped" Color="#5B728C" />
     <SolidColorBrush x:Key="State.Stopped.Bg" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="State.Paused" Color="#A86C05" />
+    <SolidColorBrush x:Key="State.Paused" Color="#9A5B00" />
     <SolidColorBrush x:Key="State.Paused.Bg" Color="#FCF0D9" />
     <SolidColorBrush x:Key="State.Danger" Color="#C93D31" />
     <SolidColorBrush x:Key="State.Danger.Bg" Color="#FBE4E1" />
     <SolidColorBrush x:Key="State.Danger.Hover" Color="#DE5246" />
     <SolidColorBrush x:Key="State.Info" Color="#1F6FCC" />
     <SolidColorBrush x:Key="State.Info.Bg" Color="#E3EFFC" />
-    <SolidColorBrush x:Key="State.Success" Color="#0B9C90" />
+    <SolidColorBrush x:Key="State.Success" Color="#077A70" />
 
     <SolidColorBrush x:Key="Source.Physical" Color="#1F6FCC" />
     <SolidColorBrush x:Key="Source.Maquereaux" Color="#0B9C90" />

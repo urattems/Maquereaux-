@@ -192,3 +192,36 @@ Projet mené en **mode autonome** : chaque choix non trivial est noté ici (déc
 ### D-036 — Carte héros = un seul gros bouton
 - **Décision** : toute la carte héros est un `Button` (Start/Stop), son contenu n'a aucun contrôle interactif.
 - **Pourquoi** : cible de clic énorme, accessible au clavier (Tab + Espace), lu « Démarrer ou arrêter la macro » par le lecteur d'écran.
+
+### D-037 — Numérotation des versions de la refonte
+- **Décision** : le premier jet de l'écran Macro est sorti dès la 1.1.0 avec la coque (il servait à valider le design system
+  en conditions réelles). Les versions suivantes gardent la numérotation prévue mais chacune publie le jalon suivant :
+  1.2.0 = Profils + Paramètres + sélecteur de fenêtre (U3, avec la fin de U2), 1.3.0 = Labo (U4),
+  1.4.0 = pastille compacte, icône de notification, visite guidée, nouvelle icône (U5a), 1.5.0 = accessibilité, documentation,
+  galerie avant/après (U5b).
+- **Pourquoi** : une release par jalon, sans jamais publier un écran à moitié refondu ; chaque release est construite depuis le
+  commit du jalon (worktree) puis `main` est refusionnée dans `ui-revamp`.
+
+### D-038 — Contraste AA vérifié par calcul, accent clair assombri
+- **Décision** : un script calcule les ratios WCAG de chaque couleur de texte sur chaque surface ; en thème clair, l'accent
+  passe de `#0B9C90` (3,4:1) à `#077A70` (5,2:1), la pause de `#A86C05` à `#9A5B00`, les tertiaires sont rapprochés du secondaire.
+- **Pourquoi** : exigence d'accessibilité du cahier des charges ; le turquoise vif reste dans les dégradés décoratifs.
+
+### D-039 — Sélecteur de fenêtre cible côté App (Win32 sanctuarisé)
+- **Décision** : `Services/ProcessCatalog` (App) énumère les applis fenêtrées et extrait leur icône (`ExtractAssociatedIcon`),
+  à la demande (ouverture du sélecteur), sur un thread de fond, avec un cache d'icônes.
+- **Pourquoi** : `Maquereaux.Win32` ne change pas ; aucune surveillance permanente des process (zéro coût en tâche de fond).
+
+### D-040 — Suppression de profil sans confirmation, avec « Annuler »
+- **Décision** : la boîte de dialogue « Supprimer définitivement ? » disparaît au profit d'un toast « Annuler » (8 s).
+- **Pourquoi** : plus rapide au quotidien et rien n'est perdu ; le profil revient à sa place (sans son raccourci s'il a été repris).
+
+### D-041 — Graphique du Labo : fond en cache, interactions sans dépendance
+- **Décision** : le nuage de points est dessiné une fois dans un `DrawingGroup` gelé ; le survol ne redessine que l'info-bulle.
+  Zoom par Ctrl+molette (la molette seule fait défiler la page), glisser pour défiler, double-clic pour tout revoir.
+- **Pourquoi** : fluide même avec plusieurs milliers de points, sans bibliothèque de graphiques (single-file léger).
+
+### D-042 — Icône d'application générée depuis le logo
+- **Décision** : `tools/gen_icon.py` produit l'ICO 16 → 256 px depuis les tracés du logo (rendu Chromium, réduction Lanczos),
+  avec une variante simplifiée pour 16 et 24 px (sans rayures, œil agrandi).
+- **Pourquoi** : une seule source de vérité pour le logo ; lisible dans la barre des tâches comme dans l'explorateur.
