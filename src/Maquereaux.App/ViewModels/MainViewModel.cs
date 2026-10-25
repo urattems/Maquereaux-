@@ -294,9 +294,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         // Pas de boîte de confirmation : suppression immédiate + toast « Annuler » (plus rapide, et rien n'est perdu)
         if (_host.Engine.RunningProfile?.Id == p.Id) _host.Stop();
         int index = Profiles.IndexOf(p);
+        // La liste liée (SelectedItem) remet ActiveProfile à null pendant le Remove : on décide avant
+        bool wasActive = ActiveProfile == p;
         Profiles.Remove(p);
         _host.Profiles.Remove(p.Id);
-        if (ActiveProfile == p) ActiveProfile = Profiles[Math.Min(index, Profiles.Count - 1)];
+        if (wasActive || ActiveProfile is null) ActiveProfile = Profiles[Math.Min(index, Profiles.Count - 1)];
         ProfilesStructureChanged();
 
         NotificationViewModel? toast = null;

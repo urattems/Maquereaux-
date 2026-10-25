@@ -4,256 +4,359 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Maquereaux.App.ViewModels"
-             xmlns:controls="clr-namespace:Maquereaux.App.Controls"
-             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:LabViewModel}" d:DesignWidth="980" d:DesignHeight="600">
+             xmlns:c="clr-namespace:Maquereaux.App.Controls"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:LabViewModel}" d:DesignWidth="980" d:DesignHeight="900">
+    <UserControl.Resources>
+        <!-- Pastille de couleur d'une source (Physique / Maquereaux / Autre / Toutes) -->
+        <Style x:Key="SourceDot" TargetType="Ellipse">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="Fill" Value="{DynamicResource Text.Tertiary}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Source}" Value="Physique (toi)">
+                    <Setter Property="Fill" Value="{DynamicResource Source.Physical}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Source}" Value="Maquereaux">
+                    <Setter Property="Fill" Value="{DynamicResource Source.Maquereaux}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Source}" Value="Autre logiciel">
+                    <Setter Property="Fill" Value="{DynamicResource Source.Other}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="Stat.Label" TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}" />
+        <Style x:Key="Stat.Value" TargetType="TextBlock" BasedOn="{StaticResource Num.Body}">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+
+        <!-- Écart A/B coloré : turquoise = B meilleur, corail = B moins bon -->
+        <Style x:Key="Delta" TargetType="TextBlock" BasedOn="{StaticResource Num.Body}">
+            <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding BIsBetter}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource State.Running}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding BIsBetter}" Value="False">
+                    <Setter Property="Foreground" Value="{DynamicResource State.Danger}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" />
-            <ColumnDefinition Width="12" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+            <StackPanel Margin="0,0,4,8">
 
-        <!-- ===== Colonne gauche : enregistrement + sessions ===== -->
-        <DockPanel>
-            <Border DockPanel.Dock="Top" Style="{StaticResource Card}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Enregistrement" Style="{StaticResource Text.Title}" />
-                    <Button Command="{Binding ToggleRecordCommand}" Content="{Binding RecordButtonLabel}" FontSize="16" Padding="12,10">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource Button.Danger}">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource Brush.SurfaceAlt}" />
-                                        <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
-                                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Stopped}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-
-                    <!-- Indicateur REC bien visible -->
-                    <Border Margin="0,10,0,0" Padding="10,8" CornerRadius="6" Background="{DynamicResource Brush.StoppedBg}"
-                            Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Right" Text="{Binding LiveEvents, StringFormat={}{0} évén.}" Foreground="{DynamicResource Brush.Text}"
-                                       VerticalAlignment="Center" FontFamily="{StaticResource Font.Mono}" />
-                            <TextBlock FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Stopped}">
-                                <Run Text="● REC" />
-                                <Run Text="{Binding ElapsedText, Mode=OneWay}" FontFamily="{StaticResource Font.Mono}" FontSize="15" />
-                            </TextBlock>
-                        </DockPanel>
-                    </Border>
-                    <Border Margin="0,10,0,0" Padding="10,8" CornerRadius="6" Background="{DynamicResource Brush.PausedBg}"
-                            Visibility="{Binding IsCountingDown, Converter={StaticResource BoolToVis}}">
-                        <TextBlock HorizontalAlignment="Center" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource Brush.Paused}"
-                                   Text="{Binding Countdown}" />
-                    </Border>
-
-                    <CheckBox Content="Compte à rebours 3-2-1" IsChecked="{Binding UseCountdown}" Margin="0,10,0,2"
-                              IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
-                    <StackPanel Orientation="Horizontal" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
-                        <CheckBox Content="Durée fixe :" IsChecked="{Binding UseFixedDuration}" />
-                        <TextBox Style="{StaticResource TextBox.Number}" Width="54" Margin="8,0,6,0"
-                                 Text="{Binding DurationSeconds, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=True}"
-                                 IsEnabled="{Binding UseFixedDuration}" />
-                        <TextBlock Text="s" Style="{StaticResource Text.Label}" />
-                    </StackPanel>
-                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,10,0,0"
-                               Text="🔒 Capture uniquement pendant une session lancée ici. Données gardées en mémoire, écrites sur disque seulement si tu exportes/sauvegardes. Aucun envoi réseau." />
-                </StackPanel>
-            </Border>
-
-            <Border Style="{StaticResource Card}">
-                <DockPanel>
-                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <Button DockPanel.Dock="Right" Content="Ouvrir…" Style="{StaticResource Button.Icon}" Command="{Binding LoadSessionCommand}"
-                                ToolTip="Recharger une session sauvegardée (.mqsession.json)" />
-                        <TextBlock Text="Sessions" Style="{StaticResource Text.Title}" Margin="0" VerticalAlignment="Center" />
-                    </DockPanel>
-                    <Grid>
-                        <ListBox ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:LabSessionViewModel}">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Text="{Binding Summary}" Style="{StaticResource Text.Muted}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                        <TextBlock Text="Aucune session : lance un enregistrement." Style="{StaticResource Text.Muted}" HorizontalAlignment="Center"
-                                   VerticalAlignment="Center" Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisInverted}}" />
-                    </Grid>
-                </DockPanel>
-            </Border>
-        </DockPanel>
-
-        <!-- ===== Colonne droite : résultats + comparaison ===== -->
-        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <Border Style="{StaticResource Card}" Margin="0,0,0,12" DataContext="{Binding SelectedSession}"
-                        Visibility="{Binding Converter={StaticResource NullToVis}}">
-                    <StackPanel>
-                        <DockPanel Margin="0,0,0,8">
-                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                <Button Content="Exporter CSV…" Margin="4,0"
-                                        Command="{Binding DataContext.ExportCsvCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                <Button Content="Sauvegarder…" Margin="4,0"
-                                        Command="{Binding DataContext.SaveSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                                <Button Content="Supprimer" Style="{StaticResource Button.Icon}" Foreground="{DynamicResource Brush.Stopped}" Margin="4,0,0,0"
-                                        Command="{Binding DataContext.DeleteSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
-                            </StackPanel>
-                            <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" FontSize="16" FontWeight="SemiBold" Background="Transparent"
-                                     BorderThickness="0" Padding="0" ToolTip="Clique pour renommer" />
-                        </DockPanel>
-                        <TextBlock Text="{Binding Summary}" Style="{StaticResource Text.Muted}" Margin="0,0,0,10" />
-
-                        <!-- Tableau des stats par source -->
-                        <Grid Margin="0,0,0,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.6*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Source" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="1" Text="Inputs" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="2" Text="Inputs/s" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="3" Text="Moy. (ms)" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="4" Text="Min" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="5" Text="Max" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="6" Text="p95" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="7" Text="Jitter σ" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="8" Text="Appui moy." Style="{StaticResource Text.Muted}" />
-                        </Grid>
-                        <ItemsControl ItemsSource="{Binding Rows}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type vm:SourceRow}">
-                                    <Border Padding="0,5" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Brush.Border}">
-                                        <Grid TextBlock.FontFamily="{StaticResource Font.Mono}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1.6*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Source}" FontFamily="Segoe UI" FontWeight="SemiBold" />
-                                            <TextBlock Grid.Column="1" Text="{Binding Inputs}" />
-                                            <TextBlock Grid.Column="2" Text="{Binding Rate, StringFormat={}{0:0.0}}" />
-                                            <TextBlock Grid.Column="3" Text="{Binding Intervals.Mean, StringFormat={}{0:0.00}}" />
-                                            <TextBlock Grid.Column="4" Text="{Binding Intervals.Min, StringFormat={}{0:0.00}}" />
-                                            <TextBlock Grid.Column="5" Text="{Binding Intervals.Max, StringFormat={}{0:0.00}}" />
-                                            <TextBlock Grid.Column="6" Text="{Binding Intervals.P95, StringFormat={}{0:0.00}}" />
-                                            <TextBlock Grid.Column="7" Text="{Binding Intervals.StdDev, StringFormat={}{0:0.00}}" />
-                                            <TextBlock Grid.Column="8" Text="{Binding Press.Mean, StringFormat={}{0:0.0}}" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Margin="0,8,0,0" Style="{StaticResource Text.Muted}">
-                            <Run Text="Par touche :" />
-                            <Run Text="{Binding TopKeys, Mode=OneWay}" />
-                        </TextBlock>
-
-                        <TextBlock Text="Intervalles dans le temps" Style="{StaticResource Text.Label}" Margin="0,12,0,6" />
-                        <controls:IntervalChart Height="220" Points="{Binding Series}" DurationMs="{Binding DurationMs}" />
-
-                        <TextBlock Text="Note (résultat externe, contexte…)" Style="{StaticResource Text.Label}" Margin="0,12,0,6" />
-                        <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54"
-                                 VerticalContentAlignment="Top"
-                                 ToolTip="Ex. « mannequin, macro officielle, 20 s → 12 340 dégâts »" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Comparaison -->
+                <!-- ===================== Barre d'enregistrement ===================== -->
                 <Border Style="{StaticResource Card}">
-                    <StackPanel>
-                        <TextBlock Text="Comparer deux sessions" Style="{StaticResource Text.Title}" />
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="A" Style="{StaticResource Text.Label}" FontWeight="Bold" />
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding Sessions}" SelectedItem="{Binding CompareA}" DisplayMemberPath="Title" />
-                            <TextBlock Grid.Column="3" Text="B" Style="{StaticResource Text.Label}" FontWeight="Bold" />
-                            <ComboBox Grid.Column="4" ItemsSource="{Binding Sessions}" SelectedItem="{Binding CompareB}" DisplayMemberPath="Title" />
-                        </Grid>
-                        <Grid Margin="0,0,0,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.4*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="1.3*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Métrique" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="1" Text="A" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="2" Text="B" Style="{StaticResource Text.Muted}" />
-                            <TextBlock Grid.Column="3" Text="Écart (B − A)" Style="{StaticResource Text.Muted}" />
-                        </Grid>
-                        <ItemsControl ItemsSource="{Binding ComparisonRows}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Padding="0,4" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Brush.Border}">
-                                        <Grid TextBlock.FontFamily="{StaticResource Font.Mono}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="1.4*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="1.3*" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding Metric}" FontFamily="Segoe UI" />
-                                            <TextBlock Grid.Column="1" Text="{Binding AText}" />
-                                            <TextBlock Grid.Column="2" Text="{Binding BText}" />
-                                            <TextBlock Grid.Column="3" Text="{Binding DeltaText}">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="{DynamicResource Brush.TextMuted}" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding BIsBetter}" Value="True">
-                                                                <Setter Property="Foreground" Value="{DynamicResource Brush.Running}" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding BIsBetter}" Value="False">
-                                                                <Setter Property="Foreground" Value="{DynamicResource Brush.Stopped}" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Style="{StaticResource Text.Muted}" Margin="0,6,0,10"
-                                   Text="Vert = B meilleur que A (cadence plus haute, intervalles plus réguliers…), rouge = moins bon. Astuce : enregistre « Manuel 20 s » puis « Maquereaux 20 s », la comparaison se remplit toute seule." />
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="10" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <controls:IntervalChart Height="150" Points="{Binding CompareA.Series}" DurationMs="{Binding CompareA.DurationMs}" EmptyText="Session A" />
-                            <controls:IntervalChart Grid.Column="2" Height="150" Points="{Binding CompareB.Series}" DurationMs="{Binding CompareB.DurationMs}" EmptyText="Session B" />
-                        </Grid>
-                    </StackPanel>
+                    <DockPanel>
+                        <!-- Options (verrouillées pendant une session) -->
+                        <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
+                            <DockPanel Margin="0,0,0,8">
+                                <CheckBox DockPanel.Dock="Right" Style="{StaticResource Toggle}" IsChecked="{Binding UseCountdown}" Margin="16,0,0,0"
+                                          AutomationProperties.Name="Compte à rebours 3-2-1" />
+                                <TextBlock Text="Compte à rebours 3-2-1" Style="{StaticResource Text.Body}" VerticalAlignment="Center" />
+                            </DockPanel>
+                            <DockPanel>
+                                <CheckBox DockPanel.Dock="Right" Style="{StaticResource Toggle}" IsChecked="{Binding UseFixedDuration}" Margin="16,0,0,0"
+                                          AutomationProperties.Name="Durée fixe" />
+                                <c:NumericBox DockPanel.Dock="Right" Value="{Binding DurationSeconds}" Minimum="1" Maximum="3600" Unit="s" Width="104"
+                                              Margin="12,0,0,0" IsEnabled="{Binding UseFixedDuration}" AutomationProperties.Name="Durée de la session en secondes" />
+                                <TextBlock Text="Durée fixe" Style="{StaticResource Text.Body}" VerticalAlignment="Center" />
+                            </DockPanel>
+                        </StackPanel>
+
+                        <Button x:Name="RecordButton" Command="{Binding ToggleRecordCommand}" MinHeight="56" Padding="22,0" FontSize="{DynamicResource FontSize.Subtitle}"
+                                VerticalAlignment="Center" AutomationProperties.Name="{Binding RecordButtonLabel}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Btn.Danger}">
+                                    <Setter Property="Content" Value="Enregistrer" />
+                                    <Setter Property="c:Ui.Icon" Value="{StaticResource Icon.Record}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRecording}" Value="True">
+                                            <Setter Property="Content" Value="Arrêter" />
+                                            <Setter Property="c:Ui.Icon" Value="{StaticResource Icon.Stop}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsCountingDown}" Value="True">
+                                            <Setter Property="Content" Value="Annuler" />
+                                            <Setter Property="c:Ui.Icon" Value="{StaticResource Icon.Close}" />
+                                            <Setter Property="Background" Value="{DynamicResource Surface.Elevated}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- État : prêt / REC pulsé + chrono -->
+                        <StackPanel VerticalAlignment="Center" Margin="20,0,16,0">
+                            <StackPanel Orientation="Horizontal" Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
+                                <Ellipse x:Name="RecDot" Width="12" Height="12" Fill="{DynamicResource State.Danger}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <TextBlock Text="REC" FontWeight="Bold" Foreground="{DynamicResource State.Danger}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                <TextBlock Text="{Binding ElapsedText}" Style="{StaticResource Num.Stat}" VerticalAlignment="Center" />
+                                <TextBlock Style="{StaticResource Num.Small}" VerticalAlignment="Center" Margin="14,4,0,0">
+                                    <Run Text="{Binding LiveEvents, Mode=OneWay}" /><Run Text=" événements" />
+                                </TextBlock>
+                            </StackPanel>
+                            <StackPanel Visibility="{Binding IsRecording, Converter={StaticResource BoolToVisInverted}}">
+                                <TextBlock Text="Prêt à mesurer" Style="{StaticResource Text.BodyStrong}" />
+                                <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                           Text="Tape au clavier ou lance une macro pendant la session : chaque appui est horodaté à la microseconde." />
+                            </StackPanel>
+                            <DockPanel Margin="0,8,0,0">
+                                <c:Icon Glyph="{StaticResource Icon.Lock}" Width="12" Height="12" Foreground="{DynamicResource Text.Tertiary}" VerticalAlignment="Top" Margin="0,2,6,0" />
+                                <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Foreground="{DynamicResource Text.Tertiary}"
+                                           Text="Capture seulement pendant une session lancée ici, gardée en mémoire. Rien n'est écrit sur disque sans ton clic, rien ne sort du PC." />
+                            </DockPanel>
+                        </StackPanel>
+                    </DockPanel>
                 </Border>
+
+                <!-- ===================== Sessions + résultats ===================== -->
+                <c:ResponsiveColumns Margin="0,16,0,0" LeftRatio="0.3" Breakpoint="860">
+
+                    <!-- ~~ Sessions ~~ -->
+                    <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Open}" Command="{Binding LoadSessionCommand}"
+                                        ToolTip="Ouvrir une session sauvegardée (.mqsession.json)" AutomationProperties.Name="Ouvrir une session" />
+                                <TextBlock Text="Sessions" Style="{StaticResource Text.Title}" VerticalAlignment="Center" />
+                            </DockPanel>
+
+                            <ListBox ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}" AutomationProperties.Name="Sessions"
+                                     Visibility="{Binding HasSessions, Converter={StaticResource BoolToVis}}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:LabSessionViewModel}">
+                                        <StackPanel>
+                                            <DockPanel>
+                                                <Border DockPanel.Dock="Right" Style="{StaticResource Badge.Neutral}" Margin="6,0,0,0">
+                                                    <TextBlock Text="{Binding DominantLabel}" />
+                                                </Border>
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            </DockPanel>
+                                            <TextBlock Text="{Binding Summary}" Style="{StaticResource Num.Small}" FontSize="11" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <!-- État vide -->
+                            <StackPanel Margin="0,12,0,8" HorizontalAlignment="Center" Visibility="{Binding HasSessions, Converter={StaticResource BoolToVisInverted}}">
+                                <Grid Width="56" Height="56" HorizontalAlignment="Center">
+                                    <Ellipse Fill="{DynamicResource Accent.Subtle}" />
+                                    <c:Icon Glyph="{StaticResource Icon.Lab}" Width="26" Height="26" Foreground="{DynamicResource Accent}" />
+                                </Grid>
+                                <TextBlock Text="Aucune session" Style="{StaticResource Text.BodyStrong}" HorizontalAlignment="Center" Margin="0,12,0,4" />
+                                <TextBlock Style="{StaticResource Text.Caption}" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="220"
+                                           Text="Enregistre « Manuel 20 s » puis « Maquereaux 20 s » : la comparaison se remplit toute seule." />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ~~ Résultats de la session sélectionnée ~~ -->
+                    <StackPanel>
+                        <Border Style="{StaticResource Card}" DataContext="{Binding SelectedSession}" Visibility="{Binding Converter={StaticResource NullToVis}}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                                        <Button Style="{StaticResource Btn.Ghost}" Content="CSV" c:Ui.Icon="{StaticResource Icon.Export}" ToolTip="Exporter en CSV (Excel)"
+                                                Command="{Binding DataContext.ExportCsvCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Save}" ToolTip="Sauvegarder la session"
+                                                AutomationProperties.Name="Sauvegarder la session"
+                                                Command="{Binding DataContext.SaveSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                        <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Delete}" ToolTip="Supprimer la session" Foreground="{DynamicResource State.Danger}"
+                                                AutomationProperties.Name="Supprimer la session"
+                                                Command="{Binding DataContext.DeleteSessionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" FontSize="{DynamicResource FontSize.Title}" FontWeight="SemiBold"
+                                                 Background="Transparent" BorderThickness="0" Padding="0" MinHeight="0" ToolTip="Clique pour renommer"
+                                                 AutomationProperties.Name="Nom de la session" />
+                                        <TextBlock Text="{Binding Summary}" Style="{StaticResource Num.Small}" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </DockPanel>
+
+                                <!-- Une carte de stats par source -->
+                                <ItemsControl ItemsSource="{Binding Rows}" Margin="0,16,0,0" Focusable="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type vm:SourceRow}">
+                                            <Border Style="{StaticResource Card.Sunken}" Width="196" Margin="0,0,10,10" Padding="14,12">
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Ellipse Style="{StaticResource SourceDot}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                                        <TextBlock Text="{Binding Source}" Style="{StaticResource Text.BodyStrong}" />
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
+                                                        <TextBlock Text="{Binding Rate, StringFormat={}{0:0.0}}" Style="{StaticResource Num.Stat}" />
+                                                        <TextBlock Text=" inputs/s" Style="{StaticResource Text.Caption}" VerticalAlignment="Bottom" Margin="0,0,0,3" />
+                                                    </StackPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                                                        </Grid.RowDefinitions>
+                                                        <TextBlock Text="Appuis" Style="{StaticResource Stat.Label}" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Inputs}" Style="{StaticResource Stat.Value}" />
+                                                        <TextBlock Grid.Row="1" Text="Intervalle moyen" Style="{StaticResource Stat.Label}" />
+                                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Intervals.Mean, StringFormat={}{0:0.00} ms}" Style="{StaticResource Stat.Value}" />
+                                                        <TextBlock Grid.Row="2" Text="p95" Style="{StaticResource Stat.Label}" />
+                                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Intervals.P95, StringFormat={}{0:0.00} ms}" Style="{StaticResource Stat.Value}" />
+                                                        <TextBlock Grid.Row="3" Text="Jitter σ" Style="{StaticResource Stat.Label}" />
+                                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Intervals.StdDev, StringFormat={}{0:0.00} ms}" Style="{StaticResource Stat.Value}" />
+                                                        <TextBlock Grid.Row="4" Text="Appui moyen" Style="{StaticResource Stat.Label}" />
+                                                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Press.Mean, StringFormat={}{0:0.0} ms}" Style="{StaticResource Stat.Value}" />
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0">
+                                    <Run Text="Touches les plus utilisées :" />
+                                    <Run Text="{Binding TopKeys, Mode=OneWay}" FontFamily="{DynamicResource Font.Mono}" />
+                                </TextBlock>
+
+                                <!-- Graphique -->
+                                <DockPanel Margin="0,20,0,8">
+                                    <Border DockPanel.Dock="Right" Style="{StaticResource Segmented}">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Style="{StaticResource Segment}" GroupName="ChartMode" Content="Nuage" MinWidth="80"
+                                                         c:Ui.Icon="{StaticResource Icon.LineChart}"
+                                                         IsChecked="{Binding Mode, ElementName=Chart, Converter={StaticResource EnumToBool}, ConverterParameter=Scatter}" />
+                                            <RadioButton Style="{StaticResource Segment}" GroupName="ChartMode" Content="Histogramme" MinWidth="80"
+                                                         c:Ui.Icon="{StaticResource Icon.Histogram}"
+                                                         IsChecked="{Binding Mode, ElementName=Chart, Converter={StaticResource EnumToBool}, ConverterParameter=Histogram}" />
+                                        </UniformGrid>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Intervalles" Style="{StaticResource Text.Subtitle}" />
+                                        <TextBlock Text="Survol : détail d'un appui · Ctrl+molette : zoom · double-clic : tout voir" Style="{StaticResource Text.Caption}" />
+                                    </StackPanel>
+                                </DockPanel>
+                                <c:IntervalChart x:Name="Chart" Height="260" Points="{Binding Series}" DurationMs="{Binding DurationMs}"
+                                                 Target="{Binding DataContext.TargetIntervalMs, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 AutomationProperties.Name="Graphique des intervalles" />
+
+                                <TextBlock Text="Note" Style="{StaticResource Text.BodyStrong}" Margin="0,16,0,6" />
+                                <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="56"
+                                         VerticalContentAlignment="Top" c:Ui.Placeholder="Contexte, résultat externe… ex. « mannequin, 20 s → 12 340 dégâts »"
+                                         AutomationProperties.Name="Note de la session" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Rien de sélectionné -->
+                        <Border Style="{StaticResource Card}" Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisInverted}}">
+                            <StackPanel HorizontalAlignment="Center" Margin="0,24">
+                                <c:Icon Glyph="{StaticResource Icon.LineChart}" Width="32" Height="32" Foreground="{DynamicResource Text.Tertiary}" />
+                                <TextBlock Text="Les résultats s'afficheront ici" Style="{StaticResource Text.BodyStrong}" HorizontalAlignment="Center" Margin="0,12,0,4" />
+                                <TextBlock Text="Cadence, régularité et durée d'appui, par source." Style="{StaticResource Text.Caption}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ===================== Comparaison A/B ===================== -->
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Comparer deux sessions" Style="{StaticResource Text.Title}" />
+                                <TextBlock Text="A = référence, B = challenger. Choisies automatiquement après deux enregistrements." Style="{StaticResource Text.Supporting}" Margin="0,2,0,12" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Left" Style="{StaticResource Kbd}" Margin="0,0,8,0"><TextBlock Text="A" /></Border>
+                                        <ComboBox ItemsSource="{Binding Sessions}" SelectedItem="{Binding CompareA}" DisplayMemberPath="Title" AutomationProperties.Name="Session A" />
+                                    </DockPanel>
+                                    <DockPanel Grid.Column="2">
+                                        <Border DockPanel.Dock="Left" Style="{StaticResource Kbd}" Margin="0,0,8,0"><TextBlock Text="B" /></Border>
+                                        <ComboBox ItemsSource="{Binding Sessions}" SelectedItem="{Binding CompareB}" DisplayMemberPath="Title" AutomationProperties.Name="Session B" />
+                                    </DockPanel>
+                                </Grid>
+
+                                <!-- Verdict en une phrase -->
+                                <Border Background="{DynamicResource Accent.Subtle}" CornerRadius="{DynamicResource Radius.M}" Padding="14,12" Margin="0,16,0,0"
+                                        Visibility="{Binding HasComparison, Converter={StaticResource BoolToVis}}">
+                                    <DockPanel>
+                                        <c:Icon Glyph="{StaticResource Icon.Sparkle}" Width="18" Height="18" Foreground="{DynamicResource Accent}" VerticalAlignment="Top" Margin="0,1,12,0" />
+                                        <TextBlock Text="{Binding Verdict}" Style="{StaticResource Text.BodyStrong}" TextWrapping="Wrap" />
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- Tableau -->
+                                <Grid Margin="0,16,0,6" Visibility="{Binding HasComparison, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="1.3*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Métrique" Style="{StaticResource Text.Overline}" />
+                                    <TextBlock Grid.Column="1" Text="A" Style="{StaticResource Text.Overline}" HorizontalAlignment="Right" />
+                                    <TextBlock Grid.Column="2" Text="B" Style="{StaticResource Text.Overline}" HorizontalAlignment="Right" />
+                                    <TextBlock Grid.Column="3" Text="Écart B − A" Style="{StaticResource Text.Overline}" HorizontalAlignment="Right" />
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding ComparisonRows}" Focusable="False">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="0,6" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Border.Subtle}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="1.4*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="1.3*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding Metric}" Style="{StaticResource Text.Body}" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding AText}" Style="{StaticResource Num.Body}" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding BText}" Style="{StaticResource Num.Body}" HorizontalAlignment="Right" />
+                                                    <TextBlock Grid.Column="3" Text="{Binding DeltaText}" Style="{StaticResource Delta}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <Grid Margin="0,12,0,0" Visibility="{Binding HasComparison, Converter={StaticResource BoolToVis}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <c:IntervalChart Height="150" Interactive="False" Points="{Binding CompareA.Series}" DurationMs="{Binding CompareA.DurationMs}" EmptyText="Session A" />
+                                    <c:IntervalChart Grid.Column="2" Height="150" Interactive="False" Points="{Binding CompareB.Series}" DurationMs="{Binding CompareB.DurationMs}" EmptyText="Session B" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </c:ResponsiveColumns>
             </StackPanel>
         </ScrollViewer>
+
+        <!-- ===================== Compte à rebours géant ===================== -->
+        <Grid x:Name="CountdownOverlay" Visibility="{Binding IsCountingDown, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource Scrim}" CornerRadius="{DynamicResource Radius.L}" />
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock x:Name="CountdownText" Text="{Binding Countdown}" FontFamily="{DynamicResource Font.Mono}" FontSize="160" FontWeight="Bold"
+                           Foreground="{DynamicResource Accent}" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                    <TextBlock.RenderTransform>
+                        <ScaleTransform x:Name="CountdownScale" />
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+                <TextBlock Text="Prépare-toi…" Style="{StaticResource Text.Title}" HorizontalAlignment="Center" />
+                <Button Content="Annuler" Command="{Binding ToggleRecordCommand}" HorizontalAlignment="Center" Margin="0,16,0,0" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

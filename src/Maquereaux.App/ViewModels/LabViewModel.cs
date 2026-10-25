@@ -41,6 +41,7 @@ public sealed partial class LabViewModel : ObservableObject, IDisposable
         _tickTimer.Tick += (_, _) => OnTick();
         _countdownTimer = new DispatcherTimer(DispatcherPriority.Normal, dispatcher) { Interval = TimeSpan.FromSeconds(1) };
         _countdownTimer.Tick += (_, _) => OnCountdownTick();
+        Sessions.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasSessions));
     }
 
     public ObservableCollection<LabSessionViewModel> Sessions { get; } = new();
@@ -85,6 +86,20 @@ public sealed partial class LabViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private IReadOnlyList<ComparisonRow> _comparisonRows = Array.Empty<ComparisonRow>();
+
+    /// <summary>Verdict A/B en une phrase (vide tant que A et B ne sont pas choisies).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasComparison))]
+    private string _verdict = "";
+
+    public bool HasComparison => Verdict.Length > 0;
+
+    /// <summary>Intervalle du profil actif : ligne « cible » du graphique.</summary>
+    public double TargetIntervalMs => _main.ActiveProfile?.IntervalMs ?? 0;
+
+    partial void OnSelectedSessionChanged(LabSessionViewModel? value) => OnPropertyChanged(nameof(TargetIntervalMs));
+
+    public bool HasSessions => Sessions.Count > 0;
 
     public bool HasSelection => SelectedSession is not null;
     public bool IsBusy => IsRecording || IsCountingDown;
@@ -197,6 +212,7 @@ public sealed partial class LabViewModel : ObservableObject, IDisposable
         ComparisonRows = CompareA is not null && CompareB is not null
             ? SessionComparison.Compare(CompareA.Results, CompareB.Results)
             : Array.Empty<ComparisonRow>();
+        Verdict = CompareA is not null && CompareB is not null ? LabLogic.Verdict(ComparisonRows, CompareA.Name, CompareB.Name) : "";
     }
 
     // ---------- Fichiers (toujours sur action explicite) ----------

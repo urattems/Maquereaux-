@@ -253,3 +253,43 @@ public class ProfileViewModelTests
         Assert.Equal("+2", vm.MoreKeysText);
     }
 }
+
+public class LabVerdictTests
+{
+    public LabVerdictTests() => CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
+
+    private static IReadOnlyList<Core.Lab.ComparisonRow> Rows(double rateA, double rateB, double sA, double sB, int nA = 100, int nB = 100) => new[]
+    {
+        new Core.Lab.ComparisonRow("Inputs", nA, nB, "", false),
+        new Core.Lab.ComparisonRow("Inputs / seconde", rateA, rateB, "/s", false),
+        new Core.Lab.ComparisonRow("Jitter (σ)", sA, sB, "ms", true),
+    };
+
+    [Fact]
+    public void Faster_and_more_regular()
+    {
+        var v = LabLogic.Verdict(Rows(8, 96, 5.8, 0.25), "Manuel", "Maquereaux");
+        Assert.Equal("Maquereaux est 23× plus régulier que Manuel (σ 0,25 ms contre 5,8 ms) et 12× plus rapide.", v);
+    }
+
+    [Fact]
+    public void Equivalent_sessions()
+    {
+        var v = LabLogic.Verdict(Rows(100, 105, 0.30, 0.28), "A", "B");
+        Assert.Equal("B est aussi régulier que A (σ 0,28 ms contre 0,3 ms), à cadence égale.", v);
+    }
+
+    [Fact]
+    public void Slower_and_less_regular()
+    {
+        var v = LabLogic.Verdict(Rows(100, 50, 0.5, 1.5), "A", "B");
+        Assert.Equal("B est 3× moins régulier que A (σ 1,5 ms contre 0,5 ms) et 2× plus lent.", v);
+    }
+
+    [Fact]
+    public void Too_few_inputs_or_missing_rows()
+    {
+        Assert.Contains("trop peu", LabLogic.Verdict(Rows(1, 1, 0, 0, nA: 1), "A", "B"));
+        Assert.Equal("", LabLogic.Verdict(Array.Empty<Core.Lab.ComparisonRow>(), "A", "B"));
+    }
+}
