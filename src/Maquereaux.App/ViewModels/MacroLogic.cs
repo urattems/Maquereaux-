@@ -12,6 +12,15 @@ public static class MacroLogic
     /// <summary>Durée d'appui recommandée pour les jeux qui lisent le clavier une fois par image.</summary>
     public const int RecommendedGameHoldMs = 16;
 
+    /// <summary>Mode jeu : appui assez long pour être vu même à 30 fps (une image ≈ 33 ms ; 30 ms couvre la plupart des cas).</summary>
+    public const int GameModeHoldMs = 30;
+
+    /// <summary>Mode jeu : intervalle minimal. Plus vite, les sorts (temps de recharge, incantation) s'écrasent entre eux.</summary>
+    public const int GameModeMinIntervalMs = 100;
+
+    /// <summary>Intervalle conseillé du mode jeu : au moins 100 ms, et toujours plus long que l'appui.</summary>
+    public static int GameModeInterval(int currentMs) => Math.Max(currentMs, GameModeMinIntervalMs);
+
     /// <summary>Borne haute du curseur d'intervalle (au-delà : saisie au clavier, jusqu'à 60 s).</summary>
     public const int SliderMaxIntervalMs = 1000;
 
@@ -71,6 +80,15 @@ public static class MacroLogic
         if (profile.Steps.Count == 0 || !profile.Steps.Any(s => s.HoldMs == 0)) return false;
         return !string.IsNullOrEmpty(profile.TargetProcess) && !DesktopApps.Contains(profile.TargetProcess);
     }
+
+    /// <summary>
+    /// Conseiller le mode jeu ? Cible = probablement un jeu ET (appuis plus courts que 30 ms OU cadence plus rapide que 100 ms).
+    /// </summary>
+    public static bool ShouldAdviseGameMode(Profile profile) =>
+        IsProbablyGame(profile.TargetProcess) && profile.Steps.Count > 0 &&
+        (profile.Steps.Any(s => s.HoldMs < GameModeHoldMs) || profile.IntervalMs < GameModeMinIntervalMs);
+
+    private static bool IsProbablyGame(string? target) => !string.IsNullOrEmpty(target) && !DesktopApps.Contains(target);
 
     /// <summary>Libellé de puce pour la durée d'appui (« 0 ms » = instantané).</summary>
     public static string HoldChip(int holdMs) => holdMs == 0 ? "instantané" : $"{holdMs} ms";

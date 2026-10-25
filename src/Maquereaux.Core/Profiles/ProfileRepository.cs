@@ -51,6 +51,7 @@ public sealed class ProfileRepository
         }
         if (!Enum.IsDefined(s.TimerStrategy)) s.TimerStrategy = Engine.TimerStrategy.HighResolution;
         if (!Enum.IsDefined(s.Theme)) s.Theme = AppTheme.Dark;
+        if (!Enum.IsDefined(s.KeySendMethod)) s.KeySendMethod = KeySendMethod.ScanCode;
         s.CompactOpacity = double.IsFinite(s.CompactOpacity) ? Math.Clamp(s.CompactOpacity, AppSettings.MinCompactOpacity, 1) : 0.95;
         s.SafetyTimeoutMinutes = Math.Clamp(s.SafetyTimeoutMinutes, AppSettings.MinSafetyTimeoutMinutes, AppSettings.MaxSafetyTimeoutMinutes);
         return s;

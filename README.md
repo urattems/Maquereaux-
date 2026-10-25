@@ -45,6 +45,13 @@ que tu relâches. Le clic arrive quand même au jeu.
    boutons latéraux 4/5). Le mode passe tout seul sur **Maintenir**.
 2. **Fenêtre cible** = le jeu (indispensable avec un clic : sinon chaque clic dans n'importe quelle appli lancerait la macro).
 
+**Ça marche dans le Bloc-notes mais pas en jeu ?** Dans l'ordre :
+1. Bouton **Appliquer le mode jeu** (appui 30 ms, intervalle ≥ 100 ms) : un jeu lit le clavier une fois par image, un appui
+   « instantané » passe inaperçu et une cadence trop rapide écrase les sorts. Teste d'abord avec **une seule touche**.
+2. Paramètres → Avancé → **Méthode d'envoi : Code virtuel** (certains jeux ne lisent que l'une des deux).
+3. Jeu lancé en admin ? Relance Maquereaux en admin (Paramètres → Avancé).
+4. Toujours rien : le jeu filtre les entrées simulées (souvent avec un anti-cheat). Maquereaux ne le contourne pas, par principe.
+
 | Écran | Ce qu'on y fait |
 |---|---|
 | **Macro** | Carte héros (Start/Stop, stats en direct, mini-courbe), séquence en keycaps (glisser-déposer, Suppr, Ctrl+D, Alt+←/→, double-clic), durée d'appui et délai par touche, cadence (curseur, presets, « = N inputs/s »), Cycle/Burst, raccourci ON/OFF ou **Maintenir**, **fenêtre cible** avec icônes |

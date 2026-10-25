@@ -102,7 +102,17 @@ Légende : ☐ à faire · ✅ OK · ❌ KO (note ce que tu vois)
 | 6.6 | Clic droit maintenu dans le jeu, puis **F9** sans relâcher | Arrêt immédiat ; relâcher ensuite ne relance rien |
 | 6.7 | Ne garde que des profils clavier | Le hook souris est retiré (log « Hook souris retiré ») |
 
-## 7. Limites connues à vérifier (comportement attendu, pas des bugs)
+## 7. Compatibilité jeux (v1.7)
+| # | Action | Attendu |
+|---|---|---|
+| 7.1 | Fenêtre cible = l'exe du jeu, séquence à 10 ms « instantané » | Bandeau « Ça marche dans le Bloc-notes mais pas en jeu ? » |
+| 7.2 | **Appliquer le mode jeu** | Toutes les puces à 30 ms, intervalle 100 ms (ou plus s'il l'était déjà), bandeau disparu |
+| 7.3 | En jeu, sur un mannequin : une seule touche de sort, mode jeu | Le sort part à chaque recharge |
+| 7.4 | Si rien : Paramètres → Avancé → **Code virtuel**, réessaie | Le sort part (sinon, revenir sur Scan code) |
+| 7.5 | Toujours rien, même en lançant Maquereaux **en admin** | Le jeu filtre les entrées simulées : limite connue, non contournable (hors périmètre) |
+| 7.6 | Bloc-notes avec chaque méthode | Les lettres s'écrivent dans les deux cas |
+
+## 8. Limites connues à vérifier (comportement attendu, pas des bugs)
 - Certains jeux/anti-cheat ignorent les entrées injectées (flag `LLKHF_INJECTED`) : c'est voulu, Maquereaux ne le contourne pas.
 - Impossible d'envoyer des touches sur l'écran de verrouillage / UAC (bureau sécurisé).
 - Win+L, Ctrl+Alt+Suppr ne peuvent pas être simulés (protégés par Windows).

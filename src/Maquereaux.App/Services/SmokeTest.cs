@@ -95,6 +95,15 @@ internal sealed class SmokeTest
         var stats20 = _host.Recorder.Snapshot();
         Log($"Édition à chaud : intervalle en cours = {live?.IntervalMs} ms, moyenne mesurée {stats20.Mean:0.000} ms");
         if (live?.IntervalMs != 20) throw new InvalidOperationException("La modification à chaud n'a pas été appliquée");
+
+        // Méthode d'envoi « code virtuel » : appliquée à chaud, les envois doivent continuer sans refus
+        long failedBefore = _host.Sender.FailedEvents, ticksBefore = _host.Engine.TicksSent;
+        _vm.KeySendMethod = Core.Models.KeySendMethod.VirtualKey;
+        await Delay(400);
+        long vkTicks = _host.Engine.TicksSent - ticksBefore;
+        _vm.KeySendMethod = Core.Models.KeySendMethod.ScanCode;
+        Log($"Méthode code virtuel : {vkTicks} ticks en 0,4 s, refusés = {_host.Sender.FailedEvents - failedBefore}");
+        if (vkTicks < 5 || _host.Sender.FailedEvents != failedBefore) throw new InvalidOperationException("Envoi en code virtuel KO");
         _vm.StartStopCommand.Execute(null);
         await Delay(500);
 

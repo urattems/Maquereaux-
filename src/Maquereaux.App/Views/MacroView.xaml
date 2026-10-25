@@ -406,22 +406,19 @@
                         </c:SequenceEditor.ItemsPanel>
                     </c:SequenceEditor>
 
-                    <!-- Conseil durée d'appui (cible = probablement un jeu, au moins une touche instantanée) -->
+                    <!-- Conseil « mode jeu » (cible = probablement un jeu, appuis trop courts ou cadence trop rapide) -->
                     <Border Background="{DynamicResource Accent.Subtle}" CornerRadius="{DynamicResource Radius.M}" Padding="14,10" Margin="0,4,0,0"
-                            Visibility="{Binding ShowHoldAdvice, Converter={StaticResource BoolToVis}}">
+                            Visibility="{Binding ShowGameModeAdvice, Converter={StaticResource BoolToVis}}">
                         <DockPanel>
                             <c:Icon Glyph="{StaticResource Icon.LightbulbFilled}" Width="18" Height="18" Foreground="{DynamicResource Accent}"
                                     VerticalAlignment="Top" Margin="0,1,12,0" />
-                            <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Secondary}" Content="Appliquer 16 ms à toute la séquence"
-                                    Command="{Binding ApplyHoldToAllCommand}" VerticalAlignment="Center" Margin="12,0,0,0">
-                                <Button.CommandParameter>
-                                    <sys:Int32>16</sys:Int32>
-                                </Button.CommandParameter>
-                            </Button>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Primary}" Content="Appliquer le mode jeu"
+                                    Command="{Binding ApplyGameModeCommand}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                    ToolTip="Appui de 30 ms sur chaque touche, intervalle d'au moins 100 ms" />
                             <StackPanel>
-                                <TextBlock Text="Certains jeux ratent les appuis instantanés" Style="{StaticResource Text.BodyStrong}" />
+                                <TextBlock Text="Ça marche dans le Bloc-notes mais pas en jeu ?" Style="{StaticResource Text.BodyStrong}" />
                                 <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
-                                           Text="Un jeu lit souvent le clavier une fois par image (~16 ms à 60 fps) : un appui de 0 ms peut passer entre deux lectures. Les applis de bureau, elles, s'en contentent." />
+                                           Text="Un jeu lit le clavier une fois par image (16 à 33 ms) : un appui plus court passe entre deux lectures, et une cadence plus rapide que 100 ms écrase les sorts (temps de recharge, incantation). Le mode jeu règle 30 ms d'appui et au moins 100 ms d'intervalle." />
                             </StackPanel>
                         </DockPanel>
                     </Border>

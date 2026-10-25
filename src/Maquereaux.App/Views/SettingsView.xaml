@@ -313,6 +313,20 @@
                             </StackPanel>
                         </DockPanel>
                         <DockPanel Style="{StaticResource Row}">
+                            <Border DockPanel.Dock="Right" Style="{StaticResource Segmented}" VerticalAlignment="Center">
+                                <UniformGrid Rows="1">
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="SendMethod" Content="Scan code"
+                                                 IsChecked="{Binding KeySendMethod, Converter={StaticResource EnumToBool}, ConverterParameter=ScanCode}" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="SendMethod" Content="Code virtuel"
+                                                 IsChecked="{Binding KeySendMethod, Converter={StaticResource EnumToBool}, ConverterParameter=VirtualKey}" />
+                                </UniformGrid>
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Méthode d'envoi des touches" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Ça marche dans le Bloc-notes mais pas dans une appli ? Essaie l'autre méthode : certaines lisent la position de la touche (scan code), d'autres son code virtuel. Appliqué immédiatement." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource Row}">
                             <Button DockPanel.Dock="Right" Content="Ouvrir le dossier" c:Ui.Icon="{StaticResource Icon.Folder}" Command="{Binding OpenDataFolderCommand}"
                                     VerticalAlignment="Center" />
                             <StackPanel>

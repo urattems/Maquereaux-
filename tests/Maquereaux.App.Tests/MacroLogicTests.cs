@@ -293,3 +293,44 @@ public class LabVerdictTests
         Assert.Equal("", LabLogic.Verdict(Array.Empty<Core.Lab.ComparisonRow>(), "A", "B"));
     }
 }
+
+public class GameModeTests
+{
+    private static ProfileViewModel GameProfile()
+    {
+        var vm = new ProfileViewModel(Profile.CreateDefault()) { TargetProcess = "jeu.exe", IntervalMs = 10 };
+        return vm;
+    }
+
+    [Fact]
+    public void Advice_shows_for_game_target_with_short_presses_or_fast_pace()
+    {
+        var vm = GameProfile();
+        Assert.True(vm.ShowGameModeAdvice);
+        vm.TargetProcess = "notepad.exe";
+        Assert.False(vm.ShowGameModeAdvice); // appli de bureau : pas de conseil
+        vm.TargetProcess = null;
+        Assert.False(vm.ShowGameModeAdvice);
+    }
+
+    [Fact]
+    public void Apply_game_mode_sets_30ms_presses_and_at_least_100ms()
+    {
+        var vm = GameProfile();
+        vm.Steps[0].DelayAfterMs = 20;
+        vm.ApplyGameModeCommand.Execute(null);
+        Assert.All(vm.Steps, s => Assert.Equal(MacroLogic.GameModeHoldMs, s.HoldMs));
+        Assert.Equal(MacroLogic.GameModeMinIntervalMs, vm.IntervalMs);
+        Assert.Null(vm.Steps[0].DelayAfterMs);
+        Assert.False(vm.ShowGameModeAdvice);
+    }
+
+    [Fact]
+    public void Game_mode_keeps_a_slower_interval()
+    {
+        var vm = GameProfile();
+        vm.IntervalMs = 250;
+        vm.ApplyGameModeCommand.Execute(null);
+        Assert.Equal(250, vm.IntervalMs);
+    }
+}

@@ -248,3 +248,12 @@ Projet mené en **mode autonome** : chaque choix non trivial est noté ici (déc
   refusé comme arrêt d'urgence (RegisterHotKey).
 - **Pourquoi** : une seule touche, atteignable en jeu sans lâcher la souris ; demandé par l'utilisateur.
 - **Limite** : F9 étant enregistré globalement, les autres applis ne le reçoivent plus pendant que Maquereaux tourne.
+
+### D-045 — Compatibilité jeux : mode jeu + méthode d'envoi, et rien au-delà
+- **Constat (CSV d'un utilisateur)** : séquence A/T à 10 ms avec des appuis de ~1,4 ms. Tout part (Bloc-notes OK), le jeu ne
+  lance pas les sorts : appuis invisibles pour une lecture par image, cadence qui écrase les sorts.
+- **Décision** : (1) « mode jeu » = appui 30 ms + intervalle ≥ 100 ms, proposé par un bandeau quand la cible ressemble à un jeu ;
+  (2) méthode d'envoi au choix, scan code (défaut) ou code virtuel (wVk + wScan sans KEYEVENTF_SCANCODE), réglage global.
+- **Refusé** : pilote / périphérique virtuel, masquage du drapeau « injecté », contournement d'anti-cheat — c'est ce que font
+  les macros matérielles (Logitech, Razer : la souris elle-même ou un pilote émet les touches), et c'est hors périmètre.
+  Si un jeu filtre les entrées simulées, Maquereaux ne peut pas et ne doit pas le contourner.

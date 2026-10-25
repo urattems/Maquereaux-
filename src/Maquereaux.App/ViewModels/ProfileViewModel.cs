@@ -145,6 +145,7 @@ public sealed partial class ProfileViewModel : ObservableObject
                 OnPropertyChanged(nameof(TargetText));
                 OnPropertyChanged(nameof(HasTarget));
                 OnPropertyChanged(nameof(ShowHoldAdvice));
+                OnPropertyChanged(nameof(ShowGameModeAdvice));
                 RaiseChanged();
             }
             else if (v != value) OnPropertyChanged();
@@ -200,6 +201,7 @@ public sealed partial class ProfileViewModel : ObservableObject
 
     private void NotifyCadence()
     {
+        OnPropertyChanged(nameof(ShowGameModeAdvice));
         OnPropertyChanged(nameof(IntervalSlider));
         OnPropertyChanged(nameof(Summary));
         OnPropertyChanged(nameof(EquivalenceText));
@@ -209,6 +211,22 @@ public sealed partial class ProfileViewModel : ObservableObject
 
     /// <summary>Afficher « Certains jeux ratent les appuis instantanés » ?</summary>
     public bool ShowHoldAdvice => MacroLogic.ShouldAdviseHold(Model);
+
+    /// <summary>Bandeau « Réglages pour un jeu » (appuis trop courts ou cadence trop rapide pour un jeu).</summary>
+    public bool ShowGameModeAdvice => MacroLogic.ShouldAdviseGameMode(Model);
+
+    /// <summary>Mode jeu : appui de 30 ms sur chaque touche, intervalle d'au moins 100 ms, délais par touche retirés.</summary>
+    [RelayCommand]
+    private void ApplyGameMode()
+    {
+        foreach (var s in Steps)
+        {
+            s.SetHoldSilently(MacroLogic.GameModeHoldMs);
+            if (s.DelayAfterMs is { } d && d < MacroLogic.GameModeMinIntervalMs) s.DelayAfterMs = null;
+        }
+        IntervalMs = MacroLogic.GameModeInterval(IntervalMs);
+        AfterStepEdit();
+    }
 
     /// <summary>Applique la même durée d'appui à toute la séquence (ex. 16 ms pour les jeux).</summary>
     [RelayCommand]
@@ -312,6 +330,7 @@ public sealed partial class ProfileViewModel : ObservableObject
         OnPropertyChanged(nameof(HasSteps));
         OnPropertyChanged(nameof(StepCountText));
         OnPropertyChanged(nameof(ShowHoldAdvice));
+        OnPropertyChanged(nameof(ShowGameModeAdvice));
         NotifyPreview();
         RaiseChanged();
     }
@@ -326,6 +345,7 @@ public sealed partial class ProfileViewModel : ObservableObject
     internal void AfterStepEdit()
     {
         OnPropertyChanged(nameof(ShowHoldAdvice));
+        OnPropertyChanged(nameof(ShowGameModeAdvice));
         NotifyPreview();
         RaiseChanged();
     }

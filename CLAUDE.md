@@ -38,6 +38,7 @@ Sous le conteneur Claude : `export PATH=/root/.dotnet:$PATH` (SDK installé via 
 - [x] Release v1.0.0 (polish + docs)
 - [x] Refonte UI « la carrosserie » : U0 audit · U1 design system + coque (v1.1.0) · U2+U3 Macro/Profils/Paramètres (v1.2.0)
   · U4 Labo (v1.3.0) · U5a compact/tray/visite/icône/AA (v1.4.0) · U5b clavier + docs (v1.5.0) — voir `docs/UI_REVAMP.md`
+- [x] v1.7.0 — Mode jeu (30 ms / ≥ 100 ms) + méthode d'envoi scan code / code virtuel (D-045 : pas de contournement)
 - [x] v1.6.0 — Maintien sur bouton de souris (hook `WH_MOUSE_LL`, `MouseHook`), arrêt d'urgence F9 (migration `SettingsVersion`)
 
 ## Refonte UI (branche ui-revamp → main)

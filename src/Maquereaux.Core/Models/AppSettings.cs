@@ -11,6 +11,19 @@ public enum AppTheme
 /// <summary>Position et taille d'une fenêtre (en pixels indépendants du DPI).</summary>
 public sealed record WindowPlacement(double Left, double Top, double Width, double Height, bool Maximized);
 
+/// <summary>
+/// Façon de décrire une touche à Windows. Les deux sont des entrées simulées « honnêtes » (marquées injectées par
+/// Windows) ; seule change l'information transmise, pour la compatibilité avec les applis qui ne lisent que l'une.
+/// </summary>
+public enum KeySendMethod
+{
+    /// <summary>Scan code (position physique) : le plus compatible avec les jeux (DirectInput / Raw Input).</summary>
+    ScanCode,
+
+    /// <summary>Code virtuel + scan code sans le drapeau « scan code » : pour les applis qui lisent le code virtuel.</summary>
+    VirtualKey,
+}
+
 /// <summary>Réglages globaux de l'application.</summary>
 public sealed class AppSettings
 {
@@ -59,6 +72,9 @@ public sealed class AppSettings
 
     /// <summary>L'assistant de premier lancement a été terminé ou passé.</summary>
     public bool OnboardingCompleted { get; set; }
+
+    /// <summary>Méthode d'envoi des touches (compatibilité ; scan code par défaut).</summary>
+    public KeySendMethod KeySendMethod { get; set; } = KeySendMethod.ScanCode;
 
     public AppSettings Clone() => (AppSettings)MemberwiseClone();
 }

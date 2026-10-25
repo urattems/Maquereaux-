@@ -3,6 +3,18 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.7.0] - 2026-10-25
+
+🎯 « Ça marche dans le Bloc-notes mais pas en jeu » : deux réglages de compatibilité.
+
+### Ajouté
+- **Mode jeu en un clic** (écran Macro) : appui de 30 ms sur chaque touche et intervalle d'au moins 100 ms. Le bandeau
+  « Ça marche dans le Bloc-notes mais pas en jeu ? » s'affiche quand la fenêtre cible est probablement un jeu et que les
+  appuis sont trop courts (< 30 ms) ou la cadence trop rapide (< 100 ms) — un jeu lit le clavier une fois par image.
+- **Méthode d'envoi des touches** (Paramètres → Avancé) : scan code (défaut) ou code virtuel, appliquée immédiatement,
+  pour les applis qui ne lisent que l'une des deux informations. Les touches restent des entrées simulées honnêtes
+  (aucun masquage, voir « Hors périmètre »).
+
 ## [1.6.0] - 2026-10-25
 
 🎮 Spammer seulement tant que tu cliques.

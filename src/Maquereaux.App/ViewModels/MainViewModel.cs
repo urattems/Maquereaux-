@@ -45,6 +45,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _isLightTheme = _settings.Theme == AppTheme.Light;
         _safetyTimeoutMinutes = _settings.SafetyTimeoutMinutes;
         _minimizeToTray = _settings.MinimizeToTray;
+        _keySendMethod = _settings.KeySendMethod;
+        _host.Sender.Method = _keySendMethod;
         _isSidebarCollapsed = _settings.SidebarCollapsed;
         _host.TimerStrategy = _timerStrategy;
         _host.Engine.MaxRunDuration = TimeSpan.FromMinutes(_safetyTimeoutMinutes);
@@ -164,6 +166,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private bool _minimizeToTray;
+
+    /// <summary>Méthode d'envoi des touches (compatibilité jeux / applis).</summary>
+    [ObservableProperty]
+    private KeySendMethod _keySendMethod;
 
     [ObservableProperty]
     private bool _isCompact;
@@ -461,6 +467,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (v != value) { SafetyTimeoutMinutes = v; return; }
         _settings.SafetyTimeoutMinutes = v;
         _host.Engine.MaxRunDuration = TimeSpan.FromMinutes(v);
+        MarkDirty();
+    }
+
+    partial void OnKeySendMethodChanged(KeySendMethod value)
+    {
+        _settings.KeySendMethod = value;
+        _host.Sender.Method = value; // pris en compte dès le prochain envoi, même macro en cours
         MarkDirty();
     }
 

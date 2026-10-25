@@ -31,6 +31,9 @@ public sealed class SendInputSender : IInputSender
     /// <summary>Nombre d'événements que SendInput a refusés (ex. bloqués par UIPI, bureau sécurisé…).</summary>
     public long FailedEvents => Interlocked.Read(ref _failedEvents);
 
+    /// <summary>Méthode d'envoi (réglage global, lu à chaque envoi).</summary>
+    public KeySendMethod Method { get; set; } = KeySendMethod.ScanCode;
+
     /// <summary>Dernier code d'erreur Win32 lors d'un échec de SendInput (0 si aucun).</summary>
     public int LastError { get; private set; }
 
@@ -59,11 +62,12 @@ public sealed class SendInputSender : IInputSender
         // stackalloc : pas d'allocation sur le tas à chaque tick (le GC ne viendra pas perturber le timing)
         INPUT* inputs = stackalloc INPUT[n];
         var resolved = _resolved;
+        bool scanMode = Method == KeySendMethod.ScanCode;
         for (int i = 0; i < n; i++)
         {
             var a = actions[i];
             if (!resolved.TryGetValue(a.Key.VirtualKey, out var r)) r = ResolveKey(a.Key);
-            inputs[i] = Build(a.Key.VirtualKey, r.Scan, r.Extended, a.IsDown);
+            inputs[i] = Build(a.Key.VirtualKey, r.Scan, r.Extended, a.IsDown, scanMode);
         }
 
         uint sent = NativeMethods.SendInput((uint)n, inputs, InputSize);
@@ -74,13 +78,19 @@ public sealed class SendInputSender : IInputSender
         }
     }
 
-    internal static INPUT Build(ushort vk, ushort scan, bool extended, bool down)
+    internal static INPUT Build(ushort vk, ushort scan, bool extended, bool down, bool scanMode = true)
     {
         uint flags = down ? 0 : NativeMethods.KEYEVENTF_KEYUP;
         if (extended) flags |= NativeMethods.KEYEVENTF_EXTENDEDKEY;
 
         var ki = new KEYBDINPUT { dwExtraInfo = ExtraInfoSignature };
-        if (scan != 0)
+        if (!scanMode)
+        {
+            // Mode code virtuel : VK + scan code renseignés, sans KEYEVENTF_SCANCODE (Windows se fie au VK)
+            ki.wVk = vk;
+            ki.wScan = scan;
+        }
+        else if (scan != 0)
         {
             // Mode scan code : wVk est ignoré par Windows (on le laisse à 0)
             ki.wScan = scan;

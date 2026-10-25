@@ -32,6 +32,17 @@ public class SendInputTests
     }
 
     [Fact]
+    public void Build_virtual_key_mode_sets_vk_and_scan_without_scancode_flag()
+    {
+        var down = SendInputSender.Build(0x41, 0x10, false, true, scanMode: false);
+        Assert.Equal(0x41, down.U.ki.wVk);
+        Assert.Equal(0x10, down.U.ki.wScan);
+        Assert.Equal(0u, down.U.ki.dwFlags & NativeMethods.KEYEVENTF_SCANCODE);
+        var up = SendInputSender.Build(0x25, 0x4B, true, false, scanMode: false);
+        Assert.Equal(NativeMethods.KEYEVENTF_KEYUP | NativeMethods.KEYEVENTF_EXTENDEDKEY, up.U.ki.dwFlags);
+    }
+
+    [Fact]
     public void Build_falls_back_to_vk_mode_without_scan()
     {
         var down = SendInputSender.Build(VirtualKeys.Pause, 0, false, true);
