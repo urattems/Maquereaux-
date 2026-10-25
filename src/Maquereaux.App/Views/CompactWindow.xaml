@@ -4,31 +4,99 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:Maquereaux.App.ViewModels"
+        xmlns:c="clr-namespace:Maquereaux.App.Controls"
         mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}"
-        Title="Maquereaux (compact)" Width="300" SizeToContent="Height"
+        Title="Maquereaux (compact)" SizeToContent="WidthAndHeight"
         WindowStyle="None" ResizeMode="NoResize" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False" Icon="/Assets/maquereaux.ico"
-        FontFamily="Segoe UI" FontSize="13" Foreground="{DynamicResource Brush.Text}"
-        MouseLeftButtonDown="OnDrag">
-    <!-- Mini-fenêtre : déplaçable à la souris, toujours au premier plan -->
-    <Border CornerRadius="10" Padding="12,10" BorderThickness="2"
-            Style="{StaticResource State.Border}">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Ellipse Width="16" Height="16" Style="{StaticResource State.Dot}" Margin="0,0,10,0" VerticalAlignment="Center" />
-            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock Text="{Binding EngineState, Converter={StaticResource StateToText}}" FontSize="20"
-                           Style="{StaticResource State.Text}" />
-                <TextBlock Text="{Binding ActiveProfile.Name}" Foreground="{DynamicResource Brush.TextMuted}" TextTrimming="CharacterEllipsis" />
+        FontFamily="{DynamicResource Font.UI}" FontSize="{DynamicResource FontSize.Body}" Foreground="{DynamicResource Text.Primary}"
+        UseLayoutRounding="True" TextOptions.TextFormattingMode="Display"
+        MouseLeftButtonDown="OnMouseDown" AutomationProperties.Name="Maquereaux, pastille compacte">
+    <!-- Pastille flottante : déplaçable, toujours au premier plan, opacité réglable (clic droit), double-clic = fenêtre complète.
+         Marge = place pour l'ombre portée. -->
+    <Border x:Name="Pill" Margin="12" CornerRadius="28" BorderThickness="1" Padding="10,8,8,8" Effect="{DynamicResource Elevation.2}">
+        <Border.Style>
+            <Style TargetType="Border" BasedOn="{StaticResource State.Border}">
+                <!-- Dans le style (et non en local) pour que le déclencheur de survol puisse la surcharger -->
+                <Setter Property="Opacity" Value="{Binding CompactOpacity}" />
+                <Style.Triggers>
+                    <!-- Au survol, la pastille redevient opaque pour être lisible -->
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Opacity" Value="1" />
+                    </Trigger>
+                    <DataTrigger Binding="{Binding EngineState}" Value="Stopped">
+                        <Setter Property="Background" Value="{DynamicResource Surface.Elevated}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        <Border.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Revenir à la fenêtre complète" c:Ui.Icon="{StaticResource Icon.Expand}" Command="{Binding ToggleCompactCommand}" />
+                <Separator />
+                <MenuItem Header="Opacité 100 %" Click="OnOpacity" Tag="1.0" />
+                <MenuItem Header="Opacité 80 %" Click="OnOpacity" Tag="0.8" />
+                <MenuItem Header="Opacité 60 %" Click="OnOpacity" Tag="0.6" />
+                <MenuItem Header="Opacité 40 %" Click="OnOpacity" Tag="0.4" />
+            </ContextMenu>
+        </Border.ContextMenu>
+        <StackPanel Orientation="Horizontal">
+            <!-- Bouton rond Start/Stop -->
+            <Button Command="{Binding StartStopCommand}" Width="40" Height="40" Cursor="Hand" FocusVisualStyle="{StaticResource Focus.Ring}"
+                    AutomationProperties.Name="Démarrer ou arrêter" ToolTip="Démarrer / arrêter">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Ellipse x:Name="Disc">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{DynamicResource Accent.Gradient}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                                                <Setter Property="Fill" Value="{DynamicResource State.Running}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                                                <Setter Property="Fill" Value="{DynamicResource State.Paused}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <c:Icon Width="16" Height="16" Foreground="{DynamicResource Text.OnAccent}">
+                                <c:Icon.Style>
+                                    <Style TargetType="c:Icon">
+                                        <Setter Property="Glyph" Value="{StaticResource Icon.Play}" />
+                                        <Setter Property="Margin" Value="2,0,0,0" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Glyph" Value="{StaticResource Icon.Stop}" />
+                                                <Setter Property="Margin" Value="0" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </c:Icon.Style>
+                            </c:Icon>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Disc" Property="Opacity" Value="0.88" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <StackPanel VerticalAlignment="Center" Margin="12,0,14,0" MinWidth="120" MaxWidth="180">
+                <TextBlock Text="{Binding EngineState, Converter={StaticResource StateToText}}" Style="{StaticResource State.Text}"
+                           FontSize="11" />
+                <TextBlock Text="{Binding ActiveProfile.Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
             </StackPanel>
-            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="{Binding StartStopLabel}" Command="{Binding StartStopCommand}" Padding="8,4" Margin="0,0,6,0" />
-                <Button Content="⤢" Command="{Binding ToggleCompactCommand}" Style="{StaticResource Button.Icon}" ToolTip="Revenir à la fenêtre complète" />
-            </StackPanel>
-        </Grid>
+
+            <Border Style="{StaticResource Kbd}" Margin="0,0,8,0" Visibility="{Binding ActiveProfile.Hotkey, Converter={StaticResource NullToVis}}">
+                <TextBlock Text="{Binding ActiveProfile.HotkeyText}" />
+            </Border>
+            <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Expand}" Command="{Binding ToggleCompactCommand}" VerticalAlignment="Center"
+                    ToolTip="Revenir à la fenêtre complète (ou double-clic sur la pastille)" AutomationProperties.Name="Revenir à la fenêtre complète" />
+        </StackPanel>
     </Border>
 </Window>

@@ -54,7 +54,7 @@ public sealed class TrayIcon : IDisposable
     {
         var state = _vm.EngineState;
         var profile = _vm.RunningProfileName ?? _vm.ActiveProfile?.Name ?? "—";
-        var stateText = state switch { EngineState.Running => "RUNNING", EngineState.Paused => "PAUSED", _ => "STOPPED" };
+        var stateText = state switch { EngineState.Running => "en marche", EngineState.Paused => "en pause", _ => "à l'arrêt" };
         // Le texte d'infobulle est limité à 63 caractères par Windows
         var tip = $"Maquereaux — {stateText} — {profile}";
         _icon.Text = tip.Length > 63 ? tip[..63] : tip;
@@ -74,12 +74,13 @@ public sealed class TrayIcon : IDisposable
             g.DrawIcon(new Icon(_baseIcon, 32, 32), new Rectangle(0, 0, 32, 32));
             var color = state switch
             {
-                EngineState.Running => Color.FromArgb(31, 209, 122),
-                EngineState.Paused => Color.FromArgb(255, 176, 32),
-                _ => Color.FromArgb(255, 84, 104),
+                // Couleurs d'état du design system : turquoise = en marche, ambre = en pause, neutre = à l'arrêt
+                EngineState.Running => Color.FromArgb(0x33, 0xE8, 0xD0),
+                EngineState.Paused => Color.FromArgb(0xF2, 0xB2, 0x4A),
+                _ => Color.FromArgb(0x7D, 0x8F, 0xA6),
             };
             using var brush = new SolidBrush(color);
-            using var pen = new Pen(Color.FromArgb(17, 21, 30), 2);
+            using var pen = new Pen(Color.FromArgb(0x0A, 0x12, 0x20), 2);
             g.FillEllipse(brush, 17, 17, 14, 14);
             g.DrawEllipse(pen, 17, 17, 14, 14);
         }

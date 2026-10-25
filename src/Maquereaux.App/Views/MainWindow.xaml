@@ -215,7 +215,7 @@
                                         <c:Icon x:Name="Ico" Glyph="{StaticResource Icon.InfoFilled}" Width="20" Height="20" VerticalAlignment="Top"
                                                 Foreground="{DynamicResource State.Info}" />
                                         <StackPanel Grid.Column="1" Margin="12,0,8,0">
-                                            <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Body}" />
+                                            <TextBlock Text="{Binding Message}" Style="{StaticResource Text.Body}" TextWrapping="Wrap" />
                                             <Button Content="{Binding ActionLabel}" Command="{Binding ActionCommand}" Style="{StaticResource Btn.Ghost}"
                                                     Foreground="{DynamicResource Accent}" HorizontalAlignment="Left" Padding="0,2" MinHeight="0" Margin="0,6,0,0"
                                                     Visibility="{Binding ActionLabel, Converter={StaticResource NullToVis}}" />
@@ -244,6 +244,79 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </Grid>
+            </Border>
+        </Grid>
+        <!-- ===================== Visite guidée (3 étapes, passable, rejouable depuis Paramètres) ===================== -->
+        <Grid x:Name="Onboarding" Visibility="{Binding IsOnboardingVisible, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource Scrim}" />
+            <Border Style="{StaticResource Card.Elevated}" Width="480" Padding="32,28" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    CornerRadius="{DynamicResource Radius.XL}" AutomationProperties.Name="Visite guidée">
+                <StackPanel>
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding OnboardingProgress}" Style="{StaticResource Num.Small}" VerticalAlignment="Top" />
+                        <Grid Width="56" Height="56" HorizontalAlignment="Left">
+                            <Ellipse Fill="{DynamicResource Accent.Gradient}" />
+                            <c:Icon x:Name="OnboardingIcon" Width="26" Height="26" Foreground="{DynamicResource Text.OnAccent}" />
+                        </Grid>
+                    </DockPanel>
+                    <TextBlock Text="{Binding CurrentOnboardingStep.Title}" Style="{StaticResource Text.Headline}" Margin="0,20,0,8" />
+                    <TextBlock Text="{Binding CurrentOnboardingStep.Text}" Style="{StaticResource Text.Supporting}" TextWrapping="Wrap" MinHeight="66" />
+
+                    <!-- Progression -->
+                    <UniformGrid Rows="1" Margin="0,20,0,24" Height="4">
+                        <Border CornerRadius="2" Margin="0,0,4,0" Background="{DynamicResource Accent}" />
+                        <Border CornerRadius="2" Margin="0,0,4,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource Surface.Sunken}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding OnboardingIndex}" Value="1"><Setter Property="Background" Value="{DynamicResource Accent}" /></DataTrigger>
+                                        <DataTrigger Binding="{Binding OnboardingIndex}" Value="2"><Setter Property="Background" Value="{DynamicResource Accent}" /></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <Border CornerRadius="2">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource Surface.Sunken}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding OnboardingIndex}" Value="2"><Setter Property="Background" Value="{DynamicResource Accent}" /></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </UniformGrid>
+
+                    <DockPanel>
+                        <Button Style="{StaticResource Btn.Ghost}" Content="Passer" Command="{Binding FinishOnboardingCommand}" Foreground="{DynamicResource Text.Secondary}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Précédent" Command="{Binding PreviousOnboardingCommand}" Margin="0,0,8,0">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource Btn.Secondary}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding OnboardingIndex}" Value="0">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button x:Name="OnboardingNext" Command="{Binding NextOnboardingCommand}" MinWidth="120">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource Btn.Primary}">
+                                        <Setter Property="Content" Value="Suivant" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsLastOnboardingStep}" Value="True">
+                                                <Setter Property="Content" Value="C'est parti" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>

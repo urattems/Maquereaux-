@@ -44,6 +44,7 @@ internal sealed class SmokeTest
             await CaptureDesignSystemAsync();
             await CapturePagesAsync();
             await CaptureMacroStatesAsync();
+            await CaptureOnboardingAsync();
 
             await RunExtraChecksAsync();
             await RunUiChecksAsync();
@@ -223,10 +224,19 @@ internal sealed class SmokeTest
         Log($"Verdict A/B : « {lab.Verdict} »");
 
         var chart = FindVisual<IntervalChart>(_window) ?? throw new InvalidOperationException("Graphique du Labo introuvable");
+        chart.BringIntoView();
+        await Delay(300);
+        Capture(_window, "7a-labo-graphique");
         chart.Mode = ChartMode.Histogram;
         await Delay(300);
         Capture(_window, "7b-labo-histogramme");
         chart.Mode = ChartMode.Scatter;
+        if (FindVisualByName(_window, "VerdictBanner") is FrameworkElement verdict)
+        {
+            verdict.BringIntoView(new Rect(0, 0, verdict.ActualWidth, 420));
+            await Delay(300);
+            Capture(_window, "7d-labo-comparaison");
+        }
         _vm.IsLightTheme = true;
         await Delay(300);
         Capture(_window, "7c-labo-clair");
@@ -330,6 +340,36 @@ internal sealed class SmokeTest
 
         profile.TargetProcess = target;
         Log("États de l'écran Macro : OK");
+    }
+
+    /// <summary>Visite guidée : première et dernière étape, puis « Passer » doit la marquer comme vue.</summary>
+    private async Task CaptureOnboardingAsync()
+    {
+        _vm.StartOnboardingCommand.Execute(null);
+        await Delay(350);
+        Capture(_window, "onboarding-1");
+        _vm.NextOnboardingCommand.Execute(null);
+        _vm.NextOnboardingCommand.Execute(null);
+        _vm.IsLightTheme = true;
+        await Delay(350);
+        Capture(_window, "onboarding-3-clair");
+        _vm.IsLightTheme = false;
+        if (!_vm.IsLastOnboardingStep) throw new InvalidOperationException("Visite guidée : dernière étape non atteinte");
+        _vm.NextOnboardingCommand.Execute(null);
+        await Delay(150);
+        if (_vm.IsOnboardingVisible) throw new InvalidOperationException("Visite guidée non refermée");
+        Log("Visite guidée : OK");
+    }
+
+    private static DependencyObject? FindVisualByName(DependencyObject root, string name)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is FrameworkElement { Name: var n } && n == name) return child;
+            if (FindVisualByName(child, name) is { } found) return found;
+        }
+        return null;
     }
 
     private static T? FindVisual<T>(DependencyObject root) where T : DependencyObject

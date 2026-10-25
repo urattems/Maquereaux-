@@ -230,6 +230,26 @@ public partial class MainWindow : Window
     {
         if (e.PropertyName == nameof(MainViewModel.IsCompact)) ApplyCompact();
         else if (e.PropertyName == nameof(MainViewModel.EngineState)) UpdateHalo();
+        else if (e.PropertyName is nameof(MainViewModel.CurrentOnboardingStep) or nameof(MainViewModel.IsOnboardingVisible)) UpdateOnboarding();
+    }
+
+    /// <summary>Icône de l'étape courante + focus sur « Suivant » (Entrée avance, Échap passe).</summary>
+    private void UpdateOnboarding()
+    {
+        if (Vm is not { IsOnboardingVisible: true } vm) return;
+        OnboardingIcon.Glyph = TryFindResource(vm.CurrentOnboardingStep.IconKey) as System.Windows.Media.Geometry;
+        Dispatcher.BeginInvoke(() => OnboardingNext.Focus(), System.Windows.Threading.DispatcherPriority.Input);
+    }
+
+    protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Escape && Vm is { IsOnboardingVisible: true } vm)
+        {
+            vm.FinishOnboardingCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+        base.OnPreviewKeyDown(e);
     }
 
     private void ApplyCompact()
@@ -239,10 +259,15 @@ public partial class MainWindow : Window
         {
             _compact ??= new CompactWindow { DataContext = vm };
             // Position par défaut : coin supérieur droit de l'écran de travail
-            var area = SystemParameters.WorkArea;
-            _compact.Left = area.Right - _compact.Width - 24;
-            _compact.Top = area.Top + 24;
+            bool first = !_compact.IsLoaded;
             _compact.Show();
+            if (first)
+            {
+                // Position par défaut (taille connue seulement après affichage : SizeToContent)
+                var area = SystemParameters.WorkArea;
+                _compact.Left = area.Right - _compact.ActualWidth - 12;
+                _compact.Top = area.Top + 12;
+            }
             Hide();
         }
         else

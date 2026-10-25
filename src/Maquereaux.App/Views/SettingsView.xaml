@@ -106,11 +106,31 @@
                             </StackPanel>
                         </DockPanel>
                         <DockPanel Style="{StaticResource Row}">
+                            <Button DockPanel.Dock="Right" Content="Revoir" c:Ui.Icon="{StaticResource Icon.Help}" Command="{Binding StartOnboardingCommand}"
+                                    VerticalAlignment="Center" />
+                            <StackPanel>
+                                <TextBlock Text="Visite guidée" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Les trois étapes de prise en main, en 30 secondes." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource Row}">
                             <Button DockPanel.Dock="Right" Content="Ouvrir" c:Ui.Icon="{StaticResource Icon.Compact}" Command="{Binding ToggleCompactCommand}"
                                     VerticalAlignment="Center" />
                             <StackPanel>
                                 <TextBlock Text="Mode compact" Style="{StaticResource Row.Label}" />
                                 <TextBlock Text="Une petite pastille flottante : état, profil actif et Start/Stop, toujours au premier plan." Style="{StaticResource Row.Help}" />
+                            </StackPanel>
+                        </DockPanel>
+                        <DockPanel Style="{StaticResource Row}">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Slider Width="160" Minimum="0.3" Maximum="1" Value="{Binding CompactOpacity}" SmallChange="0.05" LargeChange="0.1"
+                                        VerticalAlignment="Center" AutomationProperties.Name="Opacité de la pastille compacte" />
+                                <TextBlock Text="{Binding CompactOpacity, StringFormat={}{0:P0}}" Style="{StaticResource Num.Small}" Width="44" TextAlignment="Right"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Opacité de la pastille" Style="{StaticResource Row.Label}" />
+                                <TextBlock Text="Elle redevient opaque au survol. Aussi réglable d'un clic droit sur la pastille." Style="{StaticResource Row.Help}" />
                             </StackPanel>
                         </DockPanel>
                     </StackPanel>

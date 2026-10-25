@@ -65,6 +65,7 @@ public partial class App : Application
         MainWindow = window;
         window.Show();
         _vm.Initialize();
+        if (!smoke) _vm.ShowOnboardingIfNeeded();
 
         _tray = new TrayIcon(_vm, window.ShowFromTray, () => window.Close());
 
