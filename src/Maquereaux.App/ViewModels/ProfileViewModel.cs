@@ -94,6 +94,14 @@ public sealed partial class ProfileViewModel : ObservableObject
             if (SetProperty(Model.Hotkey, value, Model, (m, x) => m.Hotkey = x))
             {
                 OnPropertyChanged(nameof(HotkeyText));
+                OnPropertyChanged(nameof(IsMouseHotkey));
+                // Un bouton de souris n'a de sens qu'en « Maintenir » : on bascule pour l'utilisateur
+                if (value is { IsMouse: true } && Model.ActivationMode != ActivationMode.Hold)
+                {
+                    Model.ActivationMode = ActivationMode.Hold;
+                    OnPropertyChanged(nameof(ActivationMode));
+                    OnPropertyChanged(nameof(ActivationText));
+                }
                 RaiseChanged(true);
             }
         }
@@ -101,11 +109,20 @@ public sealed partial class ProfileViewModel : ObservableObject
 
     public string HotkeyText => Model.Hotkey?.ToString() ?? "aucun raccourci";
 
+    /// <summary>Le raccourci est un bouton de souris (mode « Maintenir » imposé).</summary>
+    public bool IsMouseHotkey => Model.Hotkey?.IsMouse == true;
+
     public ActivationMode ActivationMode
     {
         get => Model.ActivationMode;
         set
         {
+            if (value != ActivationMode.Hold && Model.Hotkey is { IsMouse: true })
+            {
+                // ON/OFF impossible sur un bouton de souris (RegisterHotKey ne les gère pas)
+                OnPropertyChanged();
+                return;
+            }
             if (SetProperty(Model.ActivationMode, value, Model, (m, x) => m.ActivationMode = x))
             {
                 OnPropertyChanged(nameof(ActivationText));

@@ -3,6 +3,24 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.6.0] - 2026-10-25
+
+🎮 Spammer seulement tant que tu cliques.
+
+### Ajouté
+- **Raccourci « Maintenir » sur un bouton de souris** (clic gauche, droit, molette, boutons latéraux 4/5) : la macro démarre
+  à l'instant de l'appui et s'arrête dès le relâchement. Le clic arrive toujours au jeu (jamais avalé). Capture : clique dans
+  le champ Raccourci puis clique avec le bouton voulu ; le profil passe tout seul en mode Maintenir.
+- Hook souris bas niveau installé uniquement si un profil l'utilise (boutons seulement, déplacements ignorés), clics sur
+  Maquereaux ignorés, avertissement si aucune fenêtre cible n'est choisie.
+
+### Modifié
+- **Arrêt d'urgence par défaut : F9** (au lieu de Ctrl+Alt+Pause). Les réglages existants qui avaient l'ancien défaut sont
+  migrés automatiquement ; un raccourci personnalisé est conservé.
+
+### Corrigé
+- Un relâchement de raccourci « Maintenir » pendant une capture de touche dans l'interface arrête bien la macro.
+
 ## [1.5.0] - 2026-10-25
 
 ✨ « La carrosserie », étape finale : clavier, documentation et galerie. Moteur strictement inchangé (benchmarks identiques à la v1.0).

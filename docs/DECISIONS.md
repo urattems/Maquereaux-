@@ -225,3 +225,26 @@ Projet mené en **mode autonome** : chaque choix non trivial est noté ici (déc
 - **Décision** : `tools/gen_icon.py` produit l'ICO 16 → 256 px depuis les tracés du logo (rendu Chromium, réduction Lanczos),
   avec une variante simplifiée pour 16 et 24 px (sans rayures, œil agrandi).
 - **Pourquoi** : une seule source de vérité pour le logo ; lisible dans la barre des tâches comme dans l'explorateur.
+
+---
+
+## v1.6 — Maintien sur un bouton de souris, arrêt d'urgence F9
+
+### D-043 — Boutons de souris = « touches » VK 0x01–0x06, mode Maintenir uniquement
+- **Décision** : un raccourci peut être un bouton de souris (clic gauche/droit/molette, boutons 4/5), stocké comme un VK
+  (0x01, 0x02, 0x04, 0x05, 0x06) dans le même modèle `Hotkey`. Détection par un hook `WH_MOUSE_LL` qui traduit les boutons
+  en `RawKeyEvent` et réutilise `HoldHotkeyTracker`. Mode Maintenir obligatoire (RegisterHotKey ne connaît pas la souris) :
+  choisir un bouton bascule le profil en Maintenir, ON/OFF est grisé.
+- **Pourquoi** : besoin réel en jeu (spammer seulement pendant le clic) ; zéro nouveau chemin dans le moteur, logique déjà testée.
+- **Garde-fous** : le clic n'est **jamais avalé** (le jeu le reçoit) ; les clics injectés sont ignorés ; un appui sur une fenêtre
+  de Maquereaux (sous le curseur) est ignoré ; les relâchements passent toujours (même pendant une capture dans l'UI) ;
+  déplacements et molette sont écartés dès la première ligne du callback ; le hook n'est installé que si un profil l'utilise ;
+  avertissement si aucune fenêtre cible n'est choisie.
+- **Hors périmètre respecté** : simple déclenchement par l'utilisateur, aucune humanisation ni lecture d'écran.
+
+### D-044 — Arrêt d'urgence par défaut : F9 (migration de Ctrl+Alt+Pause)
+- **Décision** : nouveau défaut F9 ; champ `SettingsVersion` dans les réglages ; au premier chargement d'un fichier antérieur,
+  **seul l'ancien défaut** Ctrl+Alt+Pause est remplacé par F9 (un raccourci personnalisé est conservé). Un bouton de souris est
+  refusé comme arrêt d'urgence (RegisterHotKey).
+- **Pourquoi** : une seule touche, atteignable en jeu sans lâcher la souris ; demandé par l'utilisateur.
+- **Limite** : F9 étant enregistré globalement, les autres applis ne le reçoivent plus pendant que Maquereaux tourne.

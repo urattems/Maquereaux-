@@ -6,6 +6,12 @@ namespace Maquereaux.Core.Input;
 /// </summary>
 public static class VirtualKeys
 {
+    // Boutons de souris : utilisables comme raccourci en mode « Maintenir » (détectés par le hook souris)
+    public const ushort LButton = 0x01;
+    public const ushort RButton = 0x02;
+    public const ushort MButton = 0x04;
+    public const ushort XButton1 = 0x05;
+    public const ushort XButton2 = 0x06;
     public const ushort Cancel = 0x03;      // Ctrl+Pause génère souvent VK_CANCEL au lieu de VK_PAUSE !
     public const ushort Back = 0x08;
     public const ushort Tab = 0x09;
@@ -46,6 +52,7 @@ public static class VirtualKeys
     public const ushort F6 = 0x75;
     public const ushort F7 = 0x76;
     public const ushort F8 = 0x77;
+    public const ushort F9 = 0x78;
     public const ushort F13 = 0x7C;
     public const ushort F24 = 0x87;
     public const ushort NumLock = 0x90;
@@ -56,6 +63,9 @@ public static class VirtualKeys
     public const ushort RControl = 0xA3;
     public const ushort LMenu = 0xA4;
     public const ushort RMenu = 0xA5;
+
+    /// <summary>Vrai pour les boutons de souris (clic gauche, droit, molette, boutons latéraux 4 et 5).</summary>
+    public static bool IsMouseButton(ushort vk) => vk is LButton or RButton or MButton or XButton1 or XButton2;
 
     /// <summary>Vrai pour les touches modificatrices (Ctrl, Alt, Shift, Win, gauche/droite).</summary>
     public static bool IsModifier(ushort vk) => vk is Shift or Control or Menu or LWin or RWin
@@ -71,6 +81,11 @@ public static class KeyNames
     {
         var d = new Dictionary<ushort, string>
         {
+            [VirtualKeys.LButton] = "Clic gauche",
+            [VirtualKeys.RButton] = "Clic droit",
+            [VirtualKeys.MButton] = "Clic molette",
+            [VirtualKeys.XButton1] = "Souris 4",
+            [VirtualKeys.XButton2] = "Souris 5",
             [VirtualKeys.Cancel] = "Break",
             [VirtualKeys.Back] = "Retour arrière",
             [VirtualKeys.Tab] = "Tab",

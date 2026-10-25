@@ -19,7 +19,7 @@ public sealed partial class MainViewModel
             "Choisis l'intervalle au curseur, au clavier ou en un clic sur un preset. Maquereaux t'indique tout de suite combien d'inputs par seconde ça donne.",
             "Icon.Timer", "Macro"),
         new OnboardingStep("Lance, mesure, compare",
-            "Démarre avec le raccourci du profil (F6 par défaut) ou la carte héros. Ctrl+Alt+Pause coupe tout, partout. Le Labo mesure ta précision contre celle de la macro.",
+            "Démarre avec le raccourci du profil (F6 par défaut, ou un clic maintenu en mode « Maintenir ») ou la carte héros. F9 coupe tout, partout (arrêt d'urgence). Le Labo mesure ta précision contre celle de la macro.",
             "Icon.Play", "Labo"),
     };
 

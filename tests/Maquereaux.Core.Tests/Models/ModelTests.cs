@@ -20,7 +20,23 @@ public class ModelTests
     public void Hotkey_defaults()
     {
         Assert.Equal("F6", Hotkey.DefaultToggle.ToString());
-        Assert.Equal("Ctrl+Alt+Pause", Hotkey.DefaultEmergencyStop.ToString());
+        Assert.Equal("F9", Hotkey.DefaultEmergencyStop.ToString());
+        Assert.Equal("Ctrl+Alt+Pause", Hotkey.LegacyEmergencyStop.ToString());
+    }
+
+    [Theory]
+    [InlineData(VirtualKeys.LButton, "Clic gauche")]
+    [InlineData(VirtualKeys.RButton, "Clic droit")]
+    [InlineData(VirtualKeys.MButton, "Clic molette")]
+    [InlineData(VirtualKeys.XButton1, "Souris 4")]
+    [InlineData(VirtualKeys.XButton2, "Souris 5")]
+    public void Mouse_buttons_are_valid_hotkeys_with_french_names(ushort vk, string name)
+    {
+        var hk = new Hotkey(HotkeyModifiers.None, vk);
+        Assert.True(hk.IsValid);
+        Assert.True(hk.IsMouse);
+        Assert.Equal(name, hk.ToString());
+        Assert.False(Hotkey.DefaultToggle.IsMouse);
     }
 
     [Theory]

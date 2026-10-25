@@ -17,6 +17,10 @@ public readonly record struct HoldDecision(bool Swallow, Guid? StartProfile, Gui
 /// appelé depuis un autre thread (échange atomique de la table).
 /// </para>
 /// <para>
+/// Boutons de souris : traités comme des touches (VK 0x01, 0x02…), mais jamais avalés — le clic doit
+/// toujours arriver au jeu / à l'appli.
+/// </para>
+/// <para>
 /// Règle clé : les événements INJECTÉS sont ignorés. Sinon une macro qui envoie la touche F7 pourrait
 /// se déclencher (ou s'arrêter) elle-même.
 /// </para>
@@ -42,6 +46,11 @@ public sealed class HoldHotkeyTracker
 
     public bool HasBindings => _byKey.Count > 0;
 
+    /// <summary>Au moins un raccourci « Maintenir » est un bouton de souris (→ hook souris nécessaire).</summary>
+    public bool HasMouseBindings => _byKey.Keys.Any(VirtualKeys.IsMouseButton);
+
+    private static bool Swallowable(ushort vk) => !VirtualKeys.IsMouseButton(vk);
+
     /// <summary>Modificateurs physiquement enfoncés (suivis à partir des événements reçus).</summary>
     public HotkeyModifiers CurrentModifiers =>
         (_ctrlL || _ctrlR ? HotkeyModifiers.Control : 0) |
@@ -59,12 +68,12 @@ public sealed class HoldHotkeyTracker
             // Relâchement : on stoppe si c'est une touche que NOUS avons prise en charge à l'appui
             // (peu importe l'état des modificateurs à ce moment-là).
             if (_held.Remove(e.VirtualKey, out var stopped))
-                return new HoldDecision(true, null, stopped);
+                return new HoldDecision(Swallowable(e.VirtualKey), null, stopped);
             return HoldDecision.None;
         }
 
         // Répétition automatique du clavier pendant le maintien : on continue d'avaler, sans nouvel ordre
-        if (_held.ContainsKey(e.VirtualKey)) return new HoldDecision(true, null, null);
+        if (_held.ContainsKey(e.VirtualKey)) return new HoldDecision(Swallowable(e.VirtualKey), null, null);
 
         if (!_byKey.TryGetValue(e.VirtualKey, out var candidates)) return HoldDecision.None;
         var mods = CurrentModifiers;
@@ -72,7 +81,7 @@ public sealed class HoldHotkeyTracker
         {
             if (required != mods) continue; // correspondance exacte (F7 ≠ Ctrl+F7)
             _held[e.VirtualKey] = profileId;
-            return new HoldDecision(true, profileId, null);
+            return new HoldDecision(Swallowable(e.VirtualKey), profileId, null);
         }
         return HoldDecision.None;
     }

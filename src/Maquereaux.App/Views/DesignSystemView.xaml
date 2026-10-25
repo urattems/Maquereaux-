@@ -245,7 +245,7 @@
                         <Border Style="{StaticResource Badge.Warning}" Margin="0,0,8,8"><TextBlock Text="Attention" /></Border>
                         <Border Style="{StaticResource Badge.Danger}" Margin="0,0,8,8"><TextBlock Text="REC" /></Border>
                         <Border Style="{StaticResource Kbd}" Margin="0,0,8,8"><TextBlock Text="F6" /></Border>
-                        <Border Style="{StaticResource Kbd}" Margin="0,0,8,8"><TextBlock Text="Ctrl+Alt+Pause" /></Border>
+                        <Border Style="{StaticResource Kbd}" Margin="0,0,8,8"><TextBlock Text="F9" /></Border>
                     </WrapPanel>
                 </StackPanel>
             </Border>

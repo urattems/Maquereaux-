@@ -137,3 +137,36 @@ public class HookTests
         Assert.Null(ProcessInfo.GetProcessName(0));
     }
 }
+
+/// <summary>Hook souris (raccourcis « Maintenir » sur un bouton) : traduction des messages + installation.</summary>
+public class MouseHookTests
+{
+    [Theory]
+    [InlineData(0x0201u, 0u, VirtualKeys.LButton, true)]
+    [InlineData(0x0202u, 0u, VirtualKeys.LButton, false)]
+    [InlineData(0x0204u, 0u, VirtualKeys.RButton, true)]
+    [InlineData(0x0205u, 0u, VirtualKeys.RButton, false)]
+    [InlineData(0x0207u, 0u, VirtualKeys.MButton, true)]
+    [InlineData(0x020Bu, 0x00010000u, VirtualKeys.XButton1, true)]
+    [InlineData(0x020Cu, 0x00020000u, VirtualKeys.XButton2, false)]
+    public void Buttons_are_translated_to_virtual_keys(uint msg, uint mouseData, ushort vk, bool down)
+    {
+        Assert.Equal((vk, down), MouseHook.Translate(msg, mouseData));
+    }
+
+    [Theory]
+    [InlineData(0x0200u)] // WM_MOUSEMOVE
+    [InlineData(0x020Au)] // WM_MOUSEWHEEL
+    public void Moves_and_wheel_are_ignored(uint msg) => Assert.Equal((ushort)0, MouseHook.Translate(msg, 0).Vk);
+
+    [WindowsFact]
+    public void Install_and_uninstall()
+    {
+        using var loop = new MessageLoopThread();
+        using var hook = new MouseHook(loop) { Button = _ => { } };
+        Assert.True(hook.Install());
+        Assert.True(hook.IsInstalled);
+        hook.Uninstall();
+        Assert.False(hook.IsInstalled);
+    }
+}

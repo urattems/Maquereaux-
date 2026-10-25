@@ -546,12 +546,15 @@
                         <TextBlock Text="Raccourci" Style="{StaticResource Field.Label}" Margin="0,20,0,6" />
                         <DockPanel>
                             <c:HotkeyBox DockPanel.Dock="Left" Hotkey="{Binding Hotkey}" Width="150" FontFamily="{DynamicResource Font.Mono}"
-                                         HorizontalContentAlignment="Center" Margin="0,0,12,0"
-                                         ToolTip="Clique puis appuie sur la combinaison. Retour arrière = aucun." AutomationProperties.Name="Raccourci du profil" />
+                                         HorizontalContentAlignment="Center" Margin="0,0,12,0" AllowMouse="True"
+                                         ToolTip="Clique dans le champ, puis appuie sur une touche OU clique (gauche, droit, molette, boutons latéraux). Retour arrière = aucun."
+                                         AutomationProperties.Name="Raccourci du profil" />
                             <Border Style="{StaticResource Segmented}">
                                 <UniformGrid Rows="1">
                                     <RadioButton Style="{StaticResource Segment}" GroupName="ActMode" Content="ON / OFF" MinWidth="88"
-                                                 IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Toggle}" />
+                                                 IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Toggle}"
+                                                 IsEnabled="{Binding IsMouseHotkey, Converter={StaticResource InverseBool}}"
+                                                 ToolTipService.ShowOnDisabled="True" ToolTip="Avec un bouton de souris, seul « Maintenir » est possible." />
                                     <RadioButton Style="{StaticResource Segment}" GroupName="ActMode" Content="Maintenir" MinWidth="88"
                                                  IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Hold}" />
                                 </UniformGrid>
@@ -563,7 +566,10 @@
                                     <Setter Property="Text" Value="Un appui lance, un autre arrête." />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding ActivationMode}" Value="Hold">
-                                            <Setter Property="Text" Value="La macro tourne seulement tant que tu gardes le raccourci enfoncé." />
+                                            <Setter Property="Text" Value="La macro démarre à l'instant où tu appuies et s'arrête dès que tu relâches. Marche aussi avec un clic (gauche, droit, molette…) : clique dans le champ puis clique avec le bouton voulu." />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsMouseHotkey}" Value="True">
+                                            <Setter Property="Text" Value="Tant que le bouton est enfoncé, la macro tourne ; relâché, elle s'arrête net. Le clic arrive quand même au jeu. Pense à choisir la fenêtre du jeu juste en dessous." />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>

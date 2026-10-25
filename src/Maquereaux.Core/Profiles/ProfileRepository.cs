@@ -39,7 +39,16 @@ public sealed class ProfileRepository
         if (r.Status == LoadStatus.Corrupted)
             Warnings.Add($"settings.json était illisible ({r.Error}). Réglages par défaut restaurés (copie : {Path.GetFileName(r.BackupPath)}).");
         var s = r.Value;
-        if (s.EmergencyStopHotkey is null || !s.EmergencyStopHotkey.IsValid) s.EmergencyStopHotkey = Hotkey.DefaultEmergencyStop;
+        // L'arrêt d'urgence passe par RegisterHotKey : une touche du clavier obligatoirement (pas un bouton de souris)
+        if (s.EmergencyStopHotkey is null || !s.EmergencyStopHotkey.IsValid || s.EmergencyStopHotkey.IsMouse)
+            s.EmergencyStopHotkey = Hotkey.DefaultEmergencyStop;
+        if (s.SettingsVersion < 2)
+        {
+            // v1.6 : l'arrêt d'urgence par défaut passe de Ctrl+Alt+Pause à F9 (une seule touche, accessible en jeu).
+            // Seul l'ancien défaut est migré : un raccourci choisi à la main est conservé.
+            if (s.EmergencyStopHotkey == Hotkey.LegacyEmergencyStop) s.EmergencyStopHotkey = Hotkey.DefaultEmergencyStop;
+            s.SettingsVersion = AppSettings.CurrentVersion;
+        }
         if (!Enum.IsDefined(s.TimerStrategy)) s.TimerStrategy = Engine.TimerStrategy.HighResolution;
         if (!Enum.IsDefined(s.Theme)) s.Theme = AppTheme.Dark;
         s.CompactOpacity = double.IsFinite(s.CompactOpacity) ? Math.Clamp(s.CompactOpacity, AppSettings.MinCompactOpacity, 1) : 0.95;

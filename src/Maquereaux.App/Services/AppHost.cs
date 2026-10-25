@@ -62,6 +62,7 @@ public sealed class AppHost : IDisposable
 
         Hook = new KeyboardHook(_loop);
         Hook.Filter = OnHookKey;
+        MouseHook = new MouseHook(_loop) { Button = OnHookMouse };
 
         _log.LogInformation("Maquereaux {Version} démarré (données : {Dir})", AppInfo.Version, paths.DataDir);
     }
@@ -83,6 +84,9 @@ public sealed class AppHost : IDisposable
 
     /// <summary>Hook clavier bas niveau (installé seulement si un profil Maintenir existe ou si le Labo enregistre).</summary>
     public KeyboardHook Hook { get; }
+
+    /// <summary>Hook souris (boutons seulement), installé seulement si un profil Maintenir utilise un bouton de souris.</summary>
+    public MouseHook MouseHook { get; }
 
     /// <summary>Nom du process au premier plan (filtre de fenêtre cible).</summary>
     public ForegroundProcessProvider Foreground { get; } = new();
@@ -140,7 +144,7 @@ public sealed class AppHost : IDisposable
         var r = _hotkeys.Register(EmergencyHotkeyId, emergency);
         if (!r.Success) errors.Add("Arrêt d'urgence — " + r.Describe(emergency));
         // Piège : avec Ctrl enfoncé, la touche Pause envoie VK_CANCEL (« Break ») au lieu de VK_PAUSE.
-        // On enregistre donc les deux variantes pour que Ctrl+Alt+Pause marche sur tous les claviers.
+        // On enregistre donc les deux variantes pour qu'un raccourci Ctrl+…+Pause marche sur tous les claviers.
         if (emergency.VirtualKey == VirtualKeys.Pause && emergency.Modifiers.HasFlag(HotkeyModifiers.Control))
             _hotkeys.Register(EmergencyAltHotkeyId, emergency with { VirtualKey = VirtualKeys.Cancel });
 
@@ -170,6 +174,12 @@ public sealed class AppHost : IDisposable
                 errors.Add($"« {p.Name} » : {p.Hotkey} est déjà l'arrêt d'urgence.");
                 continue;
             }
+            if (p.Hotkey.IsMouse)
+            {
+                // RegisterHotKey ne connaît pas la souris : un bouton n'a de sens qu'en mode Maintenir
+                errors.Add($"« {p.Name} » : {p.Hotkey} ne marche qu'en mode « Maintenir ».");
+                continue;
+            }
             var res = _hotkeys.Register(id, p.Hotkey);
             if (res.Success) map[id] = p.Id;
             else errors.Add($"« {p.Name} » — {res.Describe(p.Hotkey)}");
@@ -178,6 +188,7 @@ public sealed class AppHost : IDisposable
         _hotkeyToProfile = map;
         _holdTracker.SetBindings(holdBindings);
         UpdateHookNeed(holdHotkeys: holdBindings.Count > 0);
+        UpdateMouseHook(_holdTracker.HasMouseBindings);
         return errors;
     }
 
@@ -219,10 +230,30 @@ public sealed class AppHost : IDisposable
         }
     }
 
+    private void UpdateMouseHook(bool needed)
+    {
+        if (needed == MouseHook.IsInstalled) return;
+        if (needed)
+        {
+            if (MouseHook.Install()) _log.LogInformation("Hook souris installé (raccourci Maintenir sur un bouton)");
+            else Error?.Invoke("Impossible d'installer le hook souris : les raccourcis sur un bouton de souris sont indisponibles.");
+        }
+        else
+        {
+            MouseHook.Uninstall();
+            _log.LogInformation("Hook souris retiré");
+        }
+    }
+
+    /// <summary>Appelé DANS le callback du hook souris : même logique que le clavier, sans jamais avaler le clic.</summary>
+    private void OnHookMouse(RawKeyEvent e) => OnHookKey(e);
+
     /// <summary>Appelé DANS le callback du hook : décision instantanée, le travail part sur la file de commandes.</summary>
     private bool OnHookKey(RawKeyEvent e)
     {
-        if (_profileHotkeysSuspended) return false;
+        // Pendant une capture dans l'UI : aucun nouveau démarrage, mais un relâchement arrête toujours
+        // ce qui avait été lancé avant (sinon la macro continuerait sans fin).
+        if (_profileHotkeysSuspended && e.IsDown) return false;
         var d = _holdTracker.Process(e);
         if (d.StartProfile is { } start) _executor.Post(() => _controller.HoldDown(start));
         if (d.StopProfile is { } stop) _executor.Post(() => _controller.HoldUp(stop));
@@ -305,6 +336,7 @@ public sealed class AppHost : IDisposable
         Engine.Stop(StopReason.Shutdown); // relâche les touches avant tout le reste
         _hotkeys.Dispose();
         Hook.Dispose();
+        MouseHook.Dispose();
         _loop.Dispose();
         _executor.Dispose();
     }

@@ -23,7 +23,7 @@ Légende : ☐ à faire · ✅ OK · ❌ KO (note ce que tu vois)
 |---|---|---|
 | 1.1 | Profil par défaut (a, z, e — 100 ms). Clique dans le Bloc-notes, appuie sur **F6** | `azeazeaze…` s'écrit en boucle ; carte héros et pastille passent au turquoise « En marche » avec halo pulsé |
 | 1.2 | Appuie à nouveau sur **F6** | Ça s'arrête, retour à « Prêt à lancer » / « À l'arrêt » |
-| 1.3 | Relance (F6) puis **Ctrl+Alt+Pause** | Arrêt immédiat (« Arrêt d'urgence ») |
+| 1.3 | Relance (F6) puis **F9** | Arrêt immédiat (« Arrêt d'urgence ») ; si tu avais Ctrl+Alt+Pause (ancien défaut), il a été remplacé par F9 au premier lancement de la v1.6 |
 | 1.4 | Relance puis ferme Maquereaux (croix) pendant l'exécution | Plus rien ne s'écrit, **aucune touche bloquée** (tape au clavier : tout est normal) |
 | 1.5 | Pendant l'exécution, redimensionne/déplace la fenêtre, change d'onglet | UI fluide, la cadence ne bouge pas (stats en bas) |
 | 1.6 | Écran Macro → tuile **+** → appuie sur **Flèche gauche** puis lance dans le Bloc-notes | Le curseur recule (touche étendue OK, pas un « 4 » du pavé numérique) |
@@ -91,7 +91,18 @@ Légende : ☐ à faire · ✅ OK · ❌ KO (note ce que tu vois)
 | 5.15b | **Ctrl+1…4**, **Ctrl+N**, et **Ctrl+Z** après avoir supprimé une touche (hors champ texte) | Change de page, crée un profil, la touche revient ; dans un champ texte, Ctrl+Z annule la saisie comme d'habitude |
 | 5.15 | Thème clair : relis chaque écran | Contraste confortable, aucune couleur « illisible » (accent assombri en clair) |
 
-## 6. Limites connues à vérifier (comportement attendu, pas des bugs)
+## 6. Maintien sur un bouton de souris (v1.6)
+| # | Action | Attendu |
+|---|---|---|
+| 6.1 | Profil → champ Raccourci : clique dedans, puis **clic droit** | Le raccourci devient « Clic droit », le mode passe seul sur **Maintenir** (ON/OFF grisé) |
+| 6.2 | Fenêtre cible = Bloc-notes. Dans le Bloc-notes, **maintiens le clic droit** 2 s puis relâche | `aze…` démarre à l'instant de l'appui, s'arrête net au relâchement (aucune lettre en trop) ; le menu contextuel du Bloc-notes s'ouvre quand même (le clic n'est pas avalé) |
+| 6.3 | Même chose avec clic gauche, clic molette, boutons latéraux 4/5 | Idem |
+| 6.4 | Clique dans la fenêtre de Maquereaux avec le bouton choisi | Rien ne démarre (les clics sur Maquereaux sont ignorés) |
+| 6.5 | Sans fenêtre cible | Avertissement orange « chaque clic … lancera la macro » |
+| 6.6 | Clic droit maintenu dans le jeu, puis **F9** sans relâcher | Arrêt immédiat ; relâcher ensuite ne relance rien |
+| 6.7 | Ne garde que des profils clavier | Le hook souris est retiré (log « Hook souris retiré ») |
+
+## 7. Limites connues à vérifier (comportement attendu, pas des bugs)
 - Certains jeux/anti-cheat ignorent les entrées injectées (flag `LLKHF_INJECTED`) : c'est voulu, Maquereaux ne le contourne pas.
 - Impossible d'envoyer des touches sur l'écran de verrouillage / UAC (bureau sécurisé).
 - Win+L, Ctrl+Alt+Suppr ne peuvent pas être simulés (protégés par Windows).

@@ -472,7 +472,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     partial void OnEmergencyHotkeyChanged(Hotkey value)
     {
-        if (value is null || !value.IsValid)
+        if (value is null || !value.IsValid || value.IsMouse)
         {
             Notify("L'arrêt d'urgence doit avoir une touche valide : valeur par défaut restaurée.", NotificationLevel.Warning);
             EmergencyHotkey = Hotkey.DefaultEmergencyStop;

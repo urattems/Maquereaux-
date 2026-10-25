@@ -91,7 +91,12 @@ public static class ProfileValidator
             if (clash is not null)
                 issues.Add($"{p.Hotkey} est aussi le raccourci de « {clash.Name} ».");
 
-            // Mode Hold : si la touche de maintien fait partie de la séquence, la macro se « relâcherait » elle-même
+            if (p.Hotkey.IsMouse && p.ActivationMode != ActivationMode.Hold)
+                issues.Add($"{p.Hotkey} ne marche qu'en mode « Maintenir » (la macro tourne tant que le bouton est enfoncé).");
+            else if (p.Hotkey.IsMouse && p.Hotkey.Modifiers == HotkeyModifiers.None && p.TargetProcess is null)
+                issues.Add($"Sans fenêtre cible, chaque {p.Hotkey.ToString().ToLowerInvariant()} dans n'importe quelle appli lancera la macro : choisis la fenêtre du jeu.");
+
+                        // Mode Hold : si la touche de maintien fait partie de la séquence, la macro se « relâcherait » elle-même
             if (p.ActivationMode == ActivationMode.Hold && p.Steps.Any(s => s.Key.VirtualKey == p.Hotkey.VirtualKey))
                 issues.Add($"En mode « Maintenir », la touche du raccourci ({p.Hotkey}) ne peut pas faire partie de la séquence.");
         }

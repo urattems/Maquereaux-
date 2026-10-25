@@ -14,7 +14,13 @@ public sealed record WindowPlacement(double Left, double Top, double Width, doub
 /// <summary>Réglages globaux de l'application.</summary>
 public sealed class AppSettings
 {
-    /// <summary>Arrêt d'urgence, toujours actif (défaut : Ctrl+Alt+Pause).</summary>
+    /// <summary>Version du format des réglages (migrations au chargement).</summary>
+    public const int CurrentVersion = 2;
+
+    /// <summary>0 = fichier antérieur à la v1.6 (ou absent). Voir <see cref="Profiles.ProfileRepository.LoadSettings"/>.</summary>
+    public int SettingsVersion { get; set; }
+
+    /// <summary>Arrêt d'urgence, toujours actif (défaut : F9).</summary>
     public Hotkey EmergencyStopHotkey { get; set; } = Hotkey.DefaultEmergencyStop;
 
     public Guid? ActiveProfileId { get; set; }

@@ -9,6 +9,8 @@ namespace Maquereaux.App.Controls;
 /// <summary>
 /// Champ de saisie d'un raccourci global : clique, puis appuie sur la combinaison (ex. Ctrl+Alt+F8).
 /// Échap annule ; Retour arrière / Suppr (sans modificateur) efface si <see cref="AllowNone"/>.
+/// Avec <see cref="AllowMouse"/>, un clic (gauche, droit, molette, boutons 4/5) pendant la capture devient le
+/// raccourci : le premier clic gauche donne le focus, le suivant est capturé.
 /// </summary>
 public class HotkeyBox : TextBox
 {
@@ -18,6 +20,9 @@ public class HotkeyBox : TextBox
 
     public static readonly DependencyProperty AllowNoneProperty = DependencyProperty.Register(
         nameof(AllowNone), typeof(bool), typeof(HotkeyBox), new PropertyMetadata(true));
+
+    public static readonly DependencyProperty AllowMouseProperty = DependencyProperty.Register(
+        nameof(AllowMouse), typeof(bool), typeof(HotkeyBox), new PropertyMetadata(false));
 
     private bool _capturing;
 
@@ -44,13 +49,46 @@ public class HotkeyBox : TextBox
         set => SetValue(AllowNoneProperty, value);
     }
 
+    /// <summary>Accepte un bouton de souris comme raccourci (profils en mode « Maintenir »).</summary>
+    public bool AllowMouse
+    {
+        get => (bool)GetValue(AllowMouseProperty);
+        set => SetValue(AllowMouseProperty, value);
+    }
+
+    protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+    {
+        // Pas encore en capture : ce clic sert juste à donner le focus (comportement normal)
+        if (!_capturing || !AllowMouse) { base.OnPreviewMouseDown(e); return; }
+        ushort vk = e.ChangedButton switch
+        {
+            MouseButton.Left => Core.Input.VirtualKeys.LButton,
+            MouseButton.Right => Core.Input.VirtualKeys.RButton,
+            MouseButton.Middle => Core.Input.VirtualKeys.MButton,
+            MouseButton.XButton1 => Core.Input.VirtualKeys.XButton1,
+            MouseButton.XButton2 => Core.Input.VirtualKeys.XButton2,
+            _ => 0,
+        };
+        if (vk == 0) return;
+        e.Handled = true;
+        Hotkey = new Hotkey(ToModifiers(Keyboard.Modifiers), vk);
+        EndCapture();
+    }
+
+    // Le relâchement du clic capturé ne doit pas ouvrir de menu ni redonner le focus
+    protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
+    {
+        if (AllowMouse && e.ChangedButton != MouseButton.Left) e.Handled = true;
+        base.OnPreviewMouseUp(e);
+    }
+
     protected override void OnGotKeyboardFocus(KeyboardFocusChangedEventArgs e)
     {
         base.OnGotKeyboardFocus(e);
         if (_capturing) return;
         _capturing = true;
         KeyCaptureCoordinator.Begin();
-        Text = "Appuie sur la combinaison…";
+        Text = AllowMouse ? "Touche ou clic…" : "Appuie sur la combinaison…";
     }
 
     protected override void OnLostKeyboardFocus(KeyboardFocusChangedEventArgs e)

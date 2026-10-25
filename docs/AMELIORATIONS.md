@@ -48,3 +48,5 @@ Chaque ajout reste dans l'esprit du projet et respecte la section « Hors périm
 | A-37 | Contrastes AA calculés par script | Lisible pour tout le monde, dans les deux thèmes. |
 | A-38 | Générateur d'icône multi-résolution depuis le logo | Icône nette de 16 à 256 px. |
 | A-39 | Raccourcis Ctrl+1…4 (pages), Ctrl+N (nouveau profil), Ctrl+Z (annuler la suppression d'une touche), affichés dans les info-bulles de la navigation | Tout se pilote au clavier. |
+| A-40 | Bascule automatique en « Maintenir » quand on choisit un bouton de souris, ON/OFF grisé | Impossible de créer une combinaison qui ne marcherait pas. |
+| A-41 | Clics sur Maquereaux ignorés par le hook souris, relâchement toujours pris en compte | Pas de démarrage intempestif, jamais de macro « coincée ». |

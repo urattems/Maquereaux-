@@ -193,6 +193,32 @@ public class ProfileRepositoryTests : IDisposable
     }
 
     [Fact]
+    public void Legacy_emergency_hotkey_is_migrated_to_F9_once()
+    {
+        // Réglages v1.x : Ctrl+Alt+Pause (ancien défaut) → F9
+        File.WriteAllText(_dir.File("settings.json"), "{\"emergencyStopHotkey\": {\"modifiers\": \"Alt, Control\", \"virtualKey\": 19}}");
+        var s = _repo.LoadSettings();
+        Assert.Equal(Hotkey.DefaultEmergencyStop, s.EmergencyStopHotkey);
+        Assert.Equal(AppSettings.CurrentVersion, s.SettingsVersion);
+
+        // Choisi à la main après la migration : conservé
+        s.EmergencyStopHotkey = Hotkey.LegacyEmergencyStop;
+        _repo.SaveSettings(s);
+        Assert.Equal(Hotkey.LegacyEmergencyStop, _repo.LoadSettings().EmergencyStopHotkey);
+
+        // Un autre raccourci personnalisé d'avant la v1.6 n'est pas touché
+        File.WriteAllText(_dir.File("settings.json"), "{\"emergencyStopHotkey\": {\"modifiers\": \"Control\", \"virtualKey\": 123}}");
+        Assert.Equal(new Hotkey(HotkeyModifiers.Control, 0x7B), _repo.LoadSettings().EmergencyStopHotkey);
+    }
+
+    [Fact]
+    public void Mouse_button_is_refused_as_emergency_hotkey()
+    {
+        File.WriteAllText(_dir.File("settings.json"), "{\"emergencyStopHotkey\": {\"modifiers\": \"None\", \"virtualKey\": 2}, \"settingsVersion\": 2}");
+        Assert.Equal(Hotkey.DefaultEmergencyStop, _repo.LoadSettings().EmergencyStopHotkey);
+    }
+
+    [Fact]
     public void Settings_with_invalid_emergency_hotkey_is_repaired()
     {
         File.WriteAllText(_dir.File("settings.json"), "{\"emergencyStopHotkey\": {\"modifiers\": \"None\", \"virtualKey\": 0}, \"timerStrategy\": \"Hybrid\"}");
@@ -280,6 +306,21 @@ public class ProfileRepositoryTests : IDisposable
 public class ProfileValidatorTests
 {
     private readonly AppSettings _settings = new();
+
+    [Fact]
+    public void Mouse_hotkey_requires_hold_mode_and_suggests_a_target()
+    {
+        var p = Profile.CreateDefault();
+        p.Hotkey = new Hotkey(HotkeyModifiers.None, VirtualKeys.RButton);
+        p.ActivationMode = ActivationMode.Toggle;
+        Assert.Contains(ProfileValidator.Validate(p, new[] { p }, _settings), i => i.Contains("Maintenir"));
+
+        p.ActivationMode = ActivationMode.Hold;
+        Assert.Contains(ProfileValidator.Validate(p, new[] { p }, _settings), i => i.Contains("fenêtre cible"));
+
+        p.TargetProcess = "jeu.exe";
+        Assert.Empty(ProfileValidator.Validate(p, new[] { p }, _settings));
+    }
 
     [Fact]
     public void SanitizeAll_regenerates_duplicate_ids_and_skips_nulls()

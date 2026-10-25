@@ -83,6 +83,17 @@ internal struct KBDLLHOOKSTRUCT
     public nuint dwExtraInfo;
 }
 
+/// <summary>Données reçues par un hook WH_MOUSE_LL.</summary>
+[StructLayout(LayoutKind.Sequential)]
+internal struct MSLLHOOKSTRUCT
+{
+    public POINT pt;
+    public uint mouseData;
+    public uint flags;
+    public uint time;
+    public nuint dwExtraInfo;
+}
+
 internal static partial class NativeMethods
 {
     // --- Constantes ---
@@ -107,6 +118,16 @@ internal static partial class NativeMethods
     public const int ERROR_HOTKEY_ALREADY_REGISTERED = 1409;
 
     public const int WH_KEYBOARD_LL = 13;
+    public const int WH_MOUSE_LL = 14;
+    public const uint LLMHF_INJECTED = 0x01;
+    public const uint WM_LBUTTONDOWN = 0x0201;
+    public const uint WM_LBUTTONUP = 0x0202;
+    public const uint WM_RBUTTONDOWN = 0x0204;
+    public const uint WM_RBUTTONUP = 0x0205;
+    public const uint WM_MBUTTONDOWN = 0x0207;
+    public const uint WM_MBUTTONUP = 0x0208;
+    public const uint WM_XBUTTONDOWN = 0x020B;
+    public const uint WM_XBUTTONUP = 0x020C;
     public const uint LLKHF_EXTENDED = 0x01;
     public const uint LLKHF_INJECTED = 0x10;
     public const uint LLKHF_UP = 0x80;
@@ -135,6 +156,9 @@ internal static partial class NativeMethods
     // --- user32 : fenêtres ---
     [LibraryImport("user32.dll")]
     public static partial IntPtr GetForegroundWindow();
+
+    [LibraryImport("user32.dll")]
+    public static partial IntPtr WindowFromPoint(POINT point);
 
     [LibraryImport("user32.dll")]
     public static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
@@ -166,7 +190,7 @@ internal static partial class NativeMethods
     [LibraryImport("user32.dll")]
     public static partial nint DispatchMessageW(in MSG lpMsg);
 
-    // --- user32 : hook clavier bas niveau ---
+    // --- user32 : hooks bas niveau (clavier et souris : même signature de callback) ---
     public delegate nint LowLevelKeyboardProc(int nCode, nuint wParam, nint lParam);
 
     [DllImport("user32.dll", SetLastError = true)]

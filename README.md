@@ -36,7 +36,14 @@ Configuration requise : Windows 10 (1803+) ou 11, x64. Les profils et réglages 
 2. Règle l'**intervalle** (ms), le **mode** (Cycle = une touche par tick, Burst = toute la séquence à chaque tick)
    et le nombre de **répétitions** (0 = infini).
 3. Place-toi dans l'appli cible et appuie sur **F6** pour lancer / arrêter.
-4. **Ctrl+Alt+Pause** = arrêt d'urgence, toujours actif.
+4. **F9** = arrêt d'urgence, toujours actif (modifiable dans Paramètres → Raccourcis).
+
+### 🎮 Spammer seulement tant que tu cliques (jeux)
+Mode **Maintenir** + raccourci sur un **bouton de souris** : la macro démarre à l'instant où tu appuies et s'arrête dès
+que tu relâches. Le clic arrive quand même au jeu.
+1. Carte *Comportement* → clique dans le champ **Raccourci**, puis clique avec le bouton voulu (droit, gauche, molette,
+   boutons latéraux 4/5). Le mode passe tout seul sur **Maintenir**.
+2. **Fenêtre cible** = le jeu (indispensable avec un clic : sinon chaque clic dans n'importe quelle appli lancerait la macro).
 
 | Écran | Ce qu'on y fait |
 |---|---|
@@ -59,7 +66,8 @@ Configuration requise : Windows 10 (1803+) ou 11, x64. Les profils et réglages 
 _Captures générées automatiquement par le smoke test de la CI sur un runner Windows._
 
 ### Fonctionnalités clés
-- **Mode Maintenir** : la macro tourne uniquement tant que tu gardes la touche du raccourci enfoncée.
+- **Mode Maintenir** : la macro tourne uniquement tant que tu gardes la touche du raccourci enfoncée — touche du clavier
+  **ou bouton de souris** (clic gauche/droit/molette, boutons 4/5).
 - **Fenêtre cible** : n'envoie des touches que si l'appli choisie (ex. `notepad.exe`) a le focus → pause automatique sinon.
   Évite de spammer Discord ou ton navigateur par erreur.
 - **Anti-touche bloquée** : à l'arrêt (normal, urgence, fermeture, crash) toute touche enfoncée est relâchée.

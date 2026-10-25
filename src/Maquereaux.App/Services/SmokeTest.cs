@@ -145,6 +145,24 @@ internal sealed class SmokeTest
         Log($"Profils : {reloaded.Count} sauvegardés et relus, hook installé = {_host.Hook.IsInstalled}");
         if (!_host.Hook.IsInstalled) throw new InvalidOperationException("Hook non installé alors qu'un profil Maintenir existe");
 
+        // Raccourci « Maintenir » sur le clic droit : hook souris installé, retiré quand plus aucun profil n'en a besoin
+        if (_vm.EmergencyHotkey != Core.Models.Hotkey.DefaultEmergencyStop) throw new InvalidOperationException($"Arrêt d'urgence par défaut inattendu : {_vm.EmergencyHotkey}");
+        var hold = _vm.ActiveProfile!;
+        var previous = hold.Hotkey;
+        hold.Hotkey = new Core.Models.Hotkey(Core.Models.HotkeyModifiers.None, Core.Input.VirtualKeys.RButton);
+        await Delay(200);
+        if (!_host.MouseHook.IsInstalled) throw new InvalidOperationException("Hook souris non installé pour un raccourci clic droit");
+        if (hold.ActivationMode != Core.Models.ActivationMode.Hold) throw new InvalidOperationException("Un raccourci souris doit basculer le profil en Maintenir");
+        SelectTab("Macro");
+        await Delay(300);
+        FindVisual<HotkeyBox>(_window)?.BringIntoView(new Rect(0, -120, 10, 320));
+        await Delay(300);
+        Capture(_window, "macro-maintien-clic-droit");
+        hold.Hotkey = previous;
+        await Delay(200);
+        if (_host.MouseHook.IsInstalled) throw new InvalidOperationException("Hook souris resté installé");
+        Log("Maintien sur clic droit : hook souris OK, arrêt d'urgence = F9");
+
         _vm.IsLightTheme = true;
         SelectTab("Macro");
         await Delay(400);

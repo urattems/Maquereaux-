@@ -34,6 +34,24 @@ public class HoldHotkeyTrackerTests
     }
 
     [Fact]
+    public void Mouse_button_starts_and_stops_but_is_never_swallowed()
+    {
+        var p3 = Guid.NewGuid();
+        _t.SetBindings(new[] { (p3, new Hotkey(HotkeyModifiers.None, VirtualKeys.RButton)) });
+        Assert.True(_t.HasMouseBindings);
+        // Le clic doit toujours arriver au jeu : Swallow = false à l'appui comme au relâchement
+        Assert.Equal(new HoldDecision(false, p3, null), _t.Process(Ev(VirtualKeys.RButton, true)));
+        Assert.Equal(new HoldDecision(false, null, p3), _t.Process(Ev(VirtualKeys.RButton, false)));
+        // Clic injecté (par un autre logiciel) : ignoré
+        Assert.Equal(HoldDecision.None, _t.Process(Ev(VirtualKeys.RButton, true, injected: true)));
+        // Clic gauche non lié : rien
+        Assert.Equal(HoldDecision.None, _t.Process(Ev(VirtualKeys.LButton, true)));
+    }
+
+    [Fact]
+    public void Keyboard_only_bindings_have_no_mouse_bindings() => Assert.False(_t.HasMouseBindings);
+
+    [Fact]
     public void Autorepeat_is_swallowed_without_new_command()
     {
         _t.Process(Ev(VirtualKeys.F7, true));

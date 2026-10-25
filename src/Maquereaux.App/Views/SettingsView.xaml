@@ -151,7 +151,7 @@
                                          AutomationProperties.Name="Raccourci d'arrêt d'urgence" />
                             <StackPanel>
                                 <TextBlock Text="Arrêt d'urgence" Style="{StaticResource Row.Label}" />
-                                <TextBlock Text="Global et toujours actif, même pendant la capture d'une touche : coupe la macro et relâche toutes les touches." Style="{StaticResource Row.Help}" />
+                                <TextBlock Text="F9 par défaut. Global et toujours actif, même pendant la capture d'une touche : coupe la macro et relâche toutes les touches." Style="{StaticResource Row.Help}" />
                             </StackPanel>
                         </DockPanel>
                     </StackPanel>

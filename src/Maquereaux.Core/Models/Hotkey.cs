@@ -15,11 +15,18 @@ public enum HotkeyModifiers
     Win = 0x8,
 }
 
-/// <summary>Raccourci clavier global (ex. F6, Ctrl+Alt+Pause).</summary>
+/// <summary>Raccourci global : une touche (ex. F6, Ctrl+F7) ou un bouton de souris (mode « Maintenir » uniquement).</summary>
 public sealed record Hotkey(HotkeyModifiers Modifiers, ushort VirtualKey)
 {
     public static Hotkey DefaultToggle => new(HotkeyModifiers.None, VirtualKeys.F6);
-    public static Hotkey DefaultEmergencyStop => new(HotkeyModifiers.Control | HotkeyModifiers.Alt, VirtualKeys.Pause);
+    public static Hotkey DefaultEmergencyStop => new(HotkeyModifiers.None, VirtualKeys.F9);
+
+    /// <summary>Ancien arrêt d'urgence par défaut (v1.0 → v1.5), migré vers F9 au chargement des réglages.</summary>
+    public static Hotkey LegacyEmergencyStop => new(HotkeyModifiers.Control | HotkeyModifiers.Alt, VirtualKeys.Pause);
+
+    /// <summary>Bouton de souris (RegisterHotKey ne les gère pas : détection par le hook souris, mode Maintenir).</summary>
+    [JsonIgnore]
+    public bool IsMouse => VirtualKeys.IsMouseButton(VirtualKey);
 
     /// <summary>Un raccourci doit avoir une touche principale qui n'est pas un simple modificateur.</summary>
     [JsonIgnore]
