@@ -14,7 +14,6 @@
                 <ResourceDictionary Source="Themes/Typography.xaml" />
                 <ResourceDictionary Source="Themes/Controls.xaml" />
                 <ResourceDictionary Source="Themes/Controls.Lists.xaml" />
-                <ResourceDictionary Source="Themes/Legacy.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <conv:EngineStateToTextConverter x:Key="StateToText" />

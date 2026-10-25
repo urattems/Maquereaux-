@@ -355,13 +355,13 @@
                             <TextBlock Grid.Column="1" Text="{TemplateBinding Unit}" Foreground="{DynamicResource Text.Tertiary}"
                                        VerticalAlignment="Center" Margin="2,0,6,0" FontSize="{DynamicResource FontSize.Caption}" />
                             <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,2,0">
-                                <RepeatButton x:Name="PART_Up" Style="{StaticResource Btn.Spin}" Height="13" c:Ui.Icon="{StaticResource Icon.ChevronDown}"
+                                <RepeatButton x:Name="PART_Up" Style="{StaticResource Btn.Spin}" Height="13" c:Ui.Icon="{DynamicResource Icon.ChevronDown}"
                                               RenderTransformOrigin="0.5,0.5" ToolTip="Augmenter (molette, ↑)">
                                     <RepeatButton.RenderTransform>
                                         <ScaleTransform ScaleY="-1" />
                                     </RepeatButton.RenderTransform>
                                 </RepeatButton>
-                                <RepeatButton x:Name="PART_Down" Style="{StaticResource Btn.Spin}" Height="13" c:Ui.Icon="{StaticResource Icon.ChevronDown}"
+                                <RepeatButton x:Name="PART_Down" Style="{StaticResource Btn.Spin}" Height="13" c:Ui.Icon="{DynamicResource Icon.ChevronDown}"
                                               ToolTip="Diminuer (molette, ↓)" />
                             </StackPanel>
                         </Grid>
@@ -438,7 +438,7 @@
                                 <ControlTemplate TargetType="ToggleButton">
                                     <Border x:Name="Bd" Background="{DynamicResource Surface.Sunken}" BorderBrush="{DynamicResource Border.Default}"
                                             BorderThickness="1" CornerRadius="{DynamicResource Radius.M}">
-                                        <c:Icon Glyph="{StaticResource Icon.ChevronDown}" Width="12" Height="12" HorizontalAlignment="Right"
+                                        <c:Icon Glyph="{DynamicResource Icon.ChevronDown}" Width="12" Height="12" HorizontalAlignment="Right"
                                                 Margin="0,0,10,0" Foreground="{DynamicResource Text.Secondary}" />
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -498,7 +498,7 @@
                     <StackPanel Orientation="Horizontal" Background="Transparent">
                         <Border x:Name="Box" Width="20" Height="20" CornerRadius="{DynamicResource Radius.S}" BorderThickness="1.5" VerticalAlignment="Center"
                                 Background="{DynamicResource Surface.Sunken}" BorderBrush="{DynamicResource Border.Strong}">
-                            <c:Icon x:Name="Check" Glyph="{StaticResource Icon.Check}" Width="14" Height="14" Foreground="{DynamicResource Text.OnAccent}" Visibility="Collapsed" />
+                            <c:Icon x:Name="Check" Glyph="{DynamicResource Icon.Check}" Width="14" Height="14" Foreground="{DynamicResource Text.OnAccent}" Visibility="Collapsed" />
                         </Border>
                         <ContentPresenter Margin="10,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True" />
                     </StackPanel>
@@ -734,5 +734,38 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!--
+        Clés de style v1.0 encore utilisées par les écrans pas encore refondus, remappées sur le nouveau design system.
+        À supprimer à la fin de la refonte (U5).
+    -->
+    <Style x:Key="Text.Label" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+    </Style>
+    <Style x:Key="Text.Muted" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Caption}" />
+    </Style>
+    <Style x:Key="Text.StatValue" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Subtitle}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    </Style>
+    <Style x:Key="Button.Accent" TargetType="Button" BasedOn="{StaticResource Btn.Primary}" />
+    <Style x:Key="Button.Danger" TargetType="Button" BasedOn="{StaticResource Btn.Danger}" />
+    <Style x:Key="Button.Icon" TargetType="Button" BasedOn="{StaticResource Btn.Ghost}">
+        <Setter Property="Padding" Value="8,2" />
+        <Setter Property="MinHeight" Value="28" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+    </Style>
+    <Style x:Key="TextBox.Number" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Width" Value="80" />
+        <Setter Property="TextAlignment" Value="Right" />
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
     </Style>
 </ResourceDictionary>

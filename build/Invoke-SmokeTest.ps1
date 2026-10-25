@@ -14,10 +14,8 @@ $env:MAQUEREAUX_SMOKE_REPORT = $report
 
 Write-Host "Lancement de $ExePath --smoke-test (données : $dataDir)"
 $proc = Start-Process -FilePath $ExePath -ArgumentList "--smoke-test" -PassThru
-if (-not $proc.WaitForExit($TimeoutSeconds * 1000)) {
-    $proc.Kill()
-    throw "Smoke test : l'appli ne s'est pas fermée en $TimeoutSeconds s"
-}
+$timedOut = -not $proc.WaitForExit($TimeoutSeconds * 1000)
+if ($timedOut) { $proc.Kill() }
 
 if (Test-Path $report) {
     Write-Host "---- Rapport smoke test ----"
@@ -30,5 +28,6 @@ if (Test-Path $logDir) {
     Get-ChildItem $logDir -Filter *.log | ForEach-Object { Get-Content $_.FullName | Select-Object -Last 60 | ForEach-Object { Write-Host $_ } }
 }
 
+if ($timedOut) { throw "Smoke test : l'appli ne s'est pas fermée en $TimeoutSeconds s" }
 if ($proc.ExitCode -ne 0) { throw "Smoke test : code de sortie $($proc.ExitCode)" }
 Write-Host "✅ Smoke test OK (code 0)"

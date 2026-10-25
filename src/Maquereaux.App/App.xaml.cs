@@ -20,6 +20,20 @@ public partial class App : Application
     private Mutex? _singleInstance;
     private EventWaitHandle? _showSignal;
 
+    public App()
+    {
+        // Filet le plus précoce possible (avant même le chargement des ressources XAML) : en smoke test, un crash
+        // est écrit dans le rapport et l'appli quitte avec un code d'erreur au lieu d'ouvrir la boîte de dialogue
+        // Windows (qui bloquerait la CI jusqu'au timeout).
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            var report = Environment.GetEnvironmentVariable("MAQUEREAUX_SMOKE_REPORT");
+            if (report is null) return;
+            try { File.AppendAllText(report, $"CRASH : {args.ExceptionObject}{Environment.NewLine}"); } catch { }
+            Environment.Exit(4);
+        };
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -111,6 +125,14 @@ public partial class App : Application
         {
             _host?.PanicReleaseKeys();
             _log?.LogError(args.Exception, "Exception UI");
+            if (Environment.GetEnvironmentVariable("MAQUEREAUX_SMOKE_REPORT") is { } report && _vm is null)
+            {
+                // Exception pendant le démarrage en smoke test : on la rapporte et on sort (sinon l'appli resterait sans fenêtre)
+                try { File.AppendAllText(report, $"CRASH AU DÉMARRAGE : {args.Exception}{Environment.NewLine}"); } catch { }
+                args.Handled = true;
+                Shutdown(5);
+                return;
+            }
             args.Handled = true;
             _vm?.Notify("Erreur inattendue : " + args.Exception.Message, NotificationLevel.Error);
         };
