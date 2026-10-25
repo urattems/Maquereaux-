@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -9,6 +10,13 @@ using Maquereaux.App.ViewModels;
 using Maquereaux.Win32;
 
 namespace Maquereaux.App.Controls;
+
+/// <summary>Élément factice placé en fin de liste : la tuile « + Ajouter une touche ».</summary>
+public sealed class AddKeyPlaceholder
+{
+    public static readonly AddKeyPlaceholder Instance = new();
+    private AddKeyPlaceholder() { }
+}
 
 /// <summary>Conteneur d'une touche de la séquence : focusable (sélection au clavier).</summary>
 public sealed class SequenceKeyItem : ContentControl
@@ -36,6 +44,39 @@ public sealed class SequenceEditor : ItemsControl
 
     public static readonly DependencyProperty IsAddingProperty = IsAddingPropertyKey.DependencyProperty;
 
+    /// <summary>Étapes à afficher (la tuile « + » est ajoutée automatiquement à la fin).</summary>
+    public static readonly DependencyProperty StepsProperty = DependencyProperty.Register(
+        nameof(Steps), typeof(System.Collections.IEnumerable), typeof(SequenceEditor), new PropertyMetadata(null, OnStepsChanged));
+
+    public static readonly DependencyProperty KeyTemplateProperty = DependencyProperty.Register(
+        nameof(KeyTemplate), typeof(DataTemplate), typeof(SequenceEditor));
+
+    public static readonly DependencyProperty AddTemplateProperty = DependencyProperty.Register(
+        nameof(AddTemplate), typeof(DataTemplate), typeof(SequenceEditor));
+
+    public System.Collections.IEnumerable? Steps { get => (System.Collections.IEnumerable?)GetValue(StepsProperty); set => SetValue(StepsProperty, value); }
+    public DataTemplate? KeyTemplate { get => (DataTemplate?)GetValue(KeyTemplateProperty); set => SetValue(KeyTemplateProperty, value); }
+    public DataTemplate? AddTemplate { get => (DataTemplate?)GetValue(AddTemplateProperty); set => SetValue(AddTemplateProperty, value); }
+
+    private static void OnStepsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var editor = (SequenceEditor)d;
+        editor.ItemsSource = e.NewValue is System.Collections.IEnumerable steps
+            ? new CompositeCollection { new CollectionContainer { Collection = steps }, AddKeyPlaceholder.Instance }
+            : null;
+    }
+
+    /// <summary>Nombre de vraies étapes (sans la tuile « + »).</summary>
+    private int StepCount => Items.Count > 0 && Items[^1] is AddKeyPlaceholder ? Items.Count - 1 : Items.Count;
+
+    private sealed class Selector : DataTemplateSelector
+    {
+        private readonly SequenceEditor _owner;
+        public Selector(SequenceEditor owner) => _owner = owner;
+        public override DataTemplate? SelectTemplate(object item, DependencyObject container) =>
+            item is AddKeyPlaceholder ? _owner.AddTemplate : _owner.KeyTemplate;
+    }
+
     private Point _dragStart;
     private SequenceKeyItem? _pressedItem;
     private bool _dragging;
@@ -47,6 +88,7 @@ public sealed class SequenceEditor : ItemsControl
     {
         Focusable = false;
         AllowDrop = false;
+        ItemTemplateSelector = new Selector(this);
         LostKeyboardFocus += (_, e) =>
         {
             // Capture annulée si le focus quitte l'éditeur
@@ -117,12 +159,18 @@ public sealed class SequenceEditor : ItemsControl
             {
                 Profile?.AddStepCommand.Execute(stroke);
                 EndCapture();
-                FocusIndex(Items.Count - 1);
+                FocusIndex(StepCount - 1);
             }
             return;
         }
 
         // --- Raccourcis sur la touche sélectionnée ---
+        if (Keyboard.FocusedElement is SequenceKeyItem { DataContext: AddKeyPlaceholder } && key is System.Windows.Input.Key.Enter or System.Windows.Input.Key.Space)
+        {
+            BeginAdd();
+            e.Handled = true;
+            return;
+        }
         if (Keyboard.FocusedElement is not SequenceKeyItem item || item.DataContext is not StepViewModel s || Profile is not { } p)
         {
             base.OnPreviewKeyDown(e);
@@ -137,7 +185,7 @@ public sealed class SequenceEditor : ItemsControl
             case System.Windows.Input.Key.Delete:
             case System.Windows.Input.Key.Back:
                 p.RemoveStepCommand.Execute(s);
-                FocusIndex(Math.Min(index, Items.Count - 1));
+                FocusIndex(Math.Min(index, StepCount - 1));
                 e.Handled = true;
                 break;
             case System.Windows.Input.Key.D when ctrl:
@@ -181,7 +229,7 @@ public sealed class SequenceEditor : ItemsControl
 
     private void FocusIndex(int index)
     {
-        if (index < 0 || index >= Items.Count) return;
+        if (index < 0 || index >= StepCount) return;
         Dispatcher.BeginInvoke(() => (ItemContainerGenerator.ContainerFromIndex(index) as UIElement)?.Focus(),
             System.Windows.Threading.DispatcherPriority.Input);
     }
@@ -195,6 +243,13 @@ public sealed class SequenceEditor : ItemsControl
         if (FindAncestor<System.Windows.Controls.Primitives.ButtonBase>(e.OriginalSource as DependencyObject) is not null) return;
         _pressedItem = FindAncestor<SequenceKeyItem>(e.OriginalSource as DependencyObject);
         if (_pressedItem is null) return;
+        if (_pressedItem.DataContext is AddKeyPlaceholder)
+        {
+            _pressedItem = null;
+            BeginAdd();
+            e.Handled = true;
+            return;
+        }
         _dragStart = e.GetPosition(this);
         _pressedItem.Focus();
         if (e.ClickCount == 2 && _pressedItem.DataContext is StepViewModel step)
@@ -252,7 +307,7 @@ public sealed class SequenceEditor : ItemsControl
     /// <summary>Index d'insertion = avant la première touche dont le centre est « après » le curseur (ordre de lecture).</summary>
     private void UpdateDropIndicator(Point pos)
     {
-        int count = Items.Count;
+        int count = StepCount;
         int index = count;
         Rect? anchor = null;
         bool after = false;
@@ -297,7 +352,7 @@ public sealed class SequenceEditor : ItemsControl
     /// </summary>
     private void AnimatedMove(int from, int to)
     {
-        if (Profile is not { } p || to < 0 || to >= Items.Count || from == to) return;
+        if (Profile is not { } p || to < 0 || to >= StepCount || from == to) return;
         var before = new Dictionary<object, Point>();
         foreach (var item in Items)
             if (ItemContainerGenerator.ContainerFromItem(item) is FrameworkElement c)

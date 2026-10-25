@@ -24,8 +24,10 @@ public static class MacroLogic
     public static string EquivalenceText(int intervalMs, SequenceMode mode, int steps)
     {
         var rate = InputsPerSecond(intervalMs, mode, steps);
-        var formatted = rate >= 10 || Math.Abs(rate - Math.Round(rate)) < 0.05
-            ? Math.Round(rate).ToString("N0", CultureInfo.CurrentCulture)
+        // Arrondi « commercial » (62,5 → 63) et non bancaire (62,5 → 62, le défaut de .NET)
+        var rounded = Math.Round(rate, MidpointRounding.AwayFromZero);
+        var formatted = rate >= 10 || Math.Abs(rate - rounded) < 0.05
+            ? rounded.ToString("N0", CultureInfo.CurrentCulture)
             : rate.ToString("0.#", CultureInfo.CurrentCulture);
         return $"= {formatted} input{(rate >= 2 ? "s" : "")}/s";
     }

@@ -59,8 +59,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         });
         KeyCaptureCoordinator.CaptureChanged += capturing => _host.SuspendProfileHotkeys(capturing);
 
-        // Rafraîchissement des compteurs (4×/s) : le moteur ne pousse rien vers l'UI à chaque tick.
-        _refreshTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher) { Interval = TimeSpan.FromMilliseconds(250) };
+        // Rafraîchissement des compteurs à 10 Hz (plafond fixé pour ne jamais concurrencer le moteur) :
+        // le moteur ne pousse rien vers l'UI à chaque tick, c'est l'UI qui vient lire un instantané.
+        _refreshTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher) { Interval = TimeSpan.FromMilliseconds(100) };
         _refreshTimer.Tick += (_, _) => RefreshLiveData();
 
         // Sauvegarde automatique « anti-rebond » : 600 ms après la dernière modification.
@@ -110,6 +111,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private string? _runningProfileName;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeroTicks))]
     private long _ticksSent;
 
     [ObservableProperty]
@@ -121,9 +123,28 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private Hotkey _emergencyHotkey;
 
-    /// <summary>Stats de timing en direct (rafraîchies 4×/s pendant l'exécution).</summary>
+    /// <summary>Stats de timing en direct (rafraîchies 10×/s pendant l'exécution).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeroMean))]
+    [NotifyPropertyChangedFor(nameof(HeroJitter))]
+    [NotifyPropertyChangedFor(nameof(HeroP95))]
     private TimingStats _liveStats = TimingStats.Empty;
+
+    /// <summary>Derniers intervalles mesurés (mini courbe de la carte héros).</summary>
+    [ObservableProperty]
+    private IReadOnlyList<double> _recentIntervals = Array.Empty<double>();
+
+    /// <summary>Appuis par seconde réellement envoyés (Burst : toute la séquence par tick).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeroRate))]
+    private double _liveInputsPerSecond;
+
+    // Valeurs formatées de la carte héros (« — » tant qu'aucune mesure n'existe)
+    public string HeroTicks => TicksSent == 0 && !IsRunning ? "—" : TicksSent.ToString("N0", System.Globalization.CultureInfo.CurrentCulture);
+    public string HeroRate => LiveInputsPerSecond <= 0 ? "—" : LiveInputsPerSecond.ToString(LiveInputsPerSecond >= 100 ? "0" : "0.0", System.Globalization.CultureInfo.CurrentCulture);
+    public string HeroMean => LiveStats.IsEmpty ? "—" : LiveStats.Mean.ToString("0.000", System.Globalization.CultureInfo.CurrentCulture);
+    public string HeroJitter => LiveStats.IsEmpty ? "—" : LiveStats.StdDev.ToString("0.000", System.Globalization.CultureInfo.CurrentCulture);
+    public string HeroP95 => LiveStats.IsEmpty ? "—" : LiveStats.P95.ToString("0.000", System.Globalization.CultureInfo.CurrentCulture);
 
     /// <summary>Nom de la stratégie d'attente réellement utilisée par l'exécution en cours.</summary>
     [ObservableProperty]
@@ -559,7 +580,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void RefreshLiveData()
     {
         TicksSent = _host.Engine.TicksSent;
-        LiveStats = _host.Recorder.Snapshot();
+        var samples = _host.Recorder.GetSamples();
+        LiveStats = Core.Stats.TimingStats.Compute(samples);
+        // Mini courbe : les 120 derniers intervalles
+        RecentIntervals = samples.Skip(Math.Max(0, samples.Length - 120)).Select(x => x.Actual).ToArray();
+        var running = _host.Engine.RunningProfile;
+        LiveInputsPerSecond = running is null || LiveStats.IsEmpty ? 0
+            : LiveStats.RateHz * (running.SequenceMode == SequenceMode.Burst ? Math.Max(1, running.Steps.Count) : 1);
         ActiveTimerName = _host.Engine.CurrentSleeperName ?? ActiveTimerName;
         CheckUipi();
     }
