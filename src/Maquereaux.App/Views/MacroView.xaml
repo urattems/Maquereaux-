@@ -129,7 +129,7 @@
 
         <!-- ===== Tuile « + » en fin de séquence (clic ou Entrée = capture de la prochaine touche) ===== -->
         <DataTemplate x:Key="AddTemplate">
-            <Grid x:Name="Root" Width="104" Height="68" Margin="0,0,12,12" Background="Transparent"
+            <Grid x:Name="Root" Width="104" Height="68" Margin="0,0,12,12" Background="Transparent" VerticalAlignment="Top"
                   AutomationProperties.Name="Ajouter une touche" ToolTip="Ajouter une touche (clic, puis appuie sur la touche voulue)">
                 <Rectangle x:Name="Dash" RadiusX="10" RadiusY="10" Stroke="{DynamicResource Border.Strong}" StrokeThickness="1.5"
                            StrokeDashArray="4 3" Fill="Transparent" SnapsToDevicePixels="True" />

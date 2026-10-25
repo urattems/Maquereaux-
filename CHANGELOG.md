@@ -18,6 +18,10 @@ versions selon [SemVer](https://semver.org/lang/fr/).
   contrôle segmenté, curseur, listes, menus, info-bulles, barres de défilement fines.
 - **Coque Windows 11** : barre de titre maison, Mica (Windows 11 22H2+), coins arrondis, Snap Layouts conservés,
   navigation latérale repliable (Macro · Profils · Labo · Paramètres), pastille d'état globale cliquable, transitions de page.
+- **Premier jet du nouvel écran Macro** : carte héros cliquable (Start/Stop, halo pulsé, stats en direct en monospace),
+  séquence en « keycaps » (glisser-déposer animé, Suppr, Ctrl+D, Alt+←/→, double-clic pour changer la touche, tuile « + »
+  en mode capture), puces durée d'appui / délai avec mini-éditeur, conseil « Appliquer 16 ms à toute la séquence »,
+  cadence avec curseur logarithmique + presets 10·16·33·50·100 ms + « = N inputs/s », contrôles segmentés expliqués.
 - Notifications en toasts empilés (bas droite) avec action optionnelle et fermeture automatique.
 - Nouveau projet de tests `Maquereaux.App.Tests` (logique d'écran et ViewModels).
 
