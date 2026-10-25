@@ -3,6 +3,24 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.2.0] - 2026-10-25
+
+🗂️ « La carrosserie », étape 2 : Profils, Paramètres et finitions de l'écran Macro. Moteur strictement inchangé.
+
+### Ajouté
+- **Profils en cartes** : nom renommable, raccourci en keycap, aperçu des touches en mini-keycaps (+N au-delà de 6), mode,
+  intervalle et fenêtre cible en un coup d'œil, alertes intégrées, actions Éditer / Dupliquer / Exporter / Supprimer.
+- **Suppression sans boîte de dialogue** : le profil disparaît tout de suite et un toast « Annuler » le remet à sa place
+  (sans son raccourci s'il a été repris entre-temps).
+- **Sélecteur de fenêtre cible** : liste des applis ouvertes avec leur icône et le titre de leur fenêtre, recherche instantanée,
+  ↑↓ + Entrée, saisie libre d'un nom d'exe pour une appli pas encore lancée, « Toutes les fenêtres ».
+- **Paramètres en sections** (Général, Raccourcis, Timing, Sécurité, Apparence, Avancé) avec interrupteurs ; choix du timer
+  en cartes avec jauges précision / coût CPU.
+- Écran Macro : curseur d'intervalle logarithmique aimanté sur les presets ; puces des keycaps sur deux lignes si besoin.
+
+### Corrigé
+- Après la suppression du profil actif, un autre profil redevient bien actif.
+
 ## [1.1.0] - 2026-10-25
 
 🎨 « La carrosserie », étape 1 : nouveau design system et nouvelle coque Windows 11. Moteur strictement inchangé.
