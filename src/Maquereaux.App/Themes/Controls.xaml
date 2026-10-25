@@ -18,20 +18,7 @@
         </Setter>
     </Style>
 
-    <!-- ===== Icône ===== -->
-    <Style TargetType="c:Icon">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="c:Icon">
-                    <Viewbox Stretch="Uniform">
-                        <Canvas Width="20" Height="20">
-                            <Path Data="{TemplateBinding Glyph}" Fill="{TemplateBinding Foreground}" />
-                        </Canvas>
-                    </Viewbox>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+    <!-- ===== Icône : c:Icon se dessine seule (Controls/Ui.cs), aucun style requis ===== -->
 
     <!-- ================================================================
          BOUTONS : Secondaire (défaut), Primaire, Fantôme, Danger, Icône seule

@@ -54,24 +54,42 @@ public static class Ui
     public static void SetHasError(DependencyObject d, bool value) => d.SetValue(HasErrorProperty, value);
 }
 
-/// <summary>Icône vectorielle (géométrie Fluent 20×20) colorée par le <see cref="Control.Foreground"/> hérité.</summary>
+/// <summary>
+/// Icône vectorielle (géométrie Fluent 20×20) colorée par le <see cref="Control.Foreground"/> hérité.
+/// Dessinée directement (pas de template) : un <c>Style</c> local ne peut pas la « casser », et c'est plus léger
+/// qu'un Viewbox + Canvas + Path par icône.
+/// </summary>
 public sealed class Icon : Control
 {
+    private const double GlyphSize = 20;
+
     public static readonly DependencyProperty GlyphProperty = DependencyProperty.Register(
-        nameof(Glyph), typeof(Geometry), typeof(Icon), new PropertyMetadata(null));
+        nameof(Glyph), typeof(Geometry), typeof(Icon), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
 
     static Icon()
     {
-        DefaultStyleKeyProperty.OverrideMetadata(typeof(Icon), new FrameworkPropertyMetadata(typeof(Icon)));
         FocusableProperty.OverrideMetadata(typeof(Icon), new FrameworkPropertyMetadata(false));
         IsTabStopProperty.OverrideMetadata(typeof(Icon), new FrameworkPropertyMetadata(false));
         WidthProperty.OverrideMetadata(typeof(Icon), new FrameworkPropertyMetadata(16.0));
         HeightProperty.OverrideMetadata(typeof(Icon), new FrameworkPropertyMetadata(16.0));
+        ForegroundProperty.OverrideMetadata(typeof(Icon), new FrameworkPropertyMetadata(
+            SystemColors.ControlTextBrush, FrameworkPropertyMetadataOptions.Inherits | FrameworkPropertyMetadataOptions.AffectsRender));
     }
 
     public Geometry? Glyph
     {
         get => (Geometry?)GetValue(GlyphProperty);
         set => SetValue(GlyphProperty, value);
+    }
+
+    protected override void OnRender(DrawingContext dc)
+    {
+        if (Glyph is not { } glyph || ActualWidth <= 0 || ActualHeight <= 0) return;
+        double scale = Math.Min(ActualWidth, ActualHeight) / GlyphSize;
+        dc.PushTransform(new TranslateTransform((ActualWidth - GlyphSize * scale) / 2, (ActualHeight - GlyphSize * scale) / 2));
+        dc.PushTransform(new ScaleTransform(scale, scale));
+        dc.DrawGeometry(Foreground, null, glyph);
+        dc.Pop();
+        dc.Pop();
     }
 }

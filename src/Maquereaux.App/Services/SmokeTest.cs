@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Maquereaux.App.Controls;
 using Maquereaux.App.ViewModels;
 using Maquereaux.App.Views;
 
@@ -42,6 +43,7 @@ internal sealed class SmokeTest
 
             await CaptureDesignSystemAsync();
             await CapturePagesAsync();
+            await CaptureMacroStatesAsync();
 
             await RunExtraChecksAsync();
             await RunUiChecksAsync();
@@ -76,6 +78,10 @@ internal sealed class SmokeTest
         _vm.StartStopCommand.Execute(null);
         await Delay(1000);
         Capture(_window, "0-running");
+        _vm.IsLightTheme = true;
+        await Delay(300);
+        Capture(_window, "0-running-light");
+        _vm.IsLightTheme = false;
         var ticks = _host.Engine.TicksSent;
         var stats = _host.Recorder.Snapshot();
         Log($"Stats 10 ms ({_host.Engine.CurrentSleeperName}) : moyenne {stats.Mean:0.000} ms, p95 {stats.P95:0.000}, σ {stats.StdDev:0.000}, manqués {stats.Missed}");
@@ -254,6 +260,51 @@ internal sealed class SmokeTest
         _window.Width = w;
         _window.Height = h;
         await Delay(300);
+    }
+
+    /// <summary>États particuliers de l'écran Macro : conseil d'appui, capture d'une touche, pause automatique.</summary>
+    private async Task CaptureMacroStatesAsync()
+    {
+        _window.Tabs.SelectedIndex = 0;
+        var profile = _vm.ActiveProfile ?? throw new InvalidOperationException("Pas de profil actif");
+        var target = profile.TargetProcess;
+
+        // Cible = probablement un jeu + touches à 0 ms → bandeau « Appliquer 16 ms »
+        profile.TargetProcess = "jeu-introuvable.exe";
+        await Delay(350);
+        if (!profile.ShowHoldAdvice) throw new InvalidOperationException("Le conseil d'appui ne s'affiche pas");
+        Capture(_window, "macro-conseil-appui");
+
+        // Mode capture de la tuile « + »
+        var editor = FindVisual<SequenceEditor>(_window) ?? throw new InvalidOperationException("Éditeur de séquence introuvable");
+        editor.BeginAdd();
+        await Delay(250);
+        Capture(_window, "macro-ajout-touche");
+        _window.Nav.Focus(); // le focus quitte l'éditeur → capture annulée, raccourcis réactivés
+        await Delay(150);
+        if (editor.IsAdding) throw new InvalidOperationException("La capture de touche ne s'est pas annulée");
+
+        // Fenêtre cible absente → le moteur démarre en pause automatique (aucune touche envoyée)
+        _vm.StartStopCommand.Execute(null);
+        await Delay(700);
+        Log($"Cible absente : état moteur = {_host.Engine.State}");
+        Capture(_window, "macro-pause");
+        _vm.StartStopCommand.Execute(null);
+        await Delay(300);
+
+        profile.TargetProcess = target;
+        Log("États de l'écran Macro : OK");
+    }
+
+    private static T? FindVisual<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T t) return t;
+            if (FindVisual<T>(child) is { } found) return found;
+        }
+        return null;
     }
 
     /// <summary>Capture PNG d'une fenêtre ; <paramref name="scale"/> = 1,5 simule un écran à 150 % de DPI.</summary>
