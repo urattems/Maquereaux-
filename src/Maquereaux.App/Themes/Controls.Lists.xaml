@@ -110,7 +110,7 @@
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{DynamicResource Focus.Ring}" />
         <Setter Property="AutomationProperties.Name" Value="{Binding Label}" />
-        <Setter Property="ToolTip" Value="{Binding Label}" />
+        <Setter Property="ToolTip" Value="{Binding ToolTip}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">

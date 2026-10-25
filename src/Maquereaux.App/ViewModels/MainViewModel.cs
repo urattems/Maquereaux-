@@ -173,10 +173,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>Pages de la navigation latérale (même ordre que les onglets de la fenêtre).</summary>
     public IReadOnlyList<NavItem> NavItems { get; } = new[]
     {
-        new NavItem("Macro", "Compose ta séquence, règle la cadence et lance-la.", "Icon.Keyboard"),
-        new NavItem("Profils", "Une configuration par usage, chacune avec son raccourci.", "Icon.Profiles"),
-        new NavItem("Labo", "Mesure ton timing et compare manuel contre automatique.", "Icon.Lab"),
-        new NavItem("Paramètres", "Raccourcis, précision du timer, sécurité et apparence.", "Icon.Settings"),
+        new NavItem("Macro", "Compose ta séquence, règle la cadence et lance-la.", "Icon.Keyboard", "Ctrl+1"),
+        new NavItem("Profils", "Une configuration par usage, chacune avec son raccourci.", "Icon.Profiles", "Ctrl+2"),
+        new NavItem("Labo", "Mesure ton timing et compare manuel contre automatique.", "Icon.Lab", "Ctrl+3"),
+        new NavItem("Paramètres", "Raccourcis, précision du timer, sécurité et apparence.", "Icon.Settings", "Ctrl+4"),
     };
 
     [ObservableProperty]
@@ -192,6 +192,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         _settings.SidebarCollapsed = value;
         MarkDirty();
+    }
+
+    /// <summary>Ctrl+Z hors champ texte : annule la dernière suppression de touche du profil actif.</summary>
+    [RelayCommand]
+    private void UndoStepRemoval()
+    {
+        if (ActiveProfile is { CanUndoRemove: true } p) p.UndoRemoveStepCommand.Execute(null);
     }
 
     [RelayCommand]

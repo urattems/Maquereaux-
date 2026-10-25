@@ -36,13 +36,15 @@ Sous le conteneur Claude : `export PATH=/root/.dotnet:$PATH` (SDK installé via 
 - [x] J3 — Profils & activation (v0.3.0)
 - [x] J4 — Labo de mesure (v0.4.0)
 - [x] Release v1.0.0 (polish + docs)
-- [x] U0 audit UI · [x] U1 design system + coque (v1.1.0, avec 1er jet écran Macro)
-- [ ] U2 Macro (v1.2.0) · [ ] U3 Profils/Paramètres (v1.3.0) · [ ] U4 Labo (v1.4.0) · [ ] U5 finitions (v1.5.0)
+- [x] Refonte UI « la carrosserie » : U0 audit · U1 design system + coque (v1.1.0) · U2+U3 Macro/Profils/Paramètres (v1.2.0)
+  · U4 Labo (v1.3.0) · U5a compact/tray/visite/icône/AA (v1.4.0) · U5b clavier + docs (v1.5.0) — voir `docs/UI_REVAMP.md`
 
 ## Refonte UI (branche ui-revamp → main)
 - Design system : `docs/DESIGN_SYSTEM.md`. Avant de pousser : `python3 tools/check_xaml.py` (StaticResource inter-dictionnaires,
   collisions de clés) puis `dotnet build`.
 - Pas de WPF sous Linux : valider via CI (artefact `screenshots`) ; l'API publique GitHub permet d'attendre la fin d'un run.
+- Icône : `tools/gen_icon.py` (rendu Chromium via Playwright, `NODE_PATH=$(npm root -g)`).
+- Animations décoratives : toujours conditionnées à `Motion.Instance.Enabled` (coupées fenêtre cachée / animations Windows off).
 
 ## Points d'attention pour la suite
 - Toute fonctionnalité doit respecter le « Hors périmètre » (cahier des charges §2) : jamais d'humanisation des délais,

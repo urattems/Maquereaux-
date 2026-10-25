@@ -6,12 +6,19 @@ namespace Maquereaux.App.ViewModels;
 /// <summary>Entrée de la navigation latérale.</summary>
 public sealed class NavItem
 {
-    public NavItem(string label, string subtitle, string iconKey)
+    public NavItem(string label, string subtitle, string iconKey, string shortcut = "")
     {
         Label = label;
         Subtitle = subtitle;
         IconKey = iconKey;
+        Shortcut = shortcut;
     }
+
+    /// <summary>Raccourci clavier de la page (« Ctrl+1 »).</summary>
+    public string Shortcut { get; }
+
+    /// <summary>Info-bulle : « Macro (Ctrl+1) ».</summary>
+    public string ToolTip => Shortcut.Length == 0 ? Label : $"{Label} ({Shortcut})";
 
     public string Label { get; }
 

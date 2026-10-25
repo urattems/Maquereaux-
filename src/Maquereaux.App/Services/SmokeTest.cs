@@ -339,6 +339,12 @@ internal sealed class SmokeTest
         await Delay(300);
 
         profile.TargetProcess = target;
+
+        // Ctrl+Z (commande globale) : annule la suppression d'une touche
+        int steps = profile.Steps.Count;
+        profile.RemoveStepCommand.Execute(profile.Steps[0]);
+        _vm.UndoStepRemovalCommand.Execute(null);
+        if (profile.Steps.Count != steps) throw new InvalidOperationException("Annulation de suppression de touche KO");
         Log("États de l'écran Macro : OK");
     }
 

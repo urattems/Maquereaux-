@@ -15,6 +15,20 @@
         FontFamily="{DynamicResource Font.UI}" FontSize="{DynamicResource FontSize.Body}"
         UseLayoutRounding="True" TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType">
 
+    <!-- Raccourcis de l'appli (les champs texte gardent la priorité : Ctrl+Z y annule la saisie) -->
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="D1" Command="{Binding NavigateCommand}" CommandParameter="Macro" />
+        <KeyBinding Modifiers="Ctrl" Key="D2" Command="{Binding NavigateCommand}" CommandParameter="Profils" />
+        <KeyBinding Modifiers="Ctrl" Key="D3" Command="{Binding NavigateCommand}" CommandParameter="Labo" />
+        <KeyBinding Modifiers="Ctrl" Key="D4" Command="{Binding NavigateCommand}" CommandParameter="Paramètres" />
+        <KeyBinding Modifiers="Ctrl" Key="NumPad1" Command="{Binding NavigateCommand}" CommandParameter="Macro" />
+        <KeyBinding Modifiers="Ctrl" Key="NumPad2" Command="{Binding NavigateCommand}" CommandParameter="Profils" />
+        <KeyBinding Modifiers="Ctrl" Key="NumPad3" Command="{Binding NavigateCommand}" CommandParameter="Labo" />
+        <KeyBinding Modifiers="Ctrl" Key="NumPad4" Command="{Binding NavigateCommand}" CommandParameter="Paramètres" />
+        <KeyBinding Modifiers="Ctrl" Key="N" Command="{Binding NewProfileCommand}" />
+        <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding UndoStepRemovalCommand}" />
+    </Window.InputBindings>
+
     <!-- Barre de titre maison : le contenu WPF s'étend jusqu'en haut, Windows garde redimensionnement, ombre et Snap -->
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="44" ResizeBorderThickness="6" GlassFrameThickness="-1" CornerRadius="0" UseAeroCaptionButtons="False" />

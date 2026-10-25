@@ -88,6 +88,7 @@ Légende : ☐ à faire · ✅ OK · ❌ KO (note ce que tu vois)
 | 5.12 | Paramètres Windows → Accessibilité → Effets visuels → **Effets d'animation désactivés** | Plus aucune animation (halo, transitions, 3-2-1, glisser) ; tout reste fonctionnel |
 | 5.13 | Macro en marche, fenêtre **réduite** 1 min (Gestionnaire des tâches) | CPU de Maquereaux au niveau d'avant la refonte (aucune animation ne tourne en arrière-plan) |
 | 5.14 | Navigation 100 % clavier : Tab / Maj+Tab / Espace / Entrée sur chaque écran | Anneau de focus turquoise visible partout ; Narrateur lit le nom des boutons icône |
+| 5.15b | **Ctrl+1…4**, **Ctrl+N**, et **Ctrl+Z** après avoir supprimé une touche (hors champ texte) | Change de page, crée un profil, la touche revient ; dans un champ texte, Ctrl+Z annule la saisie comme d'habitude |
 | 5.15 | Thème clair : relis chaque écran | Contraste confortable, aucune couleur « illisible » (accent assombri en clair) |
 
 ## 6. Limites connues à vérifier (comportement attendu, pas des bugs)

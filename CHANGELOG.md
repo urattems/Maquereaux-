@@ -3,6 +3,16 @@
 Toutes les évolutions notables de Maquereaux. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 versions selon [SemVer](https://semver.org/lang/fr/).
 
+## [1.5.0] - 2026-10-25
+
+✨ « La carrosserie », étape finale : clavier, documentation et galerie. Moteur strictement inchangé (benchmarks identiques à la v1.0).
+
+### Ajouté
+- **Raccourcis clavier** : Ctrl+1…4 pour changer de page (affichés dans les info-bulles de la navigation), Ctrl+N pour un
+  nouveau profil, Ctrl+Z pour annuler la suppression d'une touche (les champs texte gardent leur Ctrl+Z).
+- **Galerie avant/après** de la refonte (`docs/UI_REVAMP.md`) avec la comparaison chiffrée des benchmarks v1.0 / v1.x,
+  README illustré avec les nouvelles captures, `docs/TESTS_MANUELS.md` enrichi d'une section « Refonte UI » (15 points).
+
 ## [1.4.0] - 2026-10-25
 
 🫧 « La carrosserie », étape 4 : pastille compacte, zone de notification, visite guidée, nouvelle icône. Moteur strictement inchangé.
