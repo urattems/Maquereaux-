@@ -12,6 +12,25 @@ public static class MacroLogic
     /// <summary>Durée d'appui recommandée pour les jeux qui lisent le clavier une fois par image.</summary>
     public const int RecommendedGameHoldMs = 16;
 
+    /// <summary>Borne haute du curseur d'intervalle (au-delà : saisie au clavier, jusqu'à 60 s).</summary>
+    public const int SliderMaxIntervalMs = 1000;
+
+    /// <summary>
+    /// Position du curseur (0..1) pour un intervalle : échelle logarithmique, pour que 1–20 ms (là où tout se joue)
+    /// occupe autant de place que 100–1000 ms.
+    /// </summary>
+    public static double IntervalToSlider(int intervalMs) =>
+        Math.Log10(Math.Clamp(intervalMs, 1, SliderMaxIntervalMs)) / Math.Log10(SliderMaxIntervalMs);
+
+    /// <summary>Intervalle (ms) pour une position du curseur ; aimanté sur les presets proches (±1 % de course).</summary>
+    public static int SliderToInterval(double position)
+    {
+        position = Math.Clamp(position, 0, 1);
+        foreach (var preset in IntervalPresets)
+            if (Math.Abs(IntervalToSlider(preset) - position) < 0.01) return preset;
+        return (int)Math.Round(Math.Pow(SliderMaxIntervalMs, position), MidpointRounding.AwayFromZero);
+    }
+
     /// <summary>Nombre d'appuis par seconde produits par le profil (Burst : toute la séquence à chaque tick).</summary>
     public static double InputsPerSecond(int intervalMs, SequenceMode mode, int steps)
     {

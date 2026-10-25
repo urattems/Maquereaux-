@@ -59,3 +59,12 @@ public sealed class InverseBoolConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value is not true;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value is not true;
 }
+
+/// <summary>Vrai si toutes les valeurs liées sont égales (ex. puce de preset = intervalle courant → puce « sélectionnée »).</summary>
+public sealed class AllEqualConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) =>
+        values.Length > 1 && values.Skip(1).All(v => Equals(v, values[0]));
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => throw new NotSupportedException();
+}

@@ -167,8 +167,22 @@ public sealed partial class ProfileViewModel : ObservableObject
     [RelayCommand]
     private void SetInterval(int ms) => IntervalMs = ms;
 
+    /// <summary>Position du curseur d'intervalle (0..1, échelle logarithmique 1–1000 ms).</summary>
+    public double IntervalSlider
+    {
+        get => MacroLogic.IntervalToSlider(Model.IntervalMs);
+        set
+        {
+            var ms = MacroLogic.SliderToInterval(value);
+            // Un intervalle > 1000 ms saisi au clavier ne doit pas être écrasé par un simple rafraîchissement du curseur
+            if (ms == MacroLogic.SliderMaxIntervalMs && Model.IntervalMs > ms) return;
+            IntervalMs = ms;
+        }
+    }
+
     private void NotifyCadence()
     {
+        OnPropertyChanged(nameof(IntervalSlider));
         OnPropertyChanged(nameof(Summary));
         OnPropertyChanged(nameof(EquivalenceText));
     }

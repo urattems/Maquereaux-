@@ -19,6 +19,7 @@ public partial class App : Application
     private ILogger? _log;
     private Mutex? _singleInstance;
     private EventWaitHandle? _showSignal;
+    private bool _startupComplete;
 
     public App()
     {
@@ -67,6 +68,7 @@ public partial class App : Application
 
         _tray = new TrayIcon(_vm, window.ShowFromTray, () => window.Close());
 
+        _startupComplete = true;
         if (smoke) RunSmokeTest(window);
     }
 
@@ -125,12 +127,12 @@ public partial class App : Application
         {
             _host?.PanicReleaseKeys();
             _log?.LogError(args.Exception, "Exception UI");
-            if (Environment.GetEnvironmentVariable("MAQUEREAUX_SMOKE_REPORT") is { } report && _vm is null)
+            if (Environment.GetEnvironmentVariable("MAQUEREAUX_SMOKE_REPORT") is { } report && !_startupComplete)
             {
                 // Exception pendant le démarrage en smoke test : on la rapporte et on sort (sinon l'appli resterait sans fenêtre)
                 try { File.AppendAllText(report, $"CRASH AU DÉMARRAGE : {args.Exception}{Environment.NewLine}"); } catch { }
                 args.Handled = true;
-                Shutdown(5);
+                Environment.Exit(5);
                 return;
             }
             args.Handled = true;

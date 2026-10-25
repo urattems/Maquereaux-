@@ -4,232 +4,591 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Maquereaux.App.ViewModels"
-             xmlns:controls="clr-namespace:Maquereaux.App.Controls"
-             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}" d:DesignWidth="980" d:DesignHeight="560">
-    <Grid DataContext="{Binding ActiveProfile}" d:DataContext="{d:DesignInstance vm:ProfileViewModel}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*" MinWidth="380" />
-            <ColumnDefinition Width="12" />
-            <ColumnDefinition Width="2*" MinWidth="320" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+             xmlns:c="clr-namespace:Maquereaux.App.Controls"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance vm:MainViewModel}" d:DesignWidth="980" d:DesignHeight="760">
+    <UserControl.Resources>
+        <!-- Rayures de maquereau (décor de la carte héros) : quatre vagues douces -->
+        <Geometry x:Key="Hero.Stripes">M 0 20 C 40 4 80 36 120 20 S 200 4 240 20 M 0 44 C 40 28 80 60 120 44 S 200 28 240 44 M 0 68 C 40 52 80 84 120 68 S 200 52 240 68 M 0 92 C 40 76 80 108 120 92 S 200 76 240 92</Geometry>
 
-        <!-- ===== Séquence ===== -->
-        <Border Style="{StaticResource Card}">
-            <DockPanel>
-                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                    <Button DockPanel.Dock="Right" Content="Tout effacer" Style="{StaticResource Button.Icon}"
-                            Command="{Binding ClearStepsCommand}" ToolTip="Supprimer toutes les touches" />
-                    <TextBlock Text="Séquence" Style="{StaticResource Text.Title}" Margin="0" VerticalAlignment="Center" />
-                </DockPanel>
+        <!-- Libellé de section (« CADENCE », « COMPORTEMENT »…) -->
+        <Style x:Key="Section.Header" TargetType="TextBlock" BasedOn="{StaticResource Text.Title}">
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+        <Style x:Key="Field.Label" TargetType="TextBlock" BasedOn="{StaticResource Text.BodyStrong}">
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style x:Key="Field.Help" TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,6,0,0" />
+        </Style>
 
-                <controls:KeyCaptureBox x:Name="AddKeyBox" DockPanel.Dock="Bottom" Margin="0,8,0,0" Padding="10,8"
-                                        Placeholder="+  Ajouter une touche : clique ici puis appuie sur la touche"
-                                        KeyCapturedCommand="{Binding AddStepCommand}" FontWeight="SemiBold"
-                                        Foreground="{DynamicResource Brush.Accent}" />
+        <!-- Une statistique de la carte héros : libellé + grand chiffre monospace + unité -->
+        <Style x:Key="Hero.StatLabel" TargetType="TextBlock" BasedOn="{StaticResource Text.Overline}" />
+        <Style x:Key="Hero.StatValue" TargetType="TextBlock" BasedOn="{StaticResource Num.Stat}">
+            <Setter Property="Margin" Value="0,2,0,0" />
+        </Style>
 
-                <Grid DockPanel.Dock="Top" Margin="8,0,8,4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="90" />
-                        <ColumnDefinition Width="110" />
-                        <ColumnDefinition Width="96" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="#" Style="{StaticResource Text.Muted}" />
-                    <TextBlock Grid.Column="1" Text="Touche (clic pour changer)" Style="{StaticResource Text.Muted}" />
-                    <TextBlock Grid.Column="2" Text="Appui (ms)" Style="{StaticResource Text.Muted}"
-                               ToolTip="Durée entre l'appui et le relâchement. 0 = instantané (le plus précis). Monte à 5–20 ms si une appli rate des appuis." />
-                    <TextBlock Grid.Column="3" Text="Délai après (ms)" Style="{StaticResource Text.Muted}"
-                               ToolTip="Mode Cycle uniquement. Vide = intervalle global." />
-                </Grid>
+        <!-- ===== Touche de la séquence (keycap en relief + puces appui/délai) ===== -->
+        <DataTemplate x:Key="KeyTemplate" DataType="{x:Type vm:StepViewModel}">
+            <Grid x:Name="Root" Width="96" Margin="0,0,12,12" Background="Transparent">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <AutomationProperties.Name>
+                    <MultiBinding StringFormat="Touche {0} : {1}">
+                        <Binding Path="Index" />
+                        <Binding Path="Label" />
+                    </MultiBinding>
+                </AutomationProperties.Name>
 
+                <!-- Keycap : la « tranche » (Side) dépasse de 4 px sous la face → effet de relief -->
+                <Border x:Name="Side" Height="68" CornerRadius="10" Background="{DynamicResource Keycap.Side}">
+                    <Border x:Name="Face" Margin="0,0,0,4" CornerRadius="10" Background="{DynamicResource Keycap.Face}"
+                            BorderBrush="{DynamicResource Keycap.Edge}" BorderThickness="1">
+                        <Grid>
+                            <TextBlock Text="{Binding Index}" Style="{StaticResource Num.Small}" FontSize="11" Foreground="{DynamicResource Text.Tertiary}"
+                                       HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,5,0,0" />
+                            <TextBlock x:Name="Label" Text="{Binding Label}" FontSize="{DynamicResource FontSize.Subtitle}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Text.Primary}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" Margin="8,6,8,0" ToolTip="{Binding Label}" />
+                            <TextBlock x:Name="CaptureText" Text="Appuie sur une touche…" Style="{StaticResource Text.Caption}" FontSize="11"
+                                       Foreground="{DynamicResource Accent}" TextWrapping="Wrap" TextAlignment="Center"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="6,8,6,0" Visibility="Collapsed" />
+                            <Button x:Name="Remove" Style="{StaticResource Btn.Icon}" Width="22" Height="22" c:Ui.Icon="{StaticResource Icon.Close}"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,2,0" Visibility="Hidden"
+                                    ToolTip="Supprimer (Suppr)" AutomationProperties.Name="Supprimer la touche"
+                                    Command="{Binding DataContext.RemoveStepCommand, RelativeSource={RelativeSource AncestorType=c:SequenceEditor}}"
+                                    CommandParameter="{Binding}" />
+                        </Grid>
+                    </Border>
+                </Border>
+
+                <!-- Puces : durée d'appui + délai après (Cycle uniquement) ; clic = petit éditeur en popup -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                    <ToggleButton x:Name="HoldChip" Style="{StaticResource Chip.Toggle}" Content="{Binding HoldChip}"
+                                  ToolTip="Durée d'appui (clic pour modifier)" AutomationProperties.Name="Durée d'appui"
+                                  IsHitTestVisible="{Binding IsOpen, ElementName=HoldPopup, Converter={StaticResource InverseBool}}" />
+                    <ToggleButton x:Name="DelayChip" Style="{StaticResource Chip.Toggle}" Content="{Binding DelayChip}" Margin="4,0,0,0"
+                                  ToolTip="Délai avant la touche suivante (clic pour modifier)" AutomationProperties.Name="Délai après la touche"
+                                  IsHitTestVisible="{Binding IsOpen, ElementName=DelayPopup, Converter={StaticResource InverseBool}}" />
+                </StackPanel>
+
+                <Popup x:Name="HoldPopup" IsOpen="{Binding IsChecked, ElementName=HoldChip}" PlacementTarget="{Binding ElementName=HoldChip}"
+                       Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Style="{StaticResource Card.Elevated}" Margin="8,4,8,12" Padding="16,12" Width="248">
+                        <StackPanel>
+                            <TextBlock Text="Durée d'appui" Style="{StaticResource Text.BodyStrong}" />
+                            <TextBlock Style="{StaticResource Field.Help}" Margin="0,2,0,10"
+                                       Text="Temps entre l'appui et le relâchement. 0 ms = instantané (le plus précis) ; 16 ms si un jeu rate des appuis." />
+                            <c:NumericBox Value="{Binding HoldMs}" Minimum="0" Maximum="5000" Unit="ms" HorizontalAlignment="Left"
+                                          AutomationProperties.Name="Durée d'appui en millisecondes" />
+                        </StackPanel>
+                    </Border>
+                </Popup>
+                <Popup x:Name="DelayPopup" IsOpen="{Binding IsChecked, ElementName=DelayChip}" PlacementTarget="{Binding ElementName=DelayChip}"
+                       Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Style="{StaticResource Card.Elevated}" Margin="8,4,8,12" Padding="16,12" Width="248">
+                        <StackPanel>
+                            <TextBlock Text="Délai après cette touche" Style="{StaticResource Text.BodyStrong}" />
+                            <TextBlock Style="{StaticResource Field.Help}" Margin="0,2,0,10"
+                                       Text="Vide = l'intervalle global du profil. Pratique pour un combo « A, pause, Z »." />
+                            <c:NumericBox Value="{Binding DelayAfterMs}" Minimum="1" Maximum="60000" Unit="ms" AllowEmpty="True" EmptyText="global"
+                                          HorizontalAlignment="Left" AutomationProperties.Name="Délai après la touche en millisecondes" />
+                        </StackPanel>
+                    </Border>
+                </Popup>
+            </Grid>
+            <DataTemplate.Triggers>
+                <Trigger SourceName="Root" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Remove" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="Face" Property="BorderBrush" Value="{DynamicResource Border.Strong}" />
+                </Trigger>
+                <DataTrigger Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource AncestorType=c:SequenceKeyItem}}" Value="True">
+                    <Setter TargetName="Face" Property="BorderBrush" Value="{DynamicResource Border.Focus}" />
+                    <Setter TargetName="Face" Property="BorderThickness" Value="2" />
+                    <Setter TargetName="Remove" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsCapturing}" Value="True">
+                    <Setter TargetName="Face" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                    <Setter TargetName="Face" Property="BorderThickness" Value="2" />
+                    <Setter TargetName="Face" Property="Background" Value="{DynamicResource Accent.Subtle}" />
+                    <Setter TargetName="Label" Property="Visibility" Value="Collapsed" />
+                    <Setter TargetName="CaptureText" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding DataContext.IsBurst, RelativeSource={RelativeSource AncestorType=c:SequenceEditor}}" Value="True">
+                    <Setter TargetName="DelayChip" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding HasCustomDelay}" Value="True">
+                    <Setter TargetName="DelayChip" Property="Foreground" Value="{DynamicResource Text.Primary}" />
+                    <Setter TargetName="DelayChip" Property="BorderBrush" Value="{DynamicResource Border.Strong}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- ===== Tuile « + » en fin de séquence (clic ou Entrée = capture de la prochaine touche) ===== -->
+        <DataTemplate x:Key="AddTemplate">
+            <Grid x:Name="Root" Width="96" Height="68" Margin="0,0,12,12" Background="Transparent"
+                  AutomationProperties.Name="Ajouter une touche" ToolTip="Ajouter une touche (clic, puis appuie sur la touche voulue)">
+                <Rectangle x:Name="Dash" RadiusX="10" RadiusY="10" Stroke="{DynamicResource Border.Strong}" StrokeThickness="1.5"
+                           StrokeDashArray="4 3" Fill="Transparent" SnapsToDevicePixels="True" />
+                <StackPanel x:Name="Idle" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <c:Icon Glyph="{StaticResource Icon.Add}" Width="20" Height="20" Foreground="{DynamicResource Text.Secondary}" />
+                    <TextBlock Text="Ajouter" Style="{StaticResource Text.Caption}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                </StackPanel>
+                <TextBlock x:Name="Capturing" Text="Appuie sur une touche…" Style="{StaticResource Text.Caption}" FontSize="11"
+                           Foreground="{DynamicResource Accent}" TextWrapping="Wrap" TextAlignment="Center"
+                           VerticalAlignment="Center" Margin="8,0" Visibility="Collapsed" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <Trigger SourceName="Root" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Dash" Property="Stroke" Value="{DynamicResource Accent}" />
+                    <Setter TargetName="Dash" Property="Fill" Value="{DynamicResource Surface.Hover}" />
+                </Trigger>
+                <DataTrigger Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource AncestorType=c:SequenceKeyItem}}" Value="True">
+                    <Setter TargetName="Dash" Property="Stroke" Value="{DynamicResource Border.Focus}" />
+                    <Setter TargetName="Dash" Property="StrokeThickness" Value="2" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsAdding, RelativeSource={RelativeSource AncestorType=c:SequenceEditor}}" Value="True">
+                    <Setter TargetName="Dash" Property="Stroke" Value="{DynamicResource Accent}" />
+                    <Setter TargetName="Dash" Property="StrokeThickness" Value="2" />
+                    <Setter TargetName="Dash" Property="Fill" Value="{DynamicResource Accent.Subtle}" />
+                    <Setter TargetName="Idle" Property="Visibility" Value="Collapsed" />
+                    <Setter TargetName="Capturing" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- ===== Carte héros : tout le bloc est un gros bouton Start/Stop ===== -->
+        <Style x:Key="Hero" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource Focus.Ring}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Card" CornerRadius="{DynamicResource Radius.XL}" BorderThickness="1" Padding="24,20"
+                                Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Border.Subtle}">
+                            <Grid>
+                                <!-- Décor : rayures de maquereau, très discrètes, à droite -->
+                                <Path x:Name="Stripes" Data="{StaticResource Hero.Stripes}" Stretch="Fill" Width="300" Height="96"
+                                      HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-8,0"
+                                      Stroke="{DynamicResource Signature.Gradient}" StrokeThickness="2" Opacity="0.07" IsHitTestVisible="False" />
+                                <ContentPresenter />
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource Border.Strong}" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource State.Running.Bg}" />
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource State.Running}" />
+                                <Setter TargetName="Stripes" Property="Opacity" Value="0.14" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource State.Paused.Bg}" />
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource State.Paused}" />
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+        <StackPanel Margin="0,0,4,8">
+
+            <!-- ===================== Carte héros ===================== -->
+            <Button x:Name="HeroButton" Style="{StaticResource Hero}" Command="{Binding StartStopCommand}"
+                    AutomationProperties.Name="Démarrer ou arrêter la macro">
                 <Grid>
-                    <ListBox x:Name="StepsList" ItemsSource="{Binding Steps}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:StepViewModel}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="30" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="90" />
-                                        <ColumnDefinition Width="110" />
-                                        <ColumnDefinition Width="96" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Index}" VerticalAlignment="Center" Foreground="{DynamicResource Brush.TextMuted}"
-                                               FontFamily="{StaticResource Font.Mono}" />
-                                    <controls:KeyCaptureBox Grid.Column="1" Key="{Binding Key}" Margin="0,0,10,0" FontWeight="SemiBold"
-                                                            ToolTip="Clique puis appuie sur une autre touche pour la remplacer" />
-                                    <TextBox Grid.Column="2" Style="{StaticResource TextBox.Number}" HorizontalAlignment="Left"
-                                             Text="{Binding HoldMs, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=True}" />
-                                    <TextBox Grid.Column="3" Style="{StaticResource TextBox.Number}" HorizontalAlignment="Left"
-                                             Text="{Binding DelayAfterMs, UpdateSourceTrigger=LostFocus, TargetNullValue='', ValidatesOnExceptions=True}" />
-                                    <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <Button Content="▲" Style="{StaticResource Button.Icon}" ToolTip="Monter"
-                                                Command="{Binding DataContext.MoveStepUpCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
-                                        <Button Content="▼" Style="{StaticResource Button.Icon}" ToolTip="Descendre"
-                                                Command="{Binding DataContext.MoveStepDownCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
-                                        <Button Content="✕" Style="{StaticResource Button.Icon}" ToolTip="Supprimer"
-                                                Command="{Binding DataContext.RemoveStepCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" />
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <TextBlock Text="Séquence vide : ajoute une touche ci-dessous." HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Style="{StaticResource Text.Muted}"
-                               Visibility="{Binding HasSteps, Converter={StaticResource BoolToVisInverted}}" />
-                </Grid>
-            </DockPanel>
-        </Border>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-        <!-- ===== Réglages du profil ===== -->
-        <Border Grid.Column="2" Style="{StaticResource Card}">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <TextBlock Text="Réglages" Style="{StaticResource Text.Title}" />
-
-                    <Grid Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="140" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Text="Nom" Style="{StaticResource Text.Label}" />
-                        <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=LostFocus}" Margin="0,3" />
-
-                        <TextBlock Grid.Row="1" Text="Intervalle (ms)" Style="{StaticResource Text.Label}" />
-                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
-                            <TextBox Style="{StaticResource TextBox.Number}"
-                                     Text="{Binding IntervalMs, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=True}"
-                                     ToolTip="Temps entre deux ticks. Minimum 1 ms." />
-                            <TextBlock Text="min 1 ms" Style="{StaticResource Text.Muted}" VerticalAlignment="Center" Margin="8,0,0,0" />
-                        </StackPanel>
-
-                        <TextBlock Grid.Row="2" Text="Répétitions" Style="{StaticResource Text.Label}" />
-                        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="0,3">
-                            <TextBox Style="{StaticResource TextBox.Number}"
-                                     Text="{Binding RepeatCount, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=True}"
-                                     ToolTip="Nombre de cycles complets. 0 = infini." />
-                            <TextBlock Text="0 = infini" Style="{StaticResource Text.Muted}" VerticalAlignment="Center" Margin="8,0,0,0" />
-                        </StackPanel>
-
-                        <TextBlock Grid.Row="3" Text="Raccourci ON/OFF" Style="{StaticResource Text.Label}" />
-                        <controls:HotkeyBox Grid.Row="3" Grid.Column="1" Hotkey="{Binding Hotkey}" Margin="0,3"
-                                            ToolTip="Clique puis appuie sur la combinaison. Retour arrière = aucun." />
+                    <!-- Disque Play/Stop avec halo pulsé (animé en code, coupé si fenêtre cachée) -->
+                    <Grid Width="96" Height="96" VerticalAlignment="Center" Margin="0,0,24,0">
+                        <Ellipse x:Name="HeroGlow" Width="96" Height="96" Opacity="0" RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Offset="0.55" Color="{DynamicResource Color.Running}" />
+                                    <GradientStop Offset="1" Color="Transparent" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                            <Ellipse.RenderTransform>
+                                <ScaleTransform x:Name="HeroGlowScale" />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                        <Ellipse x:Name="HeroDisc" Width="68" Height="68">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{DynamicResource Accent.Gradient}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                                            <Setter Property="Fill" Value="{DynamicResource State.Running}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                                            <Setter Property="Fill" Value="{DynamicResource State.Paused}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <c:Icon Width="26" Height="26" Foreground="{DynamicResource Text.OnAccent}">
+                            <c:Icon.Style>
+                                <Style TargetType="c:Icon">
+                                    <Setter Property="Glyph" Value="{StaticResource Icon.Play}" />
+                                    <Setter Property="Margin" Value="3,0,0,0" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                            <Setter Property="Glyph" Value="{StaticResource Icon.Stop}" />
+                                            <Setter Property="Margin" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </c:Icon.Style>
+                        </c:Icon>
                     </Grid>
 
-                    <TextBlock Text="Mode d'envoi" Style="{StaticResource Text.Label}" Margin="0,4,0,6" />
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                        <RadioButton GroupName="SeqMode" Content="Cycle"
-                                     IsChecked="{Binding SequenceMode, Converter={StaticResource EnumToBool}, ConverterParameter=Cycle}" />
-                        <RadioButton GroupName="SeqMode" Content="Burst"
-                                     IsChecked="{Binding SequenceMode, Converter={StaticResource EnumToBool}, ConverterParameter=Burst}" />
-                    </StackPanel>
-                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,0,0,10"
-                               Text="Cycle : une touche par tick (A → Z → E → A…). Burst : toute la séquence à chaque tick (A,Z,E → A,Z,E…)." />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Style="{StaticResource Text.Overline}" TextTrimming="CharacterEllipsis">
+                            <Run Text="{Binding ActiveProfile.Name, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding ActiveProfile.Summary, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Margin="0,2,0,0" FontSize="{DynamicResource FontSize.Headline}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource State.Text}">
+                                    <Setter Property="Text" Value="Prêt à lancer" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding EngineState}" Value="Running">
+                                            <Setter Property="Text" Value="En marche" />
+                                            <Setter Property="Foreground" Value="{DynamicResource State.Running}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding EngineState}" Value="Paused">
+                                            <Setter Property="Text" Value="En pause — fenêtre cible inactive" />
+                                            <Setter Property="Foreground" Value="{DynamicResource State.Paused}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,16">
+                            <TextBlock VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Secondary}">
+                                        <Setter Property="Text" Value="Clique ici pour lancer, ou appuie sur" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Text" Value="Clique ici pour arrêter, ou appuie sur" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <Border Style="{StaticResource Kbd}" Margin="8,0,0,0">
+                                <TextBlock Text="{Binding ActiveProfile.HotkeyText}" />
+                            </Border>
+                        </StackPanel>
 
-                    <TextBlock Text="Activation par le raccourci" Style="{StaticResource Text.Label}" Margin="0,4,0,6" />
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                        <RadioButton GroupName="ActMode" Content="ON / OFF"
-                                     IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Toggle}" />
-                        <RadioButton GroupName="ActMode" Content="Maintenir"
-                                     IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Hold}" />
+                        <!-- Statistiques en direct (10 Hz) : chiffres en monospace tabulaire, rien ne « danse » -->
+                        <WrapPanel>
+                            <WrapPanel.Resources>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Margin" Value="0,0,32,0" />
+                                    <Setter Property="MinWidth" Value="72" />
+                                </Style>
+                            </WrapPanel.Resources>
+                            <StackPanel ToolTip="Ticks envoyés depuis le démarrage">
+                                <TextBlock Text="Ticks" Style="{StaticResource Hero.StatLabel}" />
+                                <TextBlock Text="{Binding HeroTicks}" Style="{StaticResource Hero.StatValue}" />
+                            </StackPanel>
+                            <StackPanel ToolTip="Appuis réellement envoyés par seconde">
+                                <TextBlock Text="Inputs/s" Style="{StaticResource Hero.StatLabel}" />
+                                <TextBlock Text="{Binding HeroRate}" Style="{StaticResource Hero.StatValue}" />
+                            </StackPanel>
+                            <StackPanel ToolTip="Intervalle moyen mesuré entre deux ticks (ms)">
+                                <TextBlock Text="Moyenne ms" Style="{StaticResource Hero.StatLabel}" />
+                                <TextBlock Text="{Binding HeroMean}" Style="{StaticResource Hero.StatValue}" />
+                            </StackPanel>
+                            <StackPanel ToolTip="Écart-type des intervalles (ms) : plus c'est bas, plus le rythme est régulier">
+                                <TextBlock Text="Jitter ms" Style="{StaticResource Hero.StatLabel}" />
+                                <TextBlock Text="{Binding HeroJitter}" Style="{StaticResource Hero.StatValue}" />
+                            </StackPanel>
+                            <StackPanel ToolTip="95 % des intervalles sont inférieurs ou égaux à cette valeur (ms)">
+                                <TextBlock Text="p95 ms" Style="{StaticResource Hero.StatLabel}" />
+                                <TextBlock Text="{Binding HeroP95}" Style="{StaticResource Hero.StatValue}" />
+                            </StackPanel>
+                        </WrapPanel>
                     </StackPanel>
-                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,0,0,10"
-                               Text="ON/OFF : un appui lance, un autre arrête. Maintenir : la macro tourne uniquement tant que tu gardes la touche enfoncée." />
 
-                    <TextBlock Text="Fenêtre cible (optionnel)" Style="{StaticResource Text.Label}" Margin="0,4,0,6" />
+                    <!-- Mini courbe des intervalles récents -->
+                    <StackPanel x:Name="HeroCurve" Grid.Column="2" Width="240" VerticalAlignment="Bottom" Margin="24,0,0,0">
+                        <DockPanel Margin="0,0,0,6">
+                            <TextBlock DockPanel.Dock="Right" Style="{StaticResource Num.Small}">
+                                <Run Text="cible" /><Run Text=" " /><Run Text="{Binding ActiveProfile.IntervalMs, Mode=OneWay}" /><Run Text=" ms" />
+                            </TextBlock>
+                            <TextBlock Text="Intervalles récents" Style="{StaticResource Text.Caption}" />
+                        </DockPanel>
+                        <Border Style="{StaticResource Card.Sunken}" Padding="8" Height="72">
+                            <Grid>
+                                <c:Sparkline Values="{Binding RecentIntervals}" Target="{Binding ActiveProfile.IntervalMs}"
+                                             Stroke="{DynamicResource State.Running}" TargetBrush="{DynamicResource Text.Tertiary}" />
+                                <TextBlock Text="La courbe s'anime dès que la macro tourne" Style="{StaticResource Text.Caption}" FontSize="11"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource Text.Tertiary}"
+                                           Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisInverted}}" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Button>
+
+            <!-- ===================== Alertes du profil (conflits, séquence vide…) ===================== -->
+            <ItemsControl ItemsSource="{Binding ActiveProfile.Issues}" Margin="0,12,0,0" Focusable="False"
+                          Visibility="{Binding ActiveProfile.HasIssues, Converter={StaticResource BoolToVis}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource State.Paused.Bg}" CornerRadius="{DynamicResource Radius.M}" Padding="12,8" Margin="0,0,0,6">
+                            <DockPanel>
+                                <c:Icon Glyph="{StaticResource Icon.WarningFilled}" Width="16" Height="16" Foreground="{DynamicResource State.Paused}"
+                                        VerticalAlignment="Top" Margin="0,1,10,0" />
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="{DynamicResource Text.Primary}" />
+                            </DockPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- ===================== Séquence ===================== -->
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0" DataContext="{Binding ActiveProfile}">
+                <StackPanel>
                     <DockPanel Margin="0,0,0,4">
-                        <Button DockPanel.Dock="Right" Content="✕" Style="{StaticResource Button.Icon}" ToolTip="Aucun filtre (toutes les fenêtres)"
-                                Command="{Binding ClearTargetProcessCommand}" />
-                        <Button DockPanel.Dock="Right" Content="⟳" Style="{StaticResource Button.Icon}" ToolTip="Rafraîchir la liste des applis ouvertes"
-                                Command="{Binding DataContext.RefreshProcessesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                        <ComboBox IsEditable="True" Margin="0,0,4,0"
-                                  ItemsSource="{Binding DataContext.RunningProcesses, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                  Text="{Binding TargetProcess, UpdateSourceTrigger=LostFocus, TargetNullValue=''}"
-                                  ToolTip="Ex. notepad.exe. La macro n'envoie des touches que si cette appli a le focus ; sinon pause automatique." />
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Style="{StaticResource Btn.Ghost}" Content="Annuler la suppression" c:Ui.Icon="{StaticResource Icon.Undo}"
+                                    Command="{Binding UndoRemoveStepCommand}" Margin="0,0,4,0"
+                                    Visibility="{Binding CanUndoRemove, Converter={StaticResource BoolToVis}}" />
+                            <Button Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Delete}" Command="{Binding ClearStepsCommand}"
+                                    ToolTip="Vider la séquence" AutomationProperties.Name="Vider la séquence"
+                                    Visibility="{Binding HasSteps, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Séquence" Style="{StaticResource Text.Title}" VerticalAlignment="Center" />
+                            <Border Style="{StaticResource Badge.Neutral}" Margin="10,0,0,0">
+                                <TextBlock Text="{Binding StepCountText}" FontFamily="{DynamicResource Font.Mono}" />
+                            </Border>
+                        </StackPanel>
                     </DockPanel>
-                    <TextBlock Style="{StaticResource Text.Muted}" Margin="0,0,0,10"
-                               Text="Sécurité : évite de spammer dans Discord ou un navigateur par erreur. Vide = toutes les fenêtres." />
-
-                    <ItemsControl ItemsSource="{Binding Issues}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="0,4,0,0" Padding="8,5" CornerRadius="6" Background="{DynamicResource Brush.PausedBg}">
-                                    <TextBlock Text="{Binding StringFormat='⚠ {0}'}" TextWrapping="Wrap" Foreground="{DynamicResource Brush.Paused}" />
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </ScrollViewer>
-        </Border>
-
-        <!-- ===== Bas : stats de timing en direct (J2) ===== -->
-        <Border Grid.Row="1" Grid.ColumnSpan="3" Style="{StaticResource Card}" Margin="0,12,0,0" Padding="14,10"
-                DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
-            <DockPanel>
-                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-                    <TextBlock DockPanel.Dock="Right" Style="{StaticResource Text.Muted}" VerticalAlignment="Center">
-                        <Run Text="Timer :" />
-                        <Run Text="{Binding ActiveTimerName, Mode=OneWay}" />
+                    <TextBlock Margin="0,0,0,16" TextWrapping="Wrap">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Secondary}">
+                                <Setter Property="Text" Value="Cycle : une touche par tick, dans l'ordre (A → Z → E → A…)." />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsBurst}" Value="True">
+                                        <Setter Property="Text" Value="Burst : toute la séquence d'un coup à chaque tick (A Z E → A Z E…)." />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock Text="Timing réel (en direct)" Style="{StaticResource Text.Title}" Margin="0" />
-                </DockPanel>
-                <UniformGrid Rows="1" Columns="9">
-                    <UniformGrid.Resources>
-                        <Style TargetType="StackPanel">
-                            <Setter Property="Margin" Value="0,0,10,0" />
-                        </Style>
-                    </UniformGrid.Resources>
-                    <StackPanel ToolTip="Nombre de ticks envoyés depuis le démarrage">
-                        <TextBlock Text="Ticks" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding TicksSent}" Style="{StaticResource Text.StatValue}" />
-                    </StackPanel>
-                    <StackPanel ToolTip="Fréquence moyenne réelle des ticks">
-                        <TextBlock Text="Fréquence" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding LiveStats.RateHz, StringFormat={}{0:0.0} Hz}" Style="{StaticResource Text.StatValue}" />
-                    </StackPanel>
-                    <StackPanel ToolTip="Intervalle moyen mesuré entre deux ticks">
-                        <TextBlock Text="Moyenne" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding LiveStats.Mean, StringFormat={}{0:0.000} ms}" Style="{StaticResource Text.StatValue}" />
-                    </StackPanel>
+
+                    <c:SequenceEditor x:Name="Editor" Steps="{Binding Steps}"
+                                      KeyTemplate="{StaticResource KeyTemplate}" AddTemplate="{StaticResource AddTemplate}"
+                                      AutomationProperties.Name="Touches de la séquence">
+                        <c:SequenceEditor.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </c:SequenceEditor.ItemsPanel>
+                    </c:SequenceEditor>
+
+                    <!-- Conseil durée d'appui (cible = probablement un jeu, au moins une touche instantanée) -->
+                    <Border Background="{DynamicResource Accent.Subtle}" CornerRadius="{DynamicResource Radius.M}" Padding="14,10" Margin="0,4,0,0"
+                            Visibility="{Binding ShowHoldAdvice, Converter={StaticResource BoolToVis}}">
+                        <DockPanel>
+                            <c:Icon Glyph="{StaticResource Icon.LightbulbFilled}" Width="18" Height="18" Foreground="{DynamicResource Accent}"
+                                    VerticalAlignment="Top" Margin="0,1,12,0" />
+                            <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Secondary}" Content="Appliquer 16 ms à toute la séquence"
+                                    Command="{Binding ApplyHoldToAllCommand}" VerticalAlignment="Center" Margin="12,0,0,0">
+                                <Button.CommandParameter>
+                                    <sys:Int32>16</sys:Int32>
+                                </Button.CommandParameter>
+                            </Button>
+                            <StackPanel>
+                                <TextBlock Text="Certains jeux ratent les appuis instantanés" Style="{StaticResource Text.BodyStrong}" />
+                                <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                           Text="Un jeu lit souvent le clavier une fois par image (~16 ms à 60 fps) : un appui de 0 ms peut passer entre deux lectures. Les applis de bureau, elles, s'en contentent." />
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Raccourcis de l'éditeur -->
+                    <WrapPanel Margin="0,12,0,0" TextElement.Foreground="{DynamicResource Text.Tertiary}">
+                        <WrapPanel.Resources>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+                                <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Margin" Value="6,0,16,0" />
+                            </Style>
+                        </WrapPanel.Resources>
+                        <Border Style="{StaticResource Kbd}"><TextBlock Text="Glisser" Margin="0" Foreground="{DynamicResource Text.Secondary}" /></Border>
+                        <TextBlock Text="réordonner" />
+                        <Border Style="{StaticResource Kbd}"><TextBlock Text="Double-clic" Margin="0" Foreground="{DynamicResource Text.Secondary}" /></Border>
+                        <TextBlock Text="changer la touche" />
+                        <Border Style="{StaticResource Kbd}"><TextBlock Text="Suppr" Margin="0" Foreground="{DynamicResource Text.Secondary}" /></Border>
+                        <TextBlock Text="supprimer" />
+                        <Border Style="{StaticResource Kbd}"><TextBlock Text="Ctrl+D" Margin="0" Foreground="{DynamicResource Text.Secondary}" /></Border>
+                        <TextBlock Text="dupliquer" />
+                        <Border Style="{StaticResource Kbd}"><TextBlock Text="Alt+←→" Margin="0" Foreground="{DynamicResource Text.Secondary}" /></Border>
+                        <TextBlock Text="déplacer" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ===================== Cadence + Comportement ===================== -->
+            <c:ResponsiveColumns Margin="0,16,0,0" LeftRatio="0.5" Breakpoint="760" DataContext="{Binding ActiveProfile}">
+
+                <!-- ~~ Cadence ~~ -->
+                <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="Min" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding LiveStats.Min, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
+                        <TextBlock Text="Cadence" Style="{StaticResource Section.Header}" />
+                        <TextBlock Text="Temps entre deux ticks. Plus c'est court, plus ça spamme." Style="{StaticResource Text.Secondary}" Margin="0,0,0,16" />
+
+                        <DockPanel>
+                            <c:NumericBox DockPanel.Dock="Left" Value="{Binding IntervalMs}" Minimum="1" Maximum="60000" Unit="ms" Width="128"
+                                          AutomationProperties.Name="Intervalle en millisecondes" ToolTip="Molette (avec le focus) ou ↑↓ ; Maj = ×10" />
+                            <TextBlock Text="{Binding EquivalenceText}" Style="{StaticResource Num.Stat}" Foreground="{DynamicResource Accent}"
+                                       VerticalAlignment="Center" Margin="16,0,0,0" TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
+
+                        <Slider Minimum="0" Maximum="1" Value="{Binding IntervalSlider}" Margin="0,16,0,0"
+                                SmallChange="0.01" LargeChange="0.1" IsMoveToPointEnabled="True"
+                                AutomationProperties.Name="Intervalle (échelle logarithmique)" />
+                        <DockPanel Margin="0,2,0,0">
+                            <TextBlock DockPanel.Dock="Right" Text="1 s" Style="{StaticResource Num.Small}" Foreground="{DynamicResource Text.Tertiary}" />
+                            <TextBlock Text="1 ms" Style="{StaticResource Num.Small}" Foreground="{DynamicResource Text.Tertiary}" />
+                        </DockPanel>
+
+                        <ItemsControl ItemsSource="{Binding IntervalPresets}" Margin="0,12,0,0" Focusable="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button x:Name="Chip" Style="{StaticResource Btn.Chip}" Margin="0,0,6,6"
+                                            Content="{Binding StringFormat={}{0} ms}"
+                                            Command="{Binding DataContext.SetIntervalCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}" />
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Value="True">
+                                            <DataTrigger.Binding>
+                                                <MultiBinding Converter="{StaticResource AllEqual}">
+                                                    <Binding />
+                                                    <Binding Path="DataContext.IntervalMs" RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+                                                </MultiBinding>
+                                            </DataTrigger.Binding>
+                                            <Setter TargetName="Chip" Property="Background" Value="{DynamicResource Accent.Subtle}" />
+                                            <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                            <Setter TargetName="Chip" Property="Foreground" Value="{DynamicResource Accent}" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Separator Margin="0,12,0,16" />
+
+                        <TextBlock Text="Répétitions" Style="{StaticResource Field.Label}" />
+                        <DockPanel>
+                            <c:NumericBox DockPanel.Dock="Left" Value="{Binding RepeatCount}" Minimum="0" Maximum="1000000" Width="128"
+                                          AutomationProperties.Name="Nombre de répétitions, 0 pour infini" />
+                            <TextBlock Text="{Binding RepeatText}" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" Margin="16,0,0,0"
+                                       TextWrapping="Wrap" />
+                        </DockPanel>
+                        <TextBlock Text="0 = en boucle. Un cycle = toute la séquence une fois." Style="{StaticResource Field.Help}" />
                     </StackPanel>
+                </Border>
+
+                <!-- ~~ Comportement ~~ -->
+                <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="Max" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding LiveStats.Max, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
+                        <TextBlock Text="Comportement" Style="{StaticResource Section.Header}" />
+                        <TextBlock Text="Comment la séquence part, et quand elle s'arrête." Style="{StaticResource Text.Secondary}" Margin="0,0,0,16" />
+
+                        <TextBlock Text="Mode d'envoi" Style="{StaticResource Field.Label}" />
+                        <Border Style="{StaticResource Segmented}">
+                            <UniformGrid Rows="1">
+                                <RadioButton Style="{StaticResource Segment}" GroupName="SeqMode" Content="Cycle" c:Ui.Icon="{StaticResource Icon.Refresh}"
+                                             IsChecked="{Binding SequenceMode, Converter={StaticResource EnumToBool}, ConverterParameter=Cycle}" />
+                                <RadioButton Style="{StaticResource Segment}" GroupName="SeqMode" Content="Burst" c:Ui.Icon="{StaticResource Icon.Flash}"
+                                             IsChecked="{Binding SequenceMode, Converter={StaticResource EnumToBool}, ConverterParameter=Burst}" />
+                            </UniformGrid>
+                        </Border>
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Field.Help}">
+                                    <Setter Property="Text" Value="Une touche par tick, en boucle. Les délais par touche s'appliquent." />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsBurst}" Value="True">
+                                            <Setter Property="Text" Value="Toute la séquence à chaque tick : idéal pour un combo répété." />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Text="Raccourci" Style="{StaticResource Field.Label}" Margin="0,20,0,6" />
+                        <DockPanel>
+                            <c:HotkeyBox DockPanel.Dock="Left" Hotkey="{Binding Hotkey}" Width="150" FontFamily="{DynamicResource Font.Mono}"
+                                         HorizontalContentAlignment="Center" Margin="0,0,12,0"
+                                         ToolTip="Clique puis appuie sur la combinaison. Retour arrière = aucun." AutomationProperties.Name="Raccourci du profil" />
+                            <Border Style="{StaticResource Segmented}">
+                                <UniformGrid Rows="1">
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="ActMode" Content="ON / OFF" MinWidth="88"
+                                                 IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Toggle}" />
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="ActMode" Content="Maintenir" MinWidth="88"
+                                                 IsChecked="{Binding ActivationMode, Converter={StaticResource EnumToBool}, ConverterParameter=Hold}" />
+                                </UniformGrid>
+                            </Border>
+                        </DockPanel>
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource Field.Help}">
+                                    <Setter Property="Text" Value="Un appui lance, un autre arrête." />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ActivationMode}" Value="Hold">
+                                            <Setter Property="Text" Value="La macro tourne seulement tant que tu gardes le raccourci enfoncé." />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <TextBlock Text="Fenêtre cible" Style="{StaticResource Field.Label}" Margin="0,20,0,6" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Close}"
+                                    ToolTip="Aucun filtre (toutes les fenêtres)" AutomationProperties.Name="Retirer la fenêtre cible"
+                                    Command="{Binding ClearTargetProcessCommand}"
+                                    Visibility="{Binding HasTarget, Converter={StaticResource BoolToVis}}" />
+                            <Button DockPanel.Dock="Right" Style="{StaticResource Btn.Icon}" c:Ui.Icon="{StaticResource Icon.Refresh}" Margin="4,0,0,0"
+                                    ToolTip="Rafraîchir la liste des applis ouvertes" AutomationProperties.Name="Rafraîchir la liste des applis"
+                                    Command="{Binding DataContext.RefreshProcessesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                            <ComboBox IsEditable="True" c:Ui.Placeholder="Toutes les fenêtres"
+                                      ItemsSource="{Binding DataContext.RunningProcesses, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      Text="{Binding TargetProcess, UpdateSourceTrigger=LostFocus, TargetNullValue=''}"
+                                      AutomationProperties.Name="Fenêtre cible"
+                                      ToolTip="Ex. notepad.exe. Les touches ne partent que si cette appli a le focus ; sinon pause automatique." />
+                        </DockPanel>
+                        <TextBlock Text="Sécurité : la macro se met en pause dès que tu changes de fenêtre. Vide = partout." Style="{StaticResource Field.Help}" />
                     </StackPanel>
-                    <StackPanel ToolTip="95 % des intervalles sont inférieurs ou égaux à cette valeur">
-                        <TextBlock Text="p95" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding LiveStats.P95, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
-                    </StackPanel>
-                    <StackPanel ToolTip="99 % des intervalles sont inférieurs ou égaux à cette valeur">
-                        <TextBlock Text="p99" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding LiveStats.P99, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
-                    </StackPanel>
-                    <StackPanel ToolTip="Écart-type des intervalles : plus c'est bas, plus le rythme est régulier">
-                        <TextBlock Text="Jitter (σ)" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding LiveStats.StdDev, StringFormat={}{0:0.000}}" Style="{StaticResource Text.StatValue}" />
-                    </StackPanel>
-                    <StackPanel ToolTip="Intervalles plus longs que 1,5 × l'intervalle prévu">
-                        <TextBlock Text="Manqués" Style="{StaticResource Text.Muted}" />
-                        <TextBlock Text="{Binding LiveStats.Missed}" Style="{StaticResource Text.StatValue}" />
-                    </StackPanel>
-                </UniformGrid>
-            </DockPanel>
-        </Border>
-    </Grid>
+                </Border>
+            </c:ResponsiveColumns>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

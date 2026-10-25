@@ -23,6 +23,7 @@
             <conv:NullToVisibilityConverter x:Key="NullToVis" />
             <conv:NullToVisibilityConverter x:Key="NullToVisInverted" Invert="True" />
             <conv:InverseBoolConverter x:Key="InverseBool" />
+            <conv:AllEqualConverter x:Key="AllEqual" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

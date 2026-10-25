@@ -23,7 +23,6 @@ public sealed class SequenceKeyItem : ContentControl
 {
     static SequenceKeyItem()
     {
-        DefaultStyleKeyProperty.OverrideMetadata(typeof(SequenceKeyItem), new FrameworkPropertyMetadata(typeof(SequenceKeyItem)));
         FocusableProperty.OverrideMetadata(typeof(SequenceKeyItem), new FrameworkPropertyMetadata(true));
     }
 }

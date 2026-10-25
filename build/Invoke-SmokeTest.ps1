@@ -25,7 +25,12 @@ if (Test-Path $report) {
 $logDir = Join-Path $dataDir "logs"
 if (Test-Path $logDir) {
     Write-Host "---- Logs appli ----"
-    Get-ChildItem $logDir -Filter *.log | ForEach-Object { Get-Content $_.FullName | Select-Object -Last 60 | ForEach-Object { Write-Host $_ } }
+    Get-ChildItem $logDir -Filter *.log | ForEach-Object {
+        $lines = Get-Content $_.FullName
+        # En-têtes d'exceptions d'abord (le message utile est souvent loin au-dessus de la pile)
+        $lines | Where-Object { $_ -match 'Exception:|Exception \(|XamlParseException|Cannot|Impossible|ne peut' } | Select-Object -First 25 | ForEach-Object { Write-Host "!! $_" }
+        $lines | Select-Object -Last 60 | ForEach-Object { Write-Host $_ }
+    }
 }
 
 if ($timedOut) { throw "Smoke test : l'appli ne s'est pas fermée en $TimeoutSeconds s" }

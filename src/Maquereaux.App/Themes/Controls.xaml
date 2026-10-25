@@ -198,6 +198,25 @@
         </Style.Triggers>
     </Style>
 
+    <!-- Puce à bascule (ouvre un petit éditeur en popup : durée d'appui, délai) -->
+    <Style x:Key="Chip.Toggle" TargetType="ToggleButton" BasedOn="{StaticResource Btn.Base}">
+        <Setter Property="Background" Value="{DynamicResource Surface.Sunken}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+        <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="MinHeight" Value="22" />
+        <Setter Property="Padding" Value="7,1" />
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Background" Value="{DynamicResource Accent.Subtle}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+                <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- ================================================================
          CHAMPS DE SAISIE
          ================================================================ -->

@@ -105,6 +105,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(IsRunning))]
     [NotifyPropertyChangedFor(nameof(StartStopLabel))]
     [NotifyPropertyChangedFor(nameof(StateCaption))]
+    [NotifyPropertyChangedFor(nameof(HeroTicks))]
     private EngineState _engineState = EngineState.Stopped;
 
     [ObservableProperty]

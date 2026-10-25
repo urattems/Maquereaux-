@@ -244,4 +244,17 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!-- ===== Conteneur d'une touche de l'éditeur de séquence (le visuel est dans le DataTemplate) ===== -->
+    <Style TargetType="c:SequenceKeyItem">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="c:SequenceKeyItem">
+                    <ContentPresenter />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

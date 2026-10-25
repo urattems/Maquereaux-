@@ -98,6 +98,42 @@ public class NumericBoxParseTests
     }
 }
 
+public class IntervalSliderTests
+{
+    [Theory]
+    [InlineData(1, 0.0)]
+    [InlineData(1000, 1.0)]
+    [InlineData(60000, 1.0)]
+    public void Slider_bounds(int ms, double pos) => Assert.Equal(pos, MacroLogic.IntervalToSlider(ms), 6);
+
+    [Fact]
+    public void Slider_is_logarithmic_and_roundtrips()
+    {
+        Assert.Equal(1.0 / 3, MacroLogic.IntervalToSlider(10), 6);
+        Assert.Equal(2.0 / 3, MacroLogic.IntervalToSlider(100), 6);
+        foreach (var ms in new[] { 1, 2, 7, 10, 16, 25, 33, 50, 100, 250, 1000 })
+            Assert.Equal(ms, MacroLogic.SliderToInterval(MacroLogic.IntervalToSlider(ms)));
+    }
+
+    [Fact]
+    public void Slider_snaps_to_nearby_presets()
+    {
+        Assert.Equal(16, MacroLogic.SliderToInterval(MacroLogic.IntervalToSlider(16) + 0.008));
+        Assert.Equal(1, MacroLogic.SliderToInterval(-1));
+        Assert.Equal(1000, MacroLogic.SliderToInterval(2));
+    }
+
+    [Fact]
+    public void Vm_slider_keeps_long_intervals_typed_by_hand()
+    {
+        var vm = new ProfileViewModel(Profile.CreateDefault()) { IntervalMs = 5000 };
+        vm.IntervalSlider = 1.0;
+        Assert.Equal(5000, vm.IntervalMs);
+        vm.IntervalSlider = 2.0 / 3;
+        Assert.Equal(100, vm.IntervalMs);
+    }
+}
+
 public class ProfileViewModelTests
 {
     private static ProfileViewModel Vm(out List<bool> changes)
