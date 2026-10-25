@@ -94,6 +94,9 @@ public sealed partial class LabViewModel : ObservableObject, IDisposable
 
     public bool HasComparison => Verdict.Length > 0;
 
+    /// <summary>Les deux sessions ont assez d'appuis pour que le tableau et les écarts colorés aient un sens.</summary>
+    public bool CanCompare => CompareA is { Results.TotalInputs: >= 2 } && CompareB is { Results.TotalInputs: >= 2 };
+
     /// <summary>Intervalle du profil actif : ligne « cible » du graphique.</summary>
     public double TargetIntervalMs => _main.ActiveProfile?.IntervalMs ?? 0;
 
@@ -213,6 +216,7 @@ public sealed partial class LabViewModel : ObservableObject, IDisposable
             ? SessionComparison.Compare(CompareA.Results, CompareB.Results)
             : Array.Empty<ComparisonRow>();
         Verdict = CompareA is not null && CompareB is not null ? LabLogic.Verdict(ComparisonRows, CompareA.Name, CompareB.Name) : "";
+        OnPropertyChanged(nameof(CanCompare));
     }
 
     // ---------- Fichiers (toujours sur action explicite) ----------

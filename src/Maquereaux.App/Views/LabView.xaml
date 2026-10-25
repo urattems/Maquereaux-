@@ -295,7 +295,7 @@
                                 </Border>
 
                                 <!-- Tableau -->
-                                <Grid Margin="0,16,0,6" Visibility="{Binding HasComparison, Converter={StaticResource BoolToVis}}">
+                                <Grid Margin="0,16,0,6" Visibility="{Binding CanCompare, Converter={StaticResource BoolToVis}}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="1.4*" />
                                         <ColumnDefinition Width="*" />
@@ -307,7 +307,7 @@
                                     <TextBlock Grid.Column="2" Text="B" Style="{StaticResource Text.Overline}" HorizontalAlignment="Right" />
                                     <TextBlock Grid.Column="3" Text="Écart B − A" Style="{StaticResource Text.Overline}" HorizontalAlignment="Right" />
                                 </Grid>
-                                <ItemsControl ItemsSource="{Binding ComparisonRows}" Focusable="False">
+                                <ItemsControl ItemsSource="{Binding ComparisonRows}" Focusable="False" Visibility="{Binding CanCompare, Converter={StaticResource BoolToVis}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Border Padding="0,6" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Border.Subtle}">
@@ -328,7 +328,7 @@
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
 
-                                <Grid Margin="0,12,0,0" Visibility="{Binding HasComparison, Converter={StaticResource BoolToVis}}">
+                                <Grid Margin="0,12,0,0" Visibility="{Binding CanCompare, Converter={StaticResource BoolToVis}}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="12" />

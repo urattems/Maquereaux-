@@ -80,25 +80,4 @@
     <SolidColorBrush x:Key="Caption.CloseHover" Color="#C42B1C" />
     <SolidColorBrush x:Key="Scrim" Color="#80E9F1F7" />
 
-    <!-- ===== Alias v1.0 ===== -->
-    <SolidColorBrush x:Key="Brush.Background" Color="#EEF4F9" />
-    <SolidColorBrush x:Key="Brush.Surface" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="Brush.SurfaceAlt" Color="#F3F8FB" />
-    <SolidColorBrush x:Key="Brush.SurfaceHover" Color="#E4EEF6" />
-    <SolidColorBrush x:Key="Brush.Border" Color="#CFDDE8" />
-    <SolidColorBrush x:Key="Brush.Text" Color="#0E1C2E" />
-    <SolidColorBrush x:Key="Brush.TextMuted" Color="#46607C" />
-    <SolidColorBrush x:Key="Brush.Accent" Color="#0B9C90" />
-    <SolidColorBrush x:Key="Brush.AccentText" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="Brush.Running" Color="#0B9C90" />
-    <SolidColorBrush x:Key="Brush.RunningBg" Color="#DDF4F1" />
-    <SolidColorBrush x:Key="Brush.Stopped" Color="#C93D31" />
-    <SolidColorBrush x:Key="Brush.StoppedBg" Color="#FBE4E1" />
-    <SolidColorBrush x:Key="Brush.Paused" Color="#A86C05" />
-    <SolidColorBrush x:Key="Brush.PausedBg" Color="#FCF0D9" />
-    <SolidColorBrush x:Key="Brush.Info" Color="#1F6FCC" />
-    <SolidColorBrush x:Key="Brush.Selection" Color="#D9F2EF" />
-    <SolidColorBrush x:Key="Brush.Chart.Physical" Color="#1F6FCC" />
-    <SolidColorBrush x:Key="Brush.Chart.Injected" Color="#0B9C90" />
-    <SolidColorBrush x:Key="Brush.Chart.Grid" Color="#E1EAF2" />
 </ResourceDictionary>
