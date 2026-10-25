@@ -31,7 +31,7 @@
 
         <!-- ===== Touche de la séquence (keycap en relief + puces appui/délai) ===== -->
         <DataTemplate x:Key="KeyTemplate" DataType="{x:Type vm:StepViewModel}">
-            <Grid x:Name="Root" Width="96" Margin="0,0,12,12" Background="Transparent">
+            <Grid x:Name="Root" Width="104" Margin="0,0,12,12" Background="Transparent">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -66,14 +66,14 @@
                 </Border>
 
                 <!-- Puces : durée d'appui + délai après (Cycle uniquement) ; clic = petit éditeur en popup -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
-                    <ToggleButton x:Name="HoldChip" Style="{StaticResource Chip.Toggle}" Content="{Binding HoldChip}"
+                <WrapPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,6,0,0">
+                    <ToggleButton x:Name="HoldChip" Style="{StaticResource Chip.Toggle}" Content="{Binding HoldChip}" Margin="2"
                                   ToolTip="Durée d'appui (clic pour modifier)" AutomationProperties.Name="Durée d'appui"
                                   IsHitTestVisible="{Binding IsOpen, ElementName=HoldPopup, Converter={StaticResource InverseBool}}" />
-                    <ToggleButton x:Name="DelayChip" Style="{StaticResource Chip.Toggle}" Content="{Binding DelayChip}" Margin="4,0,0,0"
+                    <ToggleButton x:Name="DelayChip" Style="{StaticResource Chip.Toggle}" Content="{Binding DelayChip}" Margin="2"
                                   ToolTip="Délai avant la touche suivante (clic pour modifier)" AutomationProperties.Name="Délai après la touche"
                                   IsHitTestVisible="{Binding IsOpen, ElementName=DelayPopup, Converter={StaticResource InverseBool}}" />
-                </StackPanel>
+                </WrapPanel>
 
                 <Popup x:Name="HoldPopup" IsOpen="{Binding IsChecked, ElementName=HoldChip}" PlacementTarget="{Binding ElementName=HoldChip}"
                        Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
@@ -129,7 +129,7 @@
 
         <!-- ===== Tuile « + » en fin de séquence (clic ou Entrée = capture de la prochaine touche) ===== -->
         <DataTemplate x:Key="AddTemplate">
-            <Grid x:Name="Root" Width="96" Height="68" Margin="0,0,12,12" Background="Transparent"
+            <Grid x:Name="Root" Width="104" Height="68" Margin="0,0,12,12" Background="Transparent"
                   AutomationProperties.Name="Ajouter une touche" ToolTip="Ajouter une touche (clic, puis appuie sur la touche voulue)">
                 <Rectangle x:Name="Dash" RadiusX="10" RadiusY="10" Stroke="{DynamicResource Border.Strong}" StrokeThickness="1.5"
                            StrokeDashArray="4 3" Fill="Transparent" SnapsToDevicePixels="True" />

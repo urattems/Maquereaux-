@@ -10,9 +10,9 @@ public sealed class EngineStateToTextConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value switch
     {
-        EngineState.Running => "RUNNING",
-        EngineState.Paused => "PAUSED",
-        _ => "STOPPED",
+        EngineState.Running => "EN MARCHE",
+        EngineState.Paused => "EN PAUSE",
+        _ => "À L'ARRÊT",
     };
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();

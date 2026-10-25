@@ -151,7 +151,18 @@
                                 <Border Style="{StaticResource Kbd}">
                                     <TextBlock Text="{Binding ActiveProfile.HotkeyText}" />
                                 </Border>
-                                <TextBlock Text="{Binding StateCaption}" Style="{StaticResource Text.Caption}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                <TextBlock Margin="8,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource Text.Caption}">
+                                            <Setter Property="Text" Value="pour lancer" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                    <Setter Property="Text" Value="pour arrêter" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
