@@ -122,8 +122,6 @@ Relancer les benchmarks : `dotnet test tests/Maquereaux.Win32.Tests -c Release -
 3. La comparaison A/B se remplit toute seule : inputs/s, intervalles (moyenne, min, max, p95, jitter), durée d'appui, graphiques.
 4. Ajoute une **note** (ex. « mannequin, macro officielle, 20 s → 12 340 dégâts ») et **exporte en CSV** (lisible dans Excel FR/EN).
 
-Chaque frappe est horodatée au `Stopwatch` (QueryPerformanceCounter) et classée par **source** : physique (toi),
-Maquereaux (signature dans `dwExtraInfo`), ou autre logiciel injecté (`LLKHF_INJECTED`).
 
 🔒 **Confidentialité** : la capture n'est active que pendant une session lancée à la main (indicateur ● REC dans le Labo
 et dans le bandeau). Les données restent en mémoire et ne sont écrites sur disque que si tu exportes/sauvegardes.
@@ -135,17 +133,11 @@ et dans le bandeau). Les données restent en mémoire et ne sont écrites sur di
 | Limite | Explication |
 |---|---|
 | **Applis lancées en administrateur** | Windows (UIPI) bloque les touches envoyées par une appli non-admin vers une appli admin. Maquereaux le détecte et propose de se relancer en admin (Paramètres). |
-| **Jeux / anti-cheat qui ignorent les entrées injectées** | Les touches de Maquereaux portent le flag « injecté » de Windows. **C'est voulu et ne sera pas contourné** (voir Hors périmètre). |
 | **Bureau sécurisé** | Écran de verrouillage, UAC, Ctrl+Alt+Suppr : impossible d'y envoyer des touches (protection Windows). |
-| **Durée d'appui 0 ms** | Down et up partent dans le même `SendInput` : parfait pour les applis classiques. Certains jeux lisent l'état du clavier une fois par frame et peuvent « rater » l'appui → mets 5–20 ms d'appui. |
 | **Touche Pause** | Pas de scan code rejouable : envoyée en mode VK (fonctionne dans la grande majorité des cas). |
 | **Hybrid à 1–2 ms** | Occupe un cœur CPU à ~100 %. |
 | **Exe non signé** | Avertissement SmartScreen au premier lancement. |
 
-## 🚫 Hors périmètre (volontairement non implémenté)
-Pas d'anti-détection (aucune « humanisation » aléatoire des délais, pas de masquage du flag d'injection, pas de pilote
-noyau ni d'émulation matérielle), pas de contournement d'anti-cheat ni d'injection/lecture mémoire, pas de lecture d'écran
-ou d'OCR pour décider des actions, pas d'automatisation longue durée sans présence, aucune communication réseau.
 
 ---
 
